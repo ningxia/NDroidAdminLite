@@ -15,7 +15,7 @@ import android.util.Log;
  * @author ningxia
  */
 
-public class SensorService extends Service {
+public class NDroidService extends Service {
 
     private static final String TAG = "NDroid";
     private static final String THREADTAG = "SensorServiceThread";
@@ -29,8 +29,8 @@ public class SensorService extends Service {
     private Sensor mBarometer;
 
     public class LocalBinder extends Binder {
-        SensorService getService() {
-            return SensorService.this;
+        NDroidService getService() {
+            return NDroidService.this;
         }
     }
 
@@ -40,5 +40,9 @@ public class SensorService extends Service {
         return new LocalBinder();
     }
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+    }
 
 }
