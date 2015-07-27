@@ -115,9 +115,10 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     }
 
     private void registerSensors() {
-        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-        mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_FASTEST);
-        mSensorManager.registerListener(this, mBarometer, SensorManager.SENSOR_DELAY_FASTEST);
+        int sensorDelay = SensorManager.SENSOR_DELAY_GAME;
+        mSensorManager.registerListener(this, mAccelerometer, sensorDelay);
+        mSensorManager.registerListener(this, mGyroscope, sensorDelay);
+        mSensorManager.registerListener(this, mBarometer, sensorDelay);
     }
 
     @Override
