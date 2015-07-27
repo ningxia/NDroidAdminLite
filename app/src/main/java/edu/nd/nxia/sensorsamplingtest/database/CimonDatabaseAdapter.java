@@ -234,7 +234,8 @@ public final class CimonDatabaseAdapter {
 
         database.beginTransaction();
         try {
-            for (DataEntry entry : data) {
+            for (int i = 0; i < data.size(); i ++) {
+                DataEntry entry = data.get(i);
                 ContentValues contentValues = new ContentValues(values);
                 contentValues.put(DataTable.COLUMN_METRIC_ID, entry.metricId);
                 contentValues.put(DataTable.COLUMN_TIMESTAMP, this.upTimeToRealTime(entry.timestamp));
