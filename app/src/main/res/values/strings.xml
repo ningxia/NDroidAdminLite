@@ -1,9 +1,12 @@
 <resources>
-    <string name="app_name">SensorSamplingTest</string>
+    <string name="app_name">Sensor Sampling Test</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="units_ms2">m/s²</string>
     <string name="units_rads">rad/s</string>
     <string name="units_hpa">hPa</string>
+    <string name="units_percent">%</string>
+    <string name="units_celcius">°C</string>
+    <string name="units_volts">V</string>
 </resources>

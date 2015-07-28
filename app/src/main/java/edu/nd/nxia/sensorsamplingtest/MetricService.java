@@ -1,12 +1,16 @@
 package edu.nd.nxia.sensorsamplingtest;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.BatteryManager;
 import android.os.SystemClock;
 import android.util.FloatMath;
 import android.util.Log;
@@ -25,13 +29,16 @@ public class MetricService implements SensorEventListener {
     private static final String TAG = "NDroid";
     private static final String SHARED_PREFS = "CimonSharedPrefs";
     private static final String PREF_VERSION = "version";
+    private static final String SENSOR_RESULT = "sensor_result";
     private static final int SUPPORTED = 1;
 
     private Context context;
 
+    private static final int sensorDelay = SensorManager.SENSOR_DELAY_FASTEST;
     private static final int ACCEL_METRICS = 4;
     private static final int GYRO_METRICS = 4;
     private static final int BARO_METRICS = 1;
+    private static final int BATTERY_METRICS = 6;
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
     private Sensor mGyroscope;
@@ -39,6 +46,7 @@ public class MetricService implements SensorEventListener {
 
     private long startTime;
     private long endTime;
+    private long batteryTimer;
     private boolean isActive;
     private int numAccelerometer;
     private int numGyroscope;
@@ -49,11 +57,17 @@ public class MetricService implements SensorEventListener {
     private List<DataEntry> dataList;
     private int monitorId;
 
-    public MetricService(Context context) {
-        this.context = context;
-        this.mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+    SharedPreferences appPrefs;
+
+    private static final IntentFilter batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+    private static Intent batteryStatus = null;
+    private static final int BATTERY_PERIOD = 1000 * 60;
+
+    public MetricService(Context ctx) {
+        this.context = ctx;
         registerSensors();
         database = CimonDatabaseAdapter.getInstance(context);
+        appPrefs = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
     }
 
     private void registerSensors() {
@@ -61,14 +75,15 @@ public class MetricService implements SensorEventListener {
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         mBarometer = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
-        int sensorDelay = SensorManager.SENSOR_DELAY_FASTEST;
 
         mSensorManager.registerListener(this, mAccelerometer, sensorDelay);
         mSensorManager.registerListener(this, mGyroscope, sensorDelay);
         mSensorManager.registerListener(this, mBarometer, sensorDelay);
+        batteryStatus = context.registerReceiver(batteryReceiver, batteryIntentFilter);
     }
 
     public void startMonitoring() {
+        if (DebugLog.DEBUG) Log.d(TAG, "MetricService.startMonitoring - started");
         dataList = new ArrayList<>();
         registerSensors();
         numAccelerometer = 0;
@@ -79,9 +94,11 @@ public class MetricService implements SensorEventListener {
         final long upTime = SystemClock.uptimeMillis();
         monitorId = database.insertMonitor(curTime - upTime);
         startTime = System.currentTimeMillis();
+        batteryTimer = startTime;
     }
 
     public String stopMonitoring() {
+        if (DebugLog.DEBUG) Log.d(TAG, "MetricService.startMonitoring - stopped");
         mSensorManager.unregisterListener(this);
         endTime = System.currentTimeMillis();
         double offset = (endTime - startTime) / 1000.0;
@@ -98,11 +115,14 @@ public class MetricService implements SensorEventListener {
         if (dataList.size() > 0) {
             database.insertBatchGroupData(monitorId, (ArrayList<DataEntry>) dataList);
         }
+
+        SharedPreferences.Editor editor = appPrefs.edit();
+        editor.putString(SENSOR_RESULT, result);
+        editor.commit();
         return result;
     }
 
     public void insertDatabaseEntries() {
-        SharedPreferences appPrefs = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
         int storedVersion = appPrefs.getInt(PREF_VERSION, -1);
         int appVersion = -1;
         try {
@@ -154,6 +174,24 @@ public class MetricService implements SensorEventListener {
                     // insert information for metrics in group into database
                     database.insertOrReplaceMetrics(Metrics.ATMOSPHERIC_PRESSURE, Metrics.ATMOSPHERIC_PRESSURE, "Atmosphere pressure",
                             context.getString(R.string.units_hpa), mBarometer.getMaximumRange());
+
+                    // Battery
+                    // insert metric group information in database
+                    database.insertOrReplaceMetricInfo(Metrics.BATTERY_CATEGORY, "Battery", getTechnology(),
+                            SUPPORTED, 0, 0, "100 %", "1 %", Metrics.TYPE_SYSTEM);
+                    // insert information for metrics in group into database
+                    database.insertOrReplaceMetrics(Metrics.BATTERY_PERCENT, Metrics.BATTERY_CATEGORY,
+                            "Battery level", context.getString(R.string.units_percent), 100);
+                    database.insertOrReplaceMetrics(Metrics.BATTERY_STATUS, Metrics.BATTERY_CATEGORY,
+                            "Status", "", 5);
+                    database.insertOrReplaceMetrics(Metrics.BATTERY_PLUGGED, Metrics.BATTERY_CATEGORY,
+                            "Plugged status", "", 2);
+                    database.insertOrReplaceMetrics(Metrics.BATTERY_HEALTH, Metrics.BATTERY_CATEGORY,
+                            "Health", "", 7);
+                    database.insertOrReplaceMetrics(Metrics.BATTERY_TEMPERATURE, Metrics.BATTERY_CATEGORY,
+                            "Temperature", context.getString(R.string.units_celcius), 100);
+                    database.insertOrReplaceMetrics(Metrics.BATTERY_VOLTAGE, Metrics.BATTERY_CATEGORY,
+                            "Voltage", context.getString(R.string.units_volts), 10);
                 }
             }).start();
             SharedPreferences.Editor editor = appPrefs.edit();
@@ -192,6 +230,54 @@ public class MetricService implements SensorEventListener {
         dataList.add(new DataEntry(Metrics.ATMOSPHERIC_PRESSURE + 0, timestamp, event.values[0]));
     }
 
+    /**
+     * Get string describing battery used with device.
+     *
+     * @return    technology description of battery
+     */
+    private String getTechnology() {
+        String technology = batteryStatus.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY);
+        if (technology == null)
+            return " ";
+        return technology;
+    }
+
+    private void getBatteryData(long timestamp, Intent intent) {
+        if (DebugLog.DEBUG) Log.d(TAG, "BatteryService.batteryReceiver - updating battery values: " + timestamp);
+        Integer values[] = new Integer[BATTERY_METRICS];
+        if (intent == null) return;
+        int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+        values[Metrics.BATTERY_STATUS - Metrics.BATTERY_CATEGORY] = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+        values[Metrics.BATTERY_PLUGGED - Metrics.BATTERY_CATEGORY] = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+        values[Metrics.BATTERY_HEALTH - Metrics.BATTERY_CATEGORY] = intent.getIntExtra(BatteryManager.EXTRA_HEALTH, -1);
+        // temperature returned is tenths of a degree centigrade.
+        //  temp = value / 10 (degrees celcius)
+        float temp = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
+        float temperature = temp / 10.0f;
+        // voltage returned is millivolts
+        float volt = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1);
+        float voltage = volt / 1000.0f;
+        values[Metrics.BATTERY_PERCENT - Metrics.BATTERY_CATEGORY] = level * 100 / scale;
+//        for (int i = 0; i < BATTERY_METRICS; i ++) {
+//            dataList.add(new DataEntry(Metrics.BATTERY_PERCENT, timestamp, values[i]));
+//        }
+        dataList.add(new DataEntry(Metrics.BATTERY_PERCENT, timestamp, values[0]));
+    }
+
+    /**
+     * BroadcastReceiver for receiving battery data updates.
+     */
+    private BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (isActive) {
+                long upTime = SystemClock.uptimeMillis();
+                getBatteryData(upTime, intent);
+            }
+        }
+    };
+
     @Override
     public void onSensorChanged(SensorEvent event) {
         Sensor sensor = event.sensor;
@@ -215,6 +301,12 @@ public class MetricService implements SensorEventListener {
 //                    Log.d(TAG, "Barometer: " + curTime);
                     break;
                 default:
+            }
+
+            long curTime = System.currentTimeMillis();
+            if (curTime - batteryTimer >= BATTERY_PERIOD) {
+                getBatteryData(upTime, batteryStatus);
+                batteryTimer = curTime;
             }
 
             if (dataList.size() >= BATCH_SIZE) {
