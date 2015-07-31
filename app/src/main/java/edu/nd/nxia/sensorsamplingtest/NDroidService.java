@@ -24,10 +24,10 @@ public class NDroidService extends Service {
     private static final String THREADTAG = "NDroidServiceThread";
     private static final String PACKAGE_NAME = "edu.nd.nxia.sensorsamplingtest";
     private static final String SHARED_PREFS = "CimonSharedPrefs";
-    private static final String RUNNING_METRICS = "running_metrics";
+    private static final String SENSOR_DELAY_MODE = "sensor_delay_mode";
+    private static final String RUNNING_MONITOR = "running_monitor";
 
-    private static SharedPreferences settings;
-    private static SharedPreferences.Editor editor;
+    private static SharedPreferences appPrefs;
 
     private Context context;
     MetricService metricService;
@@ -48,7 +48,7 @@ public class NDroidService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        if (DebugLog.DEBUG) Log.d(TAG, "PhysicianService.onBind - bind");
+        if (DebugLog.DEBUG) Log.d(TAG, "NDroidService.onBind - bind");
         return new LocalBinder();
     }
 
@@ -57,9 +57,7 @@ public class NDroidService extends Service {
         if (DebugLog.DEBUG) Log.d(TAG, "NDroidService.onCreate - created");
         super.onCreate();
         this.context = getApplicationContext();
-        metricService = new MetricService(context);
-        settings = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
-        editor = settings.edit();
+        appPrefs = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
         if (!serviceThread.isAlive()) {
             serviceThread.start();
         }
@@ -68,9 +66,9 @@ public class NDroidService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (DebugLog.DEBUG) Log.d(TAG, "NDroidService.onStartCommand - started");
-        metricService.startMonitoring();
-        editor.putInt(RUNNING_METRICS, 1);
-        editor.commit();
+        metricService = new MetricService(context);
+        int mode = appPrefs.getInt(SENSOR_DELAY_MODE, SensorManager.SENSOR_DELAY_FASTEST);
+        metricService.startMonitoring(mode);
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -78,8 +76,6 @@ public class NDroidService extends Service {
     public void onDestroy() {
         if (DebugLog.DEBUG) Log.d(TAG, "NDroidService.onDestroy - stopped");
         metricService.stopMonitoring();
-        editor.remove(RUNNING_METRICS);
-        editor.commit();
         super.onDestroy();
     }
 }

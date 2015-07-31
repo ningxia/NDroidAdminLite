@@ -30,6 +30,8 @@ public class MetricService implements SensorEventListener {
     private static final String SHARED_PREFS = "CimonSharedPrefs";
     private static final String PREF_VERSION = "version";
     private static final String SENSOR_RESULT = "sensor_result";
+    private static final String RUNNING_MONITOR = "running_monitor";
+    private static final String SENSOR_DELAY_MODE = "sensor_delay_mode";
     private static final int SUPPORTED = 1;
 
     private Context context;
@@ -53,11 +55,12 @@ public class MetricService implements SensorEventListener {
     private int numBarometer;
 
     CimonDatabaseAdapter database;
-    private static final int BATCH_SIZE = 500;
+    private static final int BATCH_SIZE = 1000;
     private List<DataEntry> dataList;
     private int monitorId;
 
     SharedPreferences appPrefs;
+    SharedPreferences.Editor editor;
 
     private static final IntentFilter batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     private static Intent batteryStatus = null;
@@ -65,34 +68,46 @@ public class MetricService implements SensorEventListener {
 
     public MetricService(Context ctx) {
         this.context = ctx;
-        registerSensors();
+        initSensors();
+//        registerSensors(mode);
         database = CimonDatabaseAdapter.getInstance(context);
         appPrefs = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
     }
 
-    private void registerSensors() {
+    private void initSensors() {
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         mBarometer = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
-
-        mSensorManager.registerListener(this, mAccelerometer, sensorDelay);
-        mSensorManager.registerListener(this, mGyroscope, sensorDelay);
-        mSensorManager.registerListener(this, mBarometer, sensorDelay);
         batteryStatus = context.registerReceiver(batteryReceiver, batteryIntentFilter);
     }
 
-    public void startMonitoring() {
+    private void registerSensors(int mode) {
+        mSensorManager.registerListener(this, mAccelerometer, mode);
+        mSensorManager.registerListener(this, mGyroscope, mode);
+        mSensorManager.registerListener(this, mBarometer, mode);
+    }
+
+    public void startMonitoring(int mode) {
         if (DebugLog.DEBUG) Log.d(TAG, "MetricService.startMonitoring - started");
         dataList = new ArrayList<>();
-        registerSensors();
+        registerSensors(mode);
         numAccelerometer = 0;
         numGyroscope = 0;
         numBarometer = 0;
         isActive = true;
         final long curTime = System.currentTimeMillis();
         final long upTime = SystemClock.uptimeMillis();
-        monitorId = database.insertMonitor(curTime - upTime);
+        int runningMonitor = appPrefs.getInt(RUNNING_MONITOR, -1);
+        if (runningMonitor == -1) {
+            monitorId = database.insertMonitor(curTime - upTime);
+            editor = appPrefs.edit();
+            editor.putInt(RUNNING_MONITOR, monitorId);
+            editor.commit();
+        }
+        else {
+            monitorId = runningMonitor;
+        }
         startTime = System.currentTimeMillis();
         batteryTimer = startTime;
     }
@@ -100,6 +115,7 @@ public class MetricService implements SensorEventListener {
     public String stopMonitoring() {
         if (DebugLog.DEBUG) Log.d(TAG, "MetricService.startMonitoring - stopped");
         mSensorManager.unregisterListener(this);
+        context.unregisterReceiver(batteryReceiver);
         endTime = System.currentTimeMillis();
         double offset = (endTime - startTime) / 1000.0;
         double rateAccelerometer = numAccelerometer / offset;
@@ -113,10 +129,17 @@ public class MetricService implements SensorEventListener {
                 rateAccelerometer, rateGyroscope, rateBarometer
         );
         if (dataList.size() > 0) {
-            database.insertBatchGroupData(monitorId, (ArrayList<DataEntry>) dataList);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    database.insertBatchGroupData(monitorId, (ArrayList<DataEntry>) dataList);
+                }
+            }).start();
         }
 
-        SharedPreferences.Editor editor = appPrefs.edit();
+        editor = appPrefs.edit();
+        editor.remove(RUNNING_MONITOR);
+        editor.remove(SENSOR_DELAY_MODE);
         editor.putString(SENSOR_RESULT, result);
         editor.commit();
         return result;

@@ -4,12 +4,15 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,15 +23,19 @@ public class MainActivity extends Activity implements View.OnClickListener, Shar
     private static final String SHARED_PREFS = "CimonSharedPrefs";
     private static final String PREF_VERSION = "version";
     private static final String SENSOR_RESULT = "sensor_result";
-    private static final String RUNNING_METRICS = "running_metrics";
+    private static final String SENSOR_DELAY_MODE = "sensor_delay_mode";
+    private static final String RUNNING_MONITOR = "running_monitor";
 
     private Context context;
+    private RadioGroup radioGroup;
     private TextView textView;
     private Button button;
 
     MetricService metricService;
-
     SharedPreferences appPrefs;
+    SharedPreferences.Editor editor;
+
+    private int sensorDelayMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +43,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Shar
         setContentView(R.layout.activity_main);
 
         context = getApplicationContext();
+        radioGroup = (RadioGroup) findViewById(R.id.radio_group);
         textView = (TextView) findViewById(R.id.text_view);
         button = (Button) findViewById(R.id.start_button);
         button.setOnClickListener(this);
@@ -45,6 +53,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Shar
 
         appPrefs = getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
         appPrefs.registerOnSharedPreferenceChangeListener(this);
+        editor = appPrefs.edit();
         resumeStatus();
     }
 
@@ -80,33 +89,65 @@ public class MainActivity extends Activity implements View.OnClickListener, Shar
         super.onResume();
     }
 
+    public void onRadioButtonClicked(View view) {
+        boolean checked = ((RadioButton) view).isChecked();
+        switch(view.getId()) {
+            case R.id.radio_fastest:
+                if (checked)
+                    this.sensorDelayMode = SensorManager.SENSOR_DELAY_FASTEST;
+                break;
+            case R.id.radio_game:
+                if (checked)
+                    this.sensorDelayMode = SensorManager.SENSOR_DELAY_GAME;
+                break;
+        }
+    }
+
     @Override
     public void onClick(View v) {
         if (button.getText().equals("Start")) {
             button.setText("Stop");
-//            metricService.startMonitoring();
             startNDroidService();
+            setRadioGroupEnabled(false);
             textView.setText("Working...");
         }
         else {
             button.setText("Start");
-//            textView.setText(metricService.stopMonitoring());
             Intent intent = new Intent(context, NDroidService.class);
             stopService(intent);
+            setRadioGroupEnabled(true);
         }
     }
 
     private void startNDroidService() {
         Intent intent = new Intent(context, NDroidService.class);
+        editor.putInt(SENSOR_DELAY_MODE, sensorDelayMode);
+        editor.commit();
         startService(intent);
         if (DebugLog.DEBUG) Log.d(TAG, "MainActivity.startNDroidService - started");
     }
 
     private void resumeStatus() {
-        if (appPrefs.getInt(RUNNING_METRICS, -1) == 1) {
-            Toast.makeText(this, "Monitors are running...", Toast.LENGTH_LONG).show();
+        if (appPrefs.getInt(RUNNING_MONITOR, -1) != -1) {
+            Toast.makeText(this, "Monitor #" + appPrefs.getInt(RUNNING_MONITOR, -1) + " is running...", Toast.LENGTH_LONG).show();
             button.setText("Stop");
             textView.setText("Working...");
+            int mode = appPrefs.getInt(SENSOR_DELAY_MODE, -1);
+            switch (mode) {
+                case SensorManager.SENSOR_DELAY_FASTEST:
+                    radioGroup.check(R.id.radio_fastest);
+                    break;
+                case SensorManager.SENSOR_DELAY_GAME:
+                    radioGroup.check(R.id.radio_game);
+                    break;
+            }
+            setRadioGroupEnabled(false);
+        }
+    }
+
+    private void setRadioGroupEnabled(boolean enabled) {
+        for (int i = 0; i < radioGroup.getChildCount(); i ++) {
+            radioGroup.getChildAt(i).setEnabled(enabled);
         }
     }
 
