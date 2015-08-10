@@ -328,6 +328,7 @@ public class MetricService implements SensorEventListener {
 
             long curTime = System.currentTimeMillis();
             if (curTime - batteryTimer >= BATTERY_PERIOD) {
+                batteryStatus = context.registerReceiver(null, batteryIntentFilter);
                 getBatteryData(upTime, batteryStatus);
                 batteryTimer = curTime;
             }
