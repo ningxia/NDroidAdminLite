@@ -7,9 +7,11 @@ import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Binder;
+import android.os.Debug;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.util.Log;
 
 /**
@@ -26,11 +28,15 @@ public class NDroidService extends Service {
     private static final String SHARED_PREFS = "CimonSharedPrefs";
     private static final String SENSOR_DELAY_MODE = "sensor_delay_mode";
     private static final String RUNNING_MONITOR = "running_monitor";
+    private static final String WAKE_LOCK = "NDroidServiceWakeLock";
 
     private static SharedPreferences appPrefs;
 
     private Context context;
     MetricService metricService;
+
+    PowerManager powerManager;
+    PowerManager.WakeLock wakeLock;
 
     private static final HandlerThread serviceThread = new HandlerThread(THREADTAG) {
         @Override
@@ -58,6 +64,9 @@ public class NDroidService extends Service {
         super.onCreate();
         this.context = getApplicationContext();
         appPrefs = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
+        powerManager = (PowerManager) context.getSystemService(POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK);
+        wakeLock.acquire();
         if (!serviceThread.isAlive()) {
             serviceThread.start();
         }
@@ -76,6 +85,7 @@ public class NDroidService extends Service {
     public void onDestroy() {
         if (DebugLog.DEBUG) Log.d(TAG, "NDroidService.onDestroy - stopped");
         metricService.stopMonitoring();
+        wakeLock.release();
         super.onDestroy();
     }
 }
