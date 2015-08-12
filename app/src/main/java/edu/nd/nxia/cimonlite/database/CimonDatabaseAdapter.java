@@ -1,4 +1,4 @@
-package edu.nd.nxia.sensorsamplingtest.database;
+package edu.nd.nxia.cimonlite.database;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -12,9 +12,9 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
-import edu.nd.nxia.sensorsamplingtest.DataEntry;
-import edu.nd.nxia.sensorsamplingtest.DebugLog;
-import edu.nd.nxia.sensorsamplingtest.contentprovider.CimonContentProvider;
+import edu.nd.nxia.cimonlite.DebugLog;
+import edu.nd.nxia.cimonlite.DataEntry;
+import edu.nd.nxia.cimonlite.contentprovider.CimonContentProvider;
 
 /**
  * Adapter for accessing CIMON database.

@@ -1,4 +1,4 @@
-package edu.nd.nxia.sensorsamplingtest;
+package edu.nd.nxia.cimonlite;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -18,7 +18,8 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.nd.nxia.sensorsamplingtest.database.CimonDatabaseAdapter;
+import edu.nd.nxia.cimonlite.database.CimonDatabaseAdapter;
+import edu.nd.nxia.cimonlite.R;
 
 /**
  * Class for managing sensors

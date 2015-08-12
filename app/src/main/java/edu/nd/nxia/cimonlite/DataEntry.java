@@ -1,7 +1,8 @@
-package edu.nd.nxia.sensorsamplingtest;
+package edu.nd.nxia.cimonlite;
 
 import android.os.SystemClock;
-import edu.nd.nxia.sensorsamplingtest.database.CimonDatabaseAdapter;
+
+import edu.nd.nxia.cimonlite.database.CimonDatabaseAdapter;
 
 /**
  * Time and value pair for a single data entry in the Data table.

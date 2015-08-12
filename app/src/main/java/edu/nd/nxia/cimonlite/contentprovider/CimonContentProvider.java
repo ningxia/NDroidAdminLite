@@ -1,4 +1,4 @@
-package edu.nd.nxia.sensorsamplingtest.contentprovider;
+package edu.nd.nxia.cimonlite.contentprovider;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -9,14 +9,14 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
 
-import edu.nd.nxia.sensorsamplingtest.DebugLog;
-import edu.nd.nxia.sensorsamplingtest.database.CimonDatabaseAdapter;
-import edu.nd.nxia.sensorsamplingtest.database.CimonDatabaseHelper;
-import edu.nd.nxia.sensorsamplingtest.database.DataTable;
-import edu.nd.nxia.sensorsamplingtest.database.MetricInfoTable;
-import edu.nd.nxia.sensorsamplingtest.database.MetricStatusTable;
-import edu.nd.nxia.sensorsamplingtest.database.MetricsTable;
-import edu.nd.nxia.sensorsamplingtest.database.MonitorTable;
+import edu.nd.nxia.cimonlite.DebugLog;
+import edu.nd.nxia.cimonlite.database.CimonDatabaseAdapter;
+import edu.nd.nxia.cimonlite.database.MetricInfoTable;
+import edu.nd.nxia.cimonlite.database.MetricsTable;
+import edu.nd.nxia.cimonlite.database.MonitorTable;
+import edu.nd.nxia.cimonlite.database.CimonDatabaseHelper;
+import edu.nd.nxia.cimonlite.database.DataTable;
+import edu.nd.nxia.cimonlite.database.MetricStatusTable;
 
 
 /**

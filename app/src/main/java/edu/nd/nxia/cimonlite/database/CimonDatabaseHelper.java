@@ -1,11 +1,11 @@
-package edu.nd.nxia.sensorsamplingtest.database;
+package edu.nd.nxia.cimonlite.database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import edu.nd.nxia.sensorsamplingtest.DebugLog;
+import edu.nd.nxia.cimonlite.DebugLog;
 
 /**
  * Database helper

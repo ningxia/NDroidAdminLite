@@ -1,4 +1,4 @@
-package edu.nd.nxia.sensorsamplingtest;
+package edu.nd.nxia.cimonlite;
 
 /**
  * Set level of logging to enable.

@@ -1,4 +1,4 @@
-package edu.nd.nxia.sensorsamplingtest;
+package edu.nd.nxia.cimonlite;
 
 import android.app.Application;
 import android.content.Context;

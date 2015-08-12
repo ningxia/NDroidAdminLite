@@ -17,7 +17,7 @@
  * along with CIMON.  If not, see <http://www.gnu.org/licenses/>.
  *  
  */
-package edu.nd.nxia.sensorsamplingtest;
+package edu.nd.nxia.cimonlite;
 
 /**
  * Defines constants for all metrics supported by CIMON.  Also provides mappings
