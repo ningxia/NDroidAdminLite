@@ -1,4 +1,4 @@
-package edu.nd.darts.cimon;
+package edu.nd.nxia.cimonlite;
 
 
 import android.annotation.SuppressLint;

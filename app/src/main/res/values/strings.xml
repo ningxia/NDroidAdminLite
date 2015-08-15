@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">CIMON Monitor</string>
 
+    <string name="title_activity_physician_interface">Physician Interface</string>
     <string name="radio_group_message">Please select sampling mode:</string>
     <string name="welcome">Welcome!</string>
     <string name="action_settings">Settings</string>

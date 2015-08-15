@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.nd.nxia.cimonlite.database.CimonDatabaseAdapter;
-import edu.nd.nxia.cimonlite.R;
+
 
 /**
  * Class for managing sensors

@@ -3,15 +3,16 @@
     package="edu.nd.nxia.cimonlite" >
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
 
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:label="@string/app_name">
         <activity
-            android:name="edu.nd.nxia.cimonlite.MainActivity"
+            android:name="edu.nd.nxia.cimonlite.LabelingInterface"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name" >
             <intent-filter>
@@ -19,6 +20,12 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name="edu.nd.nxia.cimonlite.SamplingInterface"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_physician_interface" >
         </activity>
 
         <service android:name="edu.nd.nxia.cimonlite.NDroidService"

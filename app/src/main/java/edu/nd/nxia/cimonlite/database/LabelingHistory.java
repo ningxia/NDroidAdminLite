@@ -20,7 +20,7 @@ public class LabelingHistory {
             + COLUMN_STATE + " text not null, " + COLUMN_START
             + " integer not null," + COLUMN_END + " integer not null" + ");";
     private static final String DATABASE_DROP = "DROP TABLE " + TABLE_NAME + ";";
-    private static final String PATH = "/data/data/edu.nd.darts.cimon/databases/labellinghistory";
+    private static final String PATH = "/data/data/edu.nd.nxia.cimonlite/databases/labellinghistory";
     public static SQLiteDatabase db;
 
     public LabelingHistory() {

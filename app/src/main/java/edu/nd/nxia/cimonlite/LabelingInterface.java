@@ -35,6 +35,7 @@ import android.widget.Toast;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 
+import edu.nd.nxia.cimonlite.database.CimonDatabaseAdapter;
 import edu.nd.nxia.cimonlite.database.DataTable;
 import edu.nd.nxia.cimonlite.database.LabelingDB;
 import edu.nd.nxia.cimonlite.database.LabelingHistory;
@@ -56,7 +57,7 @@ public class LabelingInterface extends Activity {
     Button saveButton, LoginButton, cancelButton, newItemButton,
             saveNewItemButton, discardNewItemButton,
             loginButton;
-    Button MemoryButton, CimonButton;
+//    Button MemoryButton, CimonButton;
     EditText et, et2, PinCode;
     private RadioGroup radioButtonGroup;
     private RadioButton radioButton;
@@ -91,7 +92,7 @@ public class LabelingInterface extends Activity {
         discardNewItemButton = (Button) findViewById(R.id.discardItemButton);
         LoginButton = (Button) findViewById(R.id.button7);
 //        MemoryButton = (Button) findViewById(R.id.button8);
-        CimonButton = (Button) findViewById(R.id.button9);
+//        CimonButton = (Button) findViewById(R.id.button9);
 
         cancelButton = (Button) findViewById(R.id.button2);
         workSpinner = (Spinner) findViewById(R.id.spinner1);
@@ -103,6 +104,9 @@ public class LabelingInterface extends Activity {
         showStatus();
 
         this.initializeTimeSpinner();
+
+        // It is necessary, otherwise LabelingDB cannot be opened.
+        CimonDatabaseAdapter.getInstance(MyApplication.getAppContext());
 
         this.labelDB = new LabelingHistory();
         this.statesDB = new LabelingDB();
@@ -394,7 +398,7 @@ public class LabelingInterface extends Activity {
                         else if (selectedButton.getText().equals("Physician")) {
                             if (PinCode.getText().toString().equals("pabc")) {
                                 popupWindow.dismiss();
-                                Intent intent = new Intent(LabelingInterface.this, PhysicianInterface.class);
+                                Intent intent = new Intent(LabelingInterface.this, SamplingInterface.class);
                                 startActivity(intent);
                             } else {
                                 PinCode.setText("");
@@ -406,17 +410,17 @@ public class LabelingInterface extends Activity {
             }
         });
 
-        CimonButton.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LabelingInterface.this,
-                        NDroidAdmin.class);
-                intent.putExtra("State", work);
-                startActivity(intent); //
-
-            }
-        });
+//        CimonButton.setOnClickListener(new OnClickListener() {
+//
+//            @Override
+//            public void onClick(View v) {
+//                Intent intent = new Intent(LabelingInterface.this,
+//                        NDroidAdmin.class);
+//                intent.putExtra("State", work);
+//                startActivity(intent); //
+//
+//            }
+//        });
     }
 
     /**

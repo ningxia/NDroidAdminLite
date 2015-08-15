@@ -20,7 +20,7 @@ public class LabelingDB {
             + " text not null " + ");";
     private static final String DATABASE_DROP = "DROP TABLE " + TABLE_NAME
             + ";";
-    private static final String PATH = "/data/data/edu.nd.darts.cimon/databases/labellingdb";
+    private static final String PATH = "/data/data/edu.nd.nxia.cimonlite/databases/labellingdb";
     public static SQLiteDatabase db;
 
     public LabelingDB() {
