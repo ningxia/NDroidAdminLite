@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CIMON Monitor</string>
+    <string name="app_name">CIMON Monitor Lite</string>
 
     <string name="title_activity_physician_interface">Physician Interface</string>
     <string name="radio_group_message">Please select sampling mode:</string>
