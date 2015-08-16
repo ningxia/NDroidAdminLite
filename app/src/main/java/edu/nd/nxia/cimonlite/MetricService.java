@@ -91,7 +91,8 @@ public class MetricService implements SensorEventListener {
 
     public void startMonitoring(int mode) {
         if (DebugLog.DEBUG) Log.d(TAG, "MetricService.startMonitoring - started");
-        dataList = new ArrayList<>();
+        //dataList = new ArrayList<>();
+        dataList = new ArrayList();
         registerSensors(mode);
         numAccelerometer = 0;
         numGyroscope = 0;
@@ -335,7 +336,8 @@ public class MetricService implements SensorEventListener {
             }
 
             if (dataList.size() >= BATCH_SIZE) {
-                final ArrayList<DataEntry> dl = new ArrayList<>(dataList);
+                //final ArrayList<DataEntry> dl = new ArrayList<>(dataList);
+                final ArrayList<DataEntry> dl = new ArrayList(dataList);
                 new Thread(new Runnable() {
                     @Override
                     public void run() {

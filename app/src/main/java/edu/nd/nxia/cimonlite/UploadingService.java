@@ -38,8 +38,8 @@ import edu.nd.nxia.cimonlite.database.MetricsTable;
  */
 public class UploadingService extends Service {
     private static final String TAG = "CimonUploadingService";
-    private static final String[] uploadTables = {MetricInfoTable.TABLE_METRICINFO, LabelingHistory.TABLE_NAME, MetricsTable.TABLE_METRICS, DataTable.TABLE_DATA};
-    //private static final String[] uploadTables = {LabelingHistory.TABLE_NAME};
+    //private static final String[] uploadTables = {MetricInfoTable.TABLE_METRICINFO, LabelingHistory.TABLE_NAME, MetricsTable.TABLE_METRICS, DataTable.TABLE_DATA};
+    private static final String[] uploadTables = {MetricInfoTable.TABLE_METRICINFO, LabelingHistory.TABLE_NAME, MetricsTable.TABLE_METRICS};
     private static final int period = 1000 * 10;
     private static int count;
     private static int MAXRECORDS = 3000;
@@ -50,7 +50,7 @@ public class UploadingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-//        scheduleUploading();
+        scheduleUploading();
         return super.onStartCommand(intent, flags, startId);
     }
 

@@ -55,6 +55,9 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
         appPrefs.registerOnSharedPreferenceChangeListener(this);
         editor = appPrefs.edit();
         resumeStatus();
+
+        startUploadingService();
+        startLabelingReminderService();
     }
 
     @Override
@@ -118,6 +121,18 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
             stopService(intent);
             setRadioGroupEnabled(true);
         }
+    }
+
+    private void startUploadingService(){
+        Intent intent = new Intent(context,UploadingService.class);
+        startService(intent);
+        if (DebugLog.DEBUG) Log.d(TAG, "MainActivity.startUploadingService - started");
+    }
+
+    private void startLabelingReminderService(){
+        Intent intent = new Intent(context,LabelingReminderService.class);
+        startService(intent);
+        if (DebugLog.DEBUG) Log.d(TAG, "MainActivity.startLabelingReminderService - started");
     }
 
     private void startNDroidService() {

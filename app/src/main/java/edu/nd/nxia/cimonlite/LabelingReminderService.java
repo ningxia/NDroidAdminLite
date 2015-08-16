@@ -24,7 +24,7 @@ import edu.nd.nxia.cimonlite.database.LabelingHistory;
 public class LabelingReminderService extends Service {
 
     private static final String TAG = "CimonReminderService";
-    private static final int period = 1000 * 3600;
+    private static final int period = 1000*3600;
     private static int startHour = 14;
     private static int endHour = 22;
     private static int dailyTarget = 5;
@@ -61,7 +61,7 @@ public class LabelingReminderService extends Service {
                 if (labelNum < dailyTarget && currentTime >= startTime && currentTime <= endTime) {
                     Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                     Toast.makeText(getApplicationContext(),
-                            "Current labeling#: " + Integer.toString(labelNum) + " Today's Target:" + Integer.toString(dailyTarget),
+                            "Current labeling#: " + Integer.toString(labelNum) + " Today's Target: " + Integer.toString(dailyTarget),
                             Toast.LENGTH_SHORT).show();
                     v.vibrate(1000);
                 }
