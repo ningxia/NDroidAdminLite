@@ -160,45 +160,62 @@ public class MetricService implements SensorEventListener {
         if (appVersion > storedVersion) {
             new Thread(new Runnable() {
                 public void run() {
+                    String[] metrics = {"X", "Y", "Z", "Magnitude"};
 
-                    if (DebugLog.DEBUG) Log.d(TAG, "AccelerometerService.insertDatabaseEntries - insert entries");
                     // Accelerometer
                     // insert metric group information in database
-                    String[] metrics = {"X", "Y", "Z", "Magnitude"};
-                    database.insertOrReplaceMetricInfo(Metrics.ACCELEROMETER, "Accelerometer", mAccelerometer.getName(),
-                            SUPPORTED, mAccelerometer.getPower(), mAccelerometer.getMinDelay()/1000,
-                            mAccelerometer.getMaximumRange() + " " + context.getString(R.string.units_ms2),
-                            mAccelerometer.getResolution() + " " + context.getString(R.string.units_ms2),
-                            Metrics.TYPE_SENSOR);
-                    // insert information for metrics in group into database
-                    for (int i = 0; i < ACCEL_METRICS; i++) {
-                        database.insertOrReplaceMetrics(Metrics.ACCELEROMETER + i, Metrics.ACCELEROMETER, metrics[i],
-                                context.getString(R.string.units_ms2), mAccelerometer.getMaximumRange());
+                    if (mAccelerometer == null) {
+                        if (DebugLog.INFO) Log.i(TAG, "AccelerometerService - sensor not supported on this system");
+                    }
+                    else {
+                        if (DebugLog.DEBUG) Log.d(TAG, "AccelerometerService.insertDatabaseEntries - insert entries");
+                        database.insertOrReplaceMetricInfo(Metrics.ACCELEROMETER, "Accelerometer", mAccelerometer.getName(),
+                                SUPPORTED, mAccelerometer.getPower(), mAccelerometer.getMinDelay()/1000,
+                                mAccelerometer.getMaximumRange() + " " + context.getString(R.string.units_ms2),
+                                mAccelerometer.getResolution() + " " + context.getString(R.string.units_ms2),
+                                Metrics.TYPE_SENSOR);
+                        // insert information for metrics in group into database
+                        for (int i = 0; i < ACCEL_METRICS; i++) {
+                            database.insertOrReplaceMetrics(Metrics.ACCELEROMETER + i, Metrics.ACCELEROMETER, metrics[i],
+                                    context.getString(R.string.units_ms2), mAccelerometer.getMaximumRange());
+                        }
                     }
 
                     // Gyroscope
                     // insert metric group information in database
-                    database.insertOrReplaceMetricInfo(Metrics.GYROSCOPE, "Gyroscope", mGyroscope.getName(),
-                            SUPPORTED, mGyroscope.getPower(), mGyroscope.getMinDelay()/1000,
-                            mGyroscope.getMaximumRange() + " " + context.getString(R.string.units_rads),
-                            mGyroscope.getResolution() + " " + context.getString(R.string.units_rads),
-                            Metrics.TYPE_SENSOR);
-                    // insert information for metrics in group into database
-                    for (int i = 0; i < GYRO_METRICS; i++) {
-                        database.insertOrReplaceMetrics(Metrics.GYROSCOPE + i, Metrics.GYROSCOPE, metrics[i],
-                                context.getString(R.string.units_rads), mGyroscope.getMaximumRange());
+                    if (mGyroscope == null) {
+                        if (DebugLog.INFO) Log.i(TAG, "GyroscopeService - sensor not supported on this system");
+                    }
+                    else {
+                        if (DebugLog.DEBUG) Log.d(TAG, "GyroscopeService.insertDatabaseEntries - insert entries");
+                        database.insertOrReplaceMetricInfo(Metrics.GYROSCOPE, "Gyroscope", mGyroscope.getName(),
+                                SUPPORTED, mGyroscope.getPower(), mGyroscope.getMinDelay() / 1000,
+                                mGyroscope.getMaximumRange() + " " + context.getString(R.string.units_rads),
+                                mGyroscope.getResolution() + " " + context.getString(R.string.units_rads),
+                                Metrics.TYPE_SENSOR);
+                        // insert information for metrics in group into database
+                        for (int i = 0; i < GYRO_METRICS; i++) {
+                            database.insertOrReplaceMetrics(Metrics.GYROSCOPE + i, Metrics.GYROSCOPE, metrics[i],
+                                    context.getString(R.string.units_rads), mGyroscope.getMaximumRange());
+                        }
                     }
 
                     // Barometer
                     // insert metric group information in database
-                    database.insertOrReplaceMetricInfo(Metrics.ATMOSPHERIC_PRESSURE, "Pressure", mBarometer.getName(),
-                            SUPPORTED, mBarometer.getPower(), mBarometer.getMinDelay() / 1000,
-                            mBarometer.getMaximumRange() + " " + context.getString(R.string.units_hpa),
-                            mBarometer.getResolution() + " " + context.getString(R.string.units_hpa),
-                            Metrics.TYPE_SENSOR);
-                    // insert information for metrics in group into database
-                    database.insertOrReplaceMetrics(Metrics.ATMOSPHERIC_PRESSURE, Metrics.ATMOSPHERIC_PRESSURE, "Atmosphere pressure",
-                            context.getString(R.string.units_hpa), mBarometer.getMaximumRange());
+                    if (mBarometer == null) {
+                        if (DebugLog.INFO) Log.i(TAG, "BarometerService - sensor not supported on this system");
+                    }
+                    else {
+                        if (DebugLog.DEBUG) Log.d(TAG, "BarometerService.insertDatabaseEntries - insert entries");
+                        database.insertOrReplaceMetricInfo(Metrics.ATMOSPHERIC_PRESSURE, "Pressure", mBarometer.getName(),
+                                SUPPORTED, mBarometer.getPower(), mBarometer.getMinDelay() / 1000,
+                                mBarometer.getMaximumRange() + " " + context.getString(R.string.units_hpa),
+                                mBarometer.getResolution() + " " + context.getString(R.string.units_hpa),
+                                Metrics.TYPE_SENSOR);
+                        // insert information for metrics in group into database
+                        database.insertOrReplaceMetrics(Metrics.ATMOSPHERIC_PRESSURE, Metrics.ATMOSPHERIC_PRESSURE, "Atmosphere pressure",
+                                context.getString(R.string.units_hpa), mBarometer.getMaximumRange());
+                    }
 
                     // Battery
                     // insert metric group information in database
