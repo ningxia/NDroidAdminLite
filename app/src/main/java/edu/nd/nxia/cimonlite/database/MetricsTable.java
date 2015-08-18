@@ -38,6 +38,7 @@ public final class MetricsTable {
             + "("
             + COLUMN_ID + " integer primary key, "
             + COLUMN_METRIC + " text not null, "
+            + COLUMN_INFO_ID + " integer not null,"
             + COLUMN_UNITS + " text not null,"
             + COLUMN_MAX + " real not null"
             + ");";

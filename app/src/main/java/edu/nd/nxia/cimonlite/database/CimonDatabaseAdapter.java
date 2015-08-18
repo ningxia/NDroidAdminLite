@@ -117,6 +117,7 @@ public final class CimonDatabaseAdapter {
             Log.d(TAG, "CimonDatabaseAdapter.insertOrReplaceMetrics - insert into Metrics table: metric-" + metric);
         ContentValues values = new ContentValues();
         values.put(MetricsTable.COLUMN_ID, id);
+        values.put(MetricsTable.COLUMN_INFO_ID, group);
         values.put(MetricsTable.COLUMN_METRIC, metric);
         values.put(MetricsTable.COLUMN_UNITS, units);
         values.put(MetricsTable.COLUMN_MAX, max);
