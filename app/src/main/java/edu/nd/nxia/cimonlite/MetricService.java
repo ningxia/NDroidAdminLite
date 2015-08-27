@@ -10,7 +10,11 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.BatteryManager;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.FloatMath;
 import android.util.Log;
@@ -46,6 +50,8 @@ public class MetricService implements SensorEventListener {
     private Sensor mAccelerometer;
     private Sensor mGyroscope;
     private Sensor mBarometer;
+    private LocationManager mLocationManager;
+    private List<String> mProviders;
 
     private long startTime;
     private long endTime;
@@ -70,7 +76,6 @@ public class MetricService implements SensorEventListener {
     public MetricService(Context ctx) {
         this.context = ctx;
         initSensors();
-//        registerSensors(mode);
         database = CimonDatabaseAdapter.getInstance(context);
         appPrefs = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
     }
@@ -81,12 +86,14 @@ public class MetricService implements SensorEventListener {
         mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         mBarometer = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
         batteryStatus = context.registerReceiver(batteryReceiver, batteryIntentFilter);
+        mLocationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
     }
 
     private void registerSensors(int mode) {
         mSensorManager.registerListener(this, mAccelerometer, mode);
         mSensorManager.registerListener(this, mGyroscope, mode);
         mSensorManager.registerListener(this, mBarometer, mode);
+        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
     }
 
     public void startMonitoring(int mode) {
@@ -316,6 +323,34 @@ public class MetricService implements SensorEventListener {
             if (isActive) {
                 long upTime = SystemClock.uptimeMillis();
                 getBatteryData(upTime, intent);
+            }
+        }
+    };
+
+    private LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+            if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onProviderDisabled - " + provider);
+            if (provider.equals(LocationManager.GPS_PROVIDER)) {
+                if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onProviderDisabled - from gps");
+            }
+            else if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
+                if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onProviderDisabled - from network");
             }
         }
     };
