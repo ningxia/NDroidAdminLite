@@ -13,6 +13,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -46,12 +47,17 @@ public class MetricService implements SensorEventListener {
     private static final int GYRO_METRICS = 4;
     private static final int BARO_METRICS = 1;
     private static final int BATTERY_METRICS = 6;
+    private static final int LOCATION_METRICS = 4;
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
     private Sensor mGyroscope;
     private Sensor mBarometer;
     private LocationManager mLocationManager;
     private List<String> mProviders;
+    private Location coordinate;
+    private static final int BATCH_SIZE = 1000;
+    private static final float ONE_SECOND = 1000;
+    private static final long FIVE_MINUTES = 300000;
 
     private long startTime;
     private long endTime;
@@ -62,9 +68,9 @@ public class MetricService implements SensorEventListener {
     private int numBarometer;
 
     CimonDatabaseAdapter database;
-    private static final int BATCH_SIZE = 1000;
     private List<DataEntry> dataList;
     private int monitorId;
+    private long lastUpdate = 0;
 
     SharedPreferences appPrefs;
     SharedPreferences.Editor editor;
@@ -125,6 +131,7 @@ public class MetricService implements SensorEventListener {
         if (DebugLog.DEBUG) Log.d(TAG, "MetricService.startMonitoring - stopped");
         mSensorManager.unregisterListener(this);
         context.unregisterReceiver(batteryReceiver);
+        mLocationManager.removeUpdates(locationListener);
         endTime = System.currentTimeMillis();
         double offset = (endTime - startTime) / 1000.0;
         double rateAccelerometer = numAccelerometer / offset;
@@ -241,6 +248,35 @@ public class MetricService implements SensorEventListener {
                             "Temperature", context.getString(R.string.units_celcius), 100);
                     database.insertOrReplaceMetrics(Metrics.BATTERY_VOLTAGE, Metrics.BATTERY_CATEGORY,
                             "Voltage", context.getString(R.string.units_volts), 10);
+
+                    // Geo-Location
+                    float power = 0;
+                    String description = null;
+                    List<String> providers = mLocationManager.getProviders(true);
+                    for (String provider : providers) {
+                        LocationProvider locProvider = mLocationManager.getProvider(provider);
+                        power += locProvider.getPowerRequirement();
+                        if (description == null) {
+                            description = locProvider.getName();
+                        }
+                        else {
+                            description = description + " | " + locProvider.getName();
+                        }
+                    }
+                    // insert metric group information in database
+                    database.insertOrReplaceMetricInfo(Metrics.LOCATION_CATEGORY, "Geo-Location", description,
+                            SUPPORTED, power, mLocationManager.getGpsStatus(null).getTimeToFirstFix(),
+                            "Global coordinate", "1" + context.getString(R.string.units_degrees),
+                            Metrics.TYPE_SENSOR);
+                    // insert information for metrics in group into database
+                    database.insertOrReplaceMetrics(Metrics.LOCATION_LATITUDE, Metrics.LOCATION_CATEGORY,
+                            "Latitude", context.getString(R.string.units_degrees), 90);
+                    database.insertOrReplaceMetrics(Metrics.LOCATION_LONGITUDE, Metrics.LOCATION_CATEGORY,
+                            "Longitude", context.getString(R.string.units_degrees), 180);
+                    database.insertOrReplaceMetrics(Metrics.LOCATION_ACCURACY, Metrics.LOCATION_CATEGORY,
+                            "Accuracy", context.getString(R.string.units_meters), 500);
+                    database.insertOrReplaceMetrics(Metrics.LOCATION_SPEED, Metrics.LOCATION_CATEGORY,
+                            "Speed", "m/s", 500);
                 }
             }).start();
             SharedPreferences.Editor editor = appPrefs.edit();
@@ -330,7 +366,15 @@ public class MetricService implements SensorEventListener {
     private LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-
+            if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onLocationChanged - new location");
+            if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
+                if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onLocationChanged - from gps");
+            }
+            else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
+                if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onLocationChanged - from network");
+            }
+            checkLocation(location);
+            getLocationData();
         }
 
         @Override
@@ -354,6 +398,83 @@ public class MetricService implements SensorEventListener {
             }
         }
     };
+
+    /**
+     * Obtain last known location.
+     * Queries GPS and network data for last known locations.  Returns the location
+     * which is most accurate or recent, using a formula which essentially equates
+     * one second to one meter.
+     *
+     * @return    best last known location
+     */
+    private Location getLastLocation() {
+        if (DebugLog.DEBUG) Log.d(TAG, "LocationService.getLastLocation - getting last known location");
+        Location gps = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        Location network = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        if (gps != null) {
+            if (network != null) {
+                // this is my little formula for determining higher quality reading,
+                //  which essentially equates one second to one meter
+                long timeDelta = gps.getTime() - network.getTime();
+                float accuracyDelta = gps.getAccuracy() - network.getAccuracy();
+                if (!(gps.hasAccuracy() && network.hasAccuracy())) {
+                    accuracyDelta = 0;
+                }
+                if (((float)timeDelta / ONE_SECOND) > accuracyDelta) {
+                    return gps;
+                }
+                return network;
+            }
+            return gps;
+        }
+        return network;
+    }
+
+    private boolean checkLocation(Location newCoordinate) {
+        if (DebugLog.DEBUG) Log.d(TAG, "LocationService.checkLocation - check quality of location");
+        if (newCoordinate == null) {
+            return false;
+        }
+        if (coordinate != null) {
+            if (coordinate.equals(newCoordinate)) {
+                return false;
+            }
+        }
+        else {
+            coordinate = newCoordinate;
+            return true;
+        }
+        // this is my little formula for determining higher quality reading,
+        //  which essentially equates one second to one meter
+        long timeDelta = coordinate.getTime() - newCoordinate.getTime();
+        float accuracyDelta = coordinate.getAccuracy() - newCoordinate.getAccuracy();
+        if (!(coordinate.hasAccuracy() && newCoordinate.hasAccuracy())) {
+            accuracyDelta = 0;
+        }
+        if (((float)timeDelta / ONE_SECOND) > accuracyDelta) {
+            return false;
+        }
+        coordinate = newCoordinate;
+        return true;
+    }
+
+    private void getLocationData() {
+        if (isActive) {
+            long upTime = SystemClock.uptimeMillis();
+            if ((upTime - lastUpdate) > FIVE_MINUTES) {
+                coordinate = getLastLocation();
+            }
+            Double values[] = new Double[LOCATION_METRICS];
+            values[0] = coordinate.getLatitude();
+            values[1] = coordinate.getLongitude();
+            values[2] = (double) coordinate.getAccuracy();
+            values[3] = (double) coordinate.getSpeed();
+            lastUpdate = upTime;
+            for (int i = 0; i < LOCATION_METRICS; i ++) {
+                dataList.add(new DataEntry(Metrics.LOCATION_CATEGORY + i, upTime, values[i]));
+            }
+        }
+    }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
