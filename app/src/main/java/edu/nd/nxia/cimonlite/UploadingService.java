@@ -38,8 +38,8 @@ import edu.nd.nxia.cimonlite.database.MetricsTable;
  */
 public class UploadingService extends Service {
     private static final String TAG = "CimonUploadingService";
-    //private static final String[] uploadTables = {MetricInfoTable.TABLE_METRICINFO, LabelingHistory.TABLE_NAME, MetricsTable.TABLE_METRICS, DataTable.TABLE_DATA};
-    private static final String[] uploadTables = {MetricInfoTable.TABLE_METRICINFO, LabelingHistory.TABLE_NAME, MetricsTable.TABLE_METRICS};
+    private static final String[] uploadTables = {MetricInfoTable.TABLE_METRICINFO, LabelingHistory.TABLE_NAME, MetricsTable.TABLE_METRICS, DataTable.TABLE_DATA};
+    //private static final String[] uploadTables = {MetricsTable.TABLE_METRICS};
     private static final int period = 1000 * 10;
     private static int count;
     private static int MAXRECORDS = 3000;
@@ -161,6 +161,7 @@ public class UploadingService extends Service {
      */
     private void uploadFromTable(String tableName) {
         Cursor cursor = this.getCursor(tableName);
+        Log.d(TAG,tableName + " " + cursor.getCount());
         while (cursor.getCount() > 0) {
             //Update cursor
             try {
@@ -215,6 +216,7 @@ public class UploadingService extends Service {
                 }
             }
             records.put(record);
+            Log.d(TAG,record.toString());
             if (records.length() >= this.MAXRECORDS) {
                 batchUpload(records, tableName, rowIDs);
                 records = new JSONArray();

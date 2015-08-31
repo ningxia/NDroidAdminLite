@@ -171,6 +171,7 @@ public class MetricService implements SensorEventListener {
         }
         if (DebugLog.DEBUG) Log.d(TAG, "NDroidAdmin.onCreate - appVersion:" + appVersion +
                 " storedVersion:" + storedVersion);
+
         if (appVersion > storedVersion) {
             new Thread(new Runnable() {
                 public void run() {
@@ -279,10 +280,12 @@ public class MetricService implements SensorEventListener {
                             "Speed", "m/s", 500);
                 }
             }).start();
+
             SharedPreferences.Editor editor = appPrefs.edit();
             editor.putInt(PREF_VERSION, appVersion);
             editor.commit();
         }
+        Log.d(TAG,"AppVersion:" + Integer.toString(appVersion) + " " + Integer.toString(storedVersion));
     }
 
     private void getAccelData(SensorEvent event, long timestamp) {
