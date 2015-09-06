@@ -1,6 +1,13 @@
 package edu.nd.nxia.cimonlite;
 
-import java.util.Comparator;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.util.Log;
+
+import java.util.EventListener;
+import java.util.List;
+
 
 /**
  * Definition of abstract class for metric monitoring devices. These devices provide
@@ -10,8 +17,9 @@ import java.util.Comparator;
  *
  * @param <T>    value type for metrics monitored (typically subclass of Number)
  */
-public abstract class MetricDevice<T extends Comparator<T>> {
-    private static final String TAG = "NDroid";
+public abstract class MetricDevice<T extends Comparable<T>> implements EventListener {
+    /** Tag for log messages. */
+    protected static final String TAG = "NDroid";
     protected static final int SUPPORTED = 1;
     protected static final int NOTSUPPORTED = 0;
 
@@ -19,6 +27,7 @@ public abstract class MetricDevice<T extends Comparator<T>> {
     protected int groupId;
     protected int metricsCount;
 
+    protected SensorManager sensorManager;
     protected T[] values;
 
     /**
@@ -27,8 +36,198 @@ public abstract class MetricDevice<T extends Comparator<T>> {
     abstract void initDevice();
 
     /**
+     * Register device
+     */
+    abstract void registerDevice(SensorManager sensorManager, SensorEventListener eventListener, int mode);
+
+    /**
      * Insert entries for metric group and metrics into database.
      */
     abstract void insertDatabaseEntries();
+
+    /**
+     * Get device data
+     */
+    abstract List<DataEntry> getData(SensorEvent sensorEvent, long timestamp);
+
+    abstract int getCount();
+
+    abstract int getGroupId();
+
+    /**
+     * Static method to return instance of implementation of abstract class for
+     * the desired device.
+     *
+     * @param groupId   integer representing metric (per {@link Metrics})
+     * @return          metric monitoring agent for this metric, null if monitoring of
+     *             metric not supported on this system
+     */
+    public static MetricDevice<?> getDevice(int groupId, SensorManager sensorManager) {
+        switch(groupId) {
+//            case Metrics.TIME_DAY:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch time service");
+//                return null;
+//            case Metrics.MEMORY_TOTAL:
+//            case Metrics.MEMORY_AVAIL:
+//            case Metrics.MEMORY_CACHED:
+//            case Metrics.MEMORY_ACTIVE:
+//            case Metrics.MEMORY_INACTIVE:
+//            case Metrics.MEMORY_DIRTY:
+//            case Metrics.MEMORY_BUFFERS:
+//            case Metrics.MEMORY_ANONPAGES:
+//            case Metrics.MEMORY_SWAPTOTAL:
+//            case Metrics.MEMORY_SWAPFREE:
+//            case Metrics.MEMORY_SWAPCACHED:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch memory service");
+//                return MemoryService.getInstance();
+//            case Metrics.CPU_LOAD1:
+//            case Metrics.CPU_LOAD5:
+//            case Metrics.CPU_LOAD15:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch cpu service");
+//                return CpuService.getInstance();
+//            case Metrics.PROC_TOTAL:
+//            case Metrics.PROC_USER:
+//            case Metrics.PROC_NICE:
+//            case Metrics.PROC_SYSTEM:
+//            case Metrics.PROC_IDLE:
+//            case Metrics.PROC_IOWAIT:
+//            case Metrics.PROC_IRQ:
+//            case Metrics.PROC_SOFTIRQ:
+//            case Metrics.PROC_CTXT:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch proc service");
+//                return CpuUtilService.getInstance();
+//            case Metrics.BATTERY_PERCENT:
+//            case Metrics.BATTERY_STATUS:
+//            case Metrics.BATTERY_PLUGGED:
+//            case Metrics.BATTERY_HEALTH:
+//            case Metrics.BATTERY_TEMPERATURE:
+//            case Metrics.BATTERY_VOLTAGE:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch battery service");
+//                return BatteryService.getInstance();
+//            case Metrics.MOBILE_RX_BYTES:
+//            case Metrics.MOBILE_TX_BYTES:
+//            case Metrics.TOTAL_RX_BYTES:
+//            case Metrics.TOTAL_TX_BYTES:
+//            case Metrics.MOBILE_RX_PACKETS:
+//            case Metrics.MOBILE_TX_PACKETS:
+//            case Metrics.TOTAL_RX_PACKETS:
+//            case Metrics.TOTAL_TX_PACKETS:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch net bytes service");
+//                return NetBytesService.getInstance();
+//            case Metrics.ROAMING:
+//            case Metrics.NET_CONNECTED:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch net connected service");
+//                return NetConnectedService.getInstance();
+//            case Metrics.SDCARD_READS:
+//            case Metrics.SDCARD_WRITES:
+//            case Metrics.SDCARD_CREATES:
+//            case Metrics.SDCARD_DELETES:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch sdcard file access service");
+//                return FileAccessService.getInstance();
+//            case Metrics.INSTRUCTION_CNT:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch instruction count service");
+//                return InstructionCntService.getInstance();
+//            case Metrics.LOCATION_LATITUDE:
+//            case Metrics.LOCATION_LONGITUDE:
+//            case Metrics.LOCATION_ACCURACY:
+//            case Metrics.LOCATION_SPEED:
+//            case Metrics.LOCATION_COORDINATE:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch location service");
+//                return LocationService.getInstance();
+            case Metrics.ACCELEROMETER:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch accelerometer service");
+                return AccelerometerService.getInstance();
+//            case Metrics.MAGNET_X:
+//            case Metrics.MAGNET_Y:
+//            case Metrics.MAGNET_Z:
+//            case Metrics.MAGNET_MAGNITUDE:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch magnetometer service");
+//                return MagnetometerService.getInstance();
+//            case Metrics.GYRO_X:
+//            case Metrics.GYRO_Y:
+//            case Metrics.GYRO_Z:
+//            case Metrics.GYRO_MAGNITUDE:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch gyroscope service");
+//                return GyroscopeService.getInstance();
+//            case Metrics.LINEAR_X:
+//            case Metrics.LINEAR_Y:
+//            case Metrics.LINEAR_Z:
+//            case Metrics.LINEAR_MAGNITUDE:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch linear acceleration service");
+//                return LinearAccelService.getInstance();
+//            case Metrics.ORIENT_AZIMUTH:
+//            case Metrics.ORIENT_PITCH:
+//            case Metrics.ORIENT_ROLL:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch orientation service");
+//                return OrientationService.getInstance();
+//            case Metrics.LIGHT:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch light sensor service");
+//                return LightService.getInstance();
+//            case Metrics.HUMIDITY:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch relative humidity service");
+//                return HumidityService.getInstance();
+//            case Metrics.TEMPERATURE:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch ambient temperature service");
+//                return TemperatureService.getInstance();
+//            case Metrics.ATMOSPHERIC_PRESSURE:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch atmospheric pressure service");
+//                return PressureService.getInstance();
+//            case Metrics.PROXIMITY:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch proximity service");
+//                return ProximityService.getInstance();
+//            case Metrics.SCREEN_ON:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch screen state service");
+//                return ScreenService.getInstance();
+//            case Metrics.PHONESTATE:
+//            case Metrics.OUTGOINGCALLS:
+//            case Metrics.INCOMINGCALLS:
+//            case Metrics.MISSEDCALLS:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch telephony activity service");
+//                return PhoneStateService.getInstance();
+//            case Metrics.OUTGOINGSMS:
+//            case Metrics.INCOMINGSMS:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch sms activity service");
+//                return SMSService.getInstance();
+//            case Metrics.OUTGOINGMMS:
+//            case Metrics.INCOMINGMMS:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch mms activity service");
+//                return MMSService.getInstance();
+//            case Metrics.BLUETOOTH_DEVICE:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch Bluetooth activity service");
+//                return BluetoothService.getInstance();
+//            case Metrics.WIFI_NETWORK:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch Wifi activity service");
+//                return WifiService.getInstance();
+//            case Metrics.SMSSENT:
+//            case Metrics.SMSRECEIVED:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch SMS information service");
+//                return SMSInfoService.getInstance();
+//            case Metrics.MMSSENT:
+//            case Metrics.MMSRECEIVED:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch MMS information service");
+//                return MMSInfoService.getInstance();
+//            case Metrics.PHONE_CALL_OUTGOING:
+//            case Metrics.PHONE_CALL_INCOMING:
+//            case Metrics.PHONE_CALL_MISSED:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch Phone call service");
+//                return PhoneCallService.getInstance();
+//            case Metrics.CALLSTATE:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch Call state service");
+//                return CallStateService.getInstance();
+//            case Metrics.BROWSING_HISTORY:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch Browser history service");
+//                return BrowserHistoryService.getInstance();
+//            case Metrics.APPLICATION:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch Application service");
+//                return ApplicationService.getInstance();
+//            case Metrics.CELL_CID:
+//            case Metrics.CELL_LAC:
+//                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch Cell Location service");
+//                return CellLocationService.getInstance();
+            default:
+                if (DebugLog.INFO) Log.i(TAG, "MetricService.getService - unrecognized metric");
+                return null;
+        }
+    }
 
 }
