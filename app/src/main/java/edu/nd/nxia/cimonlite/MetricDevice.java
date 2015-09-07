@@ -51,7 +51,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
      */
     abstract List<DataEntry> getData(SensorEvent event, long timestamp);
 
-    abstract int getGroupId();
+    public int getGroupId() {
+        return this.groupId;
+    }
 
     /**
      * Static method to return instance of implementation of abstract class for
@@ -165,9 +167,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
 //            case Metrics.TEMPERATURE:
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch ambient temperature service");
 //                return TemperatureService.getInstance();
-//            case Metrics.ATMOSPHERIC_PRESSURE:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch atmospheric pressure service");
-//                return PressureService.getInstance();
+            case Metrics.ATMOSPHERIC_PRESSURE:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch atmospheric pressure device");
+                return PressureService.getInstance();
 //            case Metrics.PROXIMITY:
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch proximity service");
 //                return ProximityService.getInstance();

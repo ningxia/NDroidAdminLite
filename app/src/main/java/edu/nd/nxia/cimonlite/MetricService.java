@@ -162,16 +162,15 @@ public class MetricService implements SensorEventListener {
         GyroscopeService gyroscopeService = (GyroscopeService) mDeviceArray.get(Metrics.GYROSCOPE);
         double rateGyroscope = gyroscopeService.getCount() / offset;
         gyroscopeService.resetCount();
-//        double rateBarometer = numBarometer / offset;
+        PressureService pressureService = (PressureService) mDeviceArray.get(Metrics.ATMOSPHERIC_PRESSURE);
+        double rateBarometer = pressureService.getCount() / offset;
+        pressureService.resetCount();
         isActive = false;
         String result = String.format(
-//                "Accelerometer Sampling Rate: %.2fHz\n" +
-//                        "Gyroscope Sampling Rate: %.2fHz\n" +
-//                        "Barometer Sampling Rate: %.2fHz",
-//                rateAccelerometer, rateGyroscope, rateBarometer
                 "Accelerometer Sampling Rate: %.2fHz\n" +
-                        "Gyroscope Sampling Rate: %.2fHz\n",
-                rateAccelerometer, rateGyroscope
+                        "Gyroscope Sampling Rate: %.2fHz\n" +
+                        "Barometer Sampling Rate: %.2fHz",
+                rateAccelerometer, rateGyroscope, rateBarometer
         );
         if (dataList.size() > 0) {
             new Thread(new Runnable() {
@@ -376,9 +375,9 @@ public class MetricService implements SensorEventListener {
                 case Sensor.TYPE_GYROSCOPE:
                     dataList.addAll(mDeviceArray.get(Metrics.GYROSCOPE).getData(event, upTime));
                     break;
-//                case Sensor.TYPE_PRESSURE:
-//                    getBaroData(event, upTime);
-//                    break;
+                case Sensor.TYPE_PRESSURE:
+                    dataList.addAll(mDeviceArray.get(Metrics.ATMOSPHERIC_PRESSURE).getData(event, upTime));
+                    break;
                 default:
             }
 
@@ -390,8 +389,7 @@ public class MetricService implements SensorEventListener {
 //            }
 
             if (dataList.size() >= BATCH_SIZE) {
-                //final ArrayList<DataEntry> dl = new ArrayList<>(dataList);
-                final ArrayList<DataEntry> dl = new ArrayList(dataList);
+                final ArrayList<DataEntry> dl = new ArrayList<>(dataList);
                 new Thread(new Runnable() {
                     @Override
                     public void run() {

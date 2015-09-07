@@ -143,9 +143,9 @@ public final class AccelerometerService extends MetricDevice<Float> {
         return dataList;
     }
 
-    public int getGroupId() {
-        return this.groupId;
-    }
+//    public int getGroupId() {
+//        return this.groupId;
+//    }
 
     public int getCount() {
         return this.mCounter;

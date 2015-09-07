@@ -135,10 +135,10 @@ public final class GyroscopeService extends MetricDevice<Float> {
         return dataList;
     }
 
-    @Override
-    int getGroupId() {
-        return this.groupId;
-    }
+//    @Override
+//    int getGroupId() {
+//        return this.groupId;
+//    }
 
     int getCount() {
         return this.mCounter;
