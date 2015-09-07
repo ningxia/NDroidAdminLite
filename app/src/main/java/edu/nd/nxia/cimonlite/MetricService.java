@@ -14,6 +14,7 @@ import android.os.BatteryManager;
 import android.os.SystemClock;
 import android.util.FloatMath;
 import android.util.Log;
+import android.util.SparseArray;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,21 +46,15 @@ public class MetricService implements SensorEventListener {
     private static final int BARO_METRICS = 1;
     private static final int BATTERY_METRICS = 6;
     private SensorManager mSensorManager;
-    private Sensor mAccelerometer;
-    private Sensor mGyroscope;
-    private Sensor mBarometer;
 
     private long startTime;
     private long endTime;
     private long batteryTimer;
     private boolean isActive;
-    private int numAccelerometer;
-    private int numGyroscope;
-    private int numBarometer;
 
     CimonDatabaseAdapter database;
     private static final int BATCH_SIZE = 1000;
-    private Map<Integer, MetricDevice<?>> mDeviceMap;
+    private SparseArray<MetricDevice<?>> mDeviceArray;
     private List<DataEntry> dataList;
     private int monitorId;
 
@@ -72,40 +67,86 @@ public class MetricService implements SensorEventListener {
 
     public MetricService(Context _context) {
         this.context = _context;
-        this.mDeviceMap = new HashMap<>();
-        initSensors();
+        this.mDeviceArray = new SparseArray<>();
+        initDevices();
         database = CimonDatabaseAdapter.getInstance(context);
         appPrefs = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
     }
 
-    private void initSensors() {
+    public void initDevices() {
 //        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 //        mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 //        mBarometer = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
 //        batteryStatus = context.registerReceiver(batteryReceiver, batteryIntentFilter);
-        int[] deviceList = {105};
-        for (int i = 0; i < deviceList.length; i ++) {
-            MetricDevice<?> metricDevice = MetricDevice.getDevice(deviceList[i], mSensorManager);
-            metricDevice.initDevice();
-            metricDevice.insertDatabaseEntries();
-            mDeviceMap.put(metricDevice.getGroupId(), metricDevice);
+
+//        for (int i = 0; i < deviceList.length; i ++) {
+//            MetricDevice<?> metricDevice = MetricDevice.getService(deviceList[i]);
+//            if (metricDevice != null) {
+//                metricDevice.initDevice();
+//    //            metricDevice.insertDatabaseEntries();
+//                Log.d(TAG, "MetricService.initSensors: groupId " + metricDevice.getGroupId());
+//                mDeviceArray.put(metricDevice.getGroupId(), metricDevice);
+//            }
+//        }
+
+        List<MetricDevice<?>> serviceList;
+        int[] categories = {Metrics.TYPE_SYSTEM, Metrics.TYPE_SENSOR, Metrics.TYPE_USER};
+        for (int i = 0; i < categories.length; i ++) {
+            serviceList = MetricDevice.getDevices(categories[i]);
+            if (serviceList.size() != 0) {
+                for (MetricDevice<?> metricDevice : serviceList) {
+                    if (DebugLog.DEBUG) Log.d(TAG, "MetricService.initDevices: groupId " + metricDevice.getGroupId());
+                    metricDevice.initDevice();
+                    mDeviceArray.put(metricDevice.getGroupId(), metricDevice);
+                }
+            }
+            serviceList.clear();
         }
     }
 
-    private void registerSensors(int mode) {
+    public void initDatabase() {
+        int storedVersion = appPrefs.getInt(PREF_VERSION, -1);
+        int appVersion = -1;
+        try {
+            appVersion = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        if (DebugLog.DEBUG) Log.d(TAG, "MetricService.initDatabase - appVersion:" + appVersion +
+                " storedVersion:" + storedVersion);
+
+        if (appVersion > storedVersion) {
+            new Thread(new Runnable() {
+                public void run() {
+                    for (int i = 0; i < mDeviceArray.size(); i ++) {
+                        int key = mDeviceArray.keyAt(i);
+                        MetricDevice<?> metricDevice = mDeviceArray.get(key);
+                        metricDevice.insertDatabaseEntries();
+                    }
+                }
+            }).start();
+
+            SharedPreferences.Editor editor = appPrefs.edit();
+            editor.putInt(PREF_VERSION, appVersion);
+            editor.commit();
+        }
+    }
+
+    private void registerDevices(int mode) {
 //        mSensorManager.registerListener(this, mAccelerometer, mode);
 //        mSensorManager.registerListener(this, mGyroscope, mode);
 //        mSensorManager.registerListener(this, mBarometer, mode);
-        for (MetricDevice<?> md: mDeviceMap.values()) {
-            md.registerDevice(mSensorManager, this, mode);
+        for (int i = 0; i < mDeviceArray.size(); i ++) {
+            int key = mDeviceArray.keyAt(i);
+            mDeviceArray.get(key).registerDevice(mSensorManager, this, mode);
         }
     }
 
     public void startMonitoring(int mode) {
         if (DebugLog.DEBUG) Log.d(TAG, "MetricService.startMonitoring - started");
         dataList = new ArrayList<>();
-        registerSensors(mode);
+        registerDevices(mode);
 //        numAccelerometer = 0;
 //        numGyroscope = 0;
 //        numBarometer = 0;
@@ -132,7 +173,9 @@ public class MetricService implements SensorEventListener {
 //        context.unregisterReceiver(batteryReceiver);
         endTime = System.currentTimeMillis();
         double offset = (endTime - startTime) / 1000.0;
-        double rateAccelerometer = mDeviceMap.get(Metrics.ACCELEROMETER).getCount() / offset;
+        AccelerometerService accelerometerService = (AccelerometerService) mDeviceArray.get(Metrics.ACCELEROMETER);
+        double rateAccelerometer = mDeviceArray.get(Metrics.ACCELEROMETER).getCount() / offset;
+        accelerometerService.resetCount();
 //        double rateGyroscope = numGyroscope / offset;
 //        double rateBarometer = numBarometer / offset;
         isActive = false;
@@ -342,8 +385,9 @@ public class MetricService implements SensorEventListener {
             long upTime = SystemClock.uptimeMillis();
             switch (sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
-                    AccelerometerService accelerometerService = (AccelerometerService) mDeviceMap.get(Metrics.ACCELEROMETER);
-                    dataList.addAll(accelerometerService.getData(event, upTime));
+//                    AccelerometerService accelerometerService = (AccelerometerService) mDeviceArray.get(Metrics.ACCELEROMETER);
+//                    dataList.addAll(accelerometerService.getData(event, upTime));
+                    dataList.addAll(mDeviceArray.get(Metrics.ACCELEROMETER).getData(event, upTime));
                     break;
 //                case Sensor.TYPE_GYROSCOPE:
 //                    getGyroData(event, upTime);

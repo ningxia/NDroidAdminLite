@@ -5,6 +5,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 
@@ -62,7 +63,7 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
      * @return          metric monitoring agent for this metric, null if monitoring of
      *             metric not supported on this system
      */
-    public static MetricDevice<?> getDevice(int groupId, SensorManager sensorManager) {
+    public static MetricDevice<?> getDevice(int groupId) {
         switch(groupId) {
 //            case Metrics.TIME_DAY:
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch time service");
@@ -135,7 +136,7 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch location service");
 //                return LocationService.getInstance();
             case Metrics.ACCELEROMETER:
-                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch accelerometer service");
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch accelerometer device");
                 return AccelerometerService.getInstance();
 //            case Metrics.MAGNET_X:
 //            case Metrics.MAGNET_Y:
@@ -225,9 +226,36 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricService.getService - fetch Cell Location service");
 //                return CellLocationService.getInstance();
             default:
-                if (DebugLog.INFO) Log.i(TAG, "MetricService.getService - unrecognized metric");
+                if (DebugLog.INFO) Log.i(TAG, "MetricDevice.getDevice - unrecognized group: " + groupId);
                 return null;
         }
+    }
+
+    public static List<MetricDevice<?>> getDevices(int category) {
+        ArrayList<MetricDevice<?>> devices = new ArrayList<>();
+        int[] deviceList;
+        switch (category) {
+            case Metrics.TYPE_SYSTEM:
+                deviceList = Metrics.SYSTEM_METRICS;
+                break;
+            case Metrics.TYPE_SENSOR:
+                deviceList = Metrics.SENSOR_METRICS;
+                break;
+            case Metrics.TYPE_USER:
+                deviceList = Metrics.USER_METRICS;
+                break;
+            default:
+                if (DebugLog.INFO) Log.i(TAG, "MetricDevice.getDevices - unrecognized category");
+                return null;
+        }
+
+        for (int i = 0; i < deviceList.length; i ++) {
+            MetricDevice<?> metricDevice = getDevice(deviceList[i]);
+            if (metricDevice != null) {
+                devices.add(metricDevice);
+            }
+        }
+        return devices;
     }
 
 }

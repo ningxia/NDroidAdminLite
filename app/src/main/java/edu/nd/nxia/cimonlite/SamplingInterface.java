@@ -49,6 +49,7 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
         button.setOnClickListener(this);
 
         metricService = new MetricService(context);
+        metricService.initDatabase();
 
         appPrefs = getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
         appPrefs.registerOnSharedPreferenceChangeListener(this);

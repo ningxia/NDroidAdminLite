@@ -126,14 +126,6 @@ public final class AccelerometerService extends MetricDevice<Float> {
      * Process SensorEvent data obtained from onSensorChanged() event.
      * Update values, and push to orientation monitor if it is active.
      *
-     * @param
-     * @param event    accelerometer data received from onSensorChanged() event
-     */
-
-    /**
-     * Process SensorEvent data obtained from onSensorChanged() event.
-     * Update values, and push to orientation monitor if it is active.
-     *
      * @param event         accelerometer data received from onSensorChanged() event
      * @param timestamp     the timestamp when the event occurred
      * @return              list of data of type {@link DataEntry}
@@ -161,6 +153,14 @@ public final class AccelerometerService extends MetricDevice<Float> {
 
     public int getCount() {
         return this.mCounter;
+    }
+
+    public void resetCount() {
+        this.mCounter = 0;
+    }
+
+    public String getDeviceName() {
+        return this.title;
     }
 
 //	/**
