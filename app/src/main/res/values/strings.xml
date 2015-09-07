@@ -11,6 +11,8 @@
     <string name="units_percent">%</string>
     <string name="units_celcius">°C</string>
     <string name="units_volts">V</string>
+    <string name="units_degrees">°</string>
+    <string name="units_meters">m</string>
     <string name="fastest">Fastest</string>
     <string name="game">Game</string>
 </resources>

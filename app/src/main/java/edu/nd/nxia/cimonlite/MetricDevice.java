@@ -39,6 +39,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     protected static final int PARAM_TIMESTAMP = 5;
     protected static final int PARAM_SENSOR_EVENT = 6;
     protected static final int PARAM_INTENT = 7;
+    protected static final int PARAM_LOCATION_MANAGER = 8;
+    protected static final int PARAM_LOCATION_LISTENER = 9;
+    protected static final int PARAM_LOCATION = 10;
 
 
     /**
@@ -133,13 +136,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
 //            case Metrics.INSTRUCTION_CNT:
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch instruction count service");
 //                return InstructionCntService.getInstance();
-//            case Metrics.LOCATION_LATITUDE:
-//            case Metrics.LOCATION_LONGITUDE:
-//            case Metrics.LOCATION_ACCURACY:
-//            case Metrics.LOCATION_SPEED:
-//            case Metrics.LOCATION_COORDINATE:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch location service");
-//                return LocationService.getInstance();
+            case Metrics.LOCATION_CATEGORY:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch location service");
+                return LocationService.getInstance();
             case Metrics.ACCELEROMETER:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch accelerometer device");
                 return AccelerometerService.getInstance();

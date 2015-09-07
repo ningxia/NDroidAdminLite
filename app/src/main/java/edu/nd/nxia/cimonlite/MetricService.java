@@ -10,7 +10,11 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.BatteryManager;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.FloatMath;
 import android.util.Log;
@@ -44,6 +48,7 @@ public class MetricService implements SensorEventListener {
     private static final int BATTERY_PERIOD = 1000 * 60;
     private static final int BATCH_SIZE = 1000;
     private SensorManager mSensorManager;
+    private LocationManager mLocationManager;
 
     private long startTime;
     private long endTime;
@@ -67,6 +72,9 @@ public class MetricService implements SensorEventListener {
     private static final int PARAM_TIMESTAMP = 5;
     private static final int PARAM_SENSOR_EVENT = 6;
     private static final int PARAM_INTENT = 7;
+    private static final int PARAM_LOCATION_MANAGER = 8;
+    private static final int PARAM_LOCATION_LISTENER = 9;
+    private static final int PARAM_LOCATION = 10;
 
     private static final IntentFilter batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     private static Intent batteryStatus = null;
@@ -80,6 +88,7 @@ public class MetricService implements SensorEventListener {
         database = CimonDatabaseAdapter.getInstance(context);
         appPrefs = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
         this.mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        this.mLocationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         initParameters();
     }
 
@@ -89,6 +98,8 @@ public class MetricService implements SensorEventListener {
         parameters.put(PARAM_SENSOR_EVENT_LISTENER, this);
         parameters.put(PARAM_BROADCAST_RECEIVER, mBroadcastReceiver);
         parameters.put(PARAM_MODE, -1);
+        parameters.put(PARAM_LOCATION_MANAGER, mLocationManager);
+        parameters.put(PARAM_LOCATION_LISTENER, mLocationListener);
     }
 
     public void initDevices() {
@@ -165,9 +176,10 @@ public class MetricService implements SensorEventListener {
     }
 
     public String stopMonitoring() {
-        if (DebugLog.DEBUG) Log.d(TAG, "MetricService.startMonitoring - stopped");
+        if (DebugLog.DEBUG) Log.d(TAG, "MetricService.stopMonitoring - stopped");
         mSensorManager.unregisterListener(this);
         context.unregisterReceiver(mBroadcastReceiver);
+        mLocationManager.removeUpdates(mLocationListener);
         endTime = System.currentTimeMillis();
         double offset = (endTime - startTime) / 1000.0;
         AccelerometerService accelerometerService = (AccelerometerService) mDeviceArray.get(Metrics.ACCELEROMETER);
@@ -265,6 +277,43 @@ public class MetricService implements SensorEventListener {
                 if (intent.getAction().equals(Intent.ACTION_BATTERY_CHANGED)) {
                     dataList.addAll(mDeviceArray.get(Metrics.BATTERY_CATEGORY).getData(params));
                 }
+            }
+        }
+    };
+
+    private LocationListener mLocationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onLocationChanged - new location");
+            if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
+                if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onLocationChanged - from gps");
+            }
+            else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
+                if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onLocationChanged - from network");
+            }
+            SparseArray<Object> params = new SparseArray<>();
+            params.put(PARAM_LOCATION, location);
+            mDeviceArray.get(Metrics.LOCATION_CATEGORY).getData(params);
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+            if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onProviderDisabled - " + provider);
+            if (provider.equals(LocationManager.GPS_PROVIDER)) {
+                if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onProviderDisabled - from gps");
+            }
+            else if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
+                if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onProviderDisabled - from network");
             }
         }
     };
