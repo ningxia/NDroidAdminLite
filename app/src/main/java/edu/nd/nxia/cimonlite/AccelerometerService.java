@@ -59,14 +59,10 @@ public final class AccelerometerService extends MetricDevice<Float> {
 	private static final String title = "Accelerometer";
 	private static final String[] metrics = {"X", "Y", "Z", "Magnitude"};
 	private static AccelerometerService INSTANCE = new AccelerometerService();
-	private boolean valid = false;
 
-    private SensorManager mSensorManager;
-	private Sensor mAccelerometer;
+    private static SensorManager mSensorManager;
+	private static Sensor mAccelerometer;
     private int mCounter;
-
-//	private long eventTime;
-//	private long sensorPeriod;
 	
 	private AccelerometerService() {
 		if (DebugLog.DEBUG) Log.d(TAG, "AccelerometerService - constructor");
@@ -157,10 +153,6 @@ public final class AccelerometerService extends MetricDevice<Float> {
 
     public void resetCount() {
         this.mCounter = 0;
-    }
-
-    public String getDeviceName() {
-        return this.title;
     }
 
 //	/**

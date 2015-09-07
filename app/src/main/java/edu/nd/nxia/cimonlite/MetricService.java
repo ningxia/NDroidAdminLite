@@ -79,17 +79,6 @@ public class MetricService implements SensorEventListener {
 //        mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 //        mBarometer = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
 //        batteryStatus = context.registerReceiver(batteryReceiver, batteryIntentFilter);
-
-//        for (int i = 0; i < deviceList.length; i ++) {
-//            MetricDevice<?> metricDevice = MetricDevice.getService(deviceList[i]);
-//            if (metricDevice != null) {
-//                metricDevice.initDevice();
-//    //            metricDevice.insertDatabaseEntries();
-//                Log.d(TAG, "MetricService.initSensors: groupId " + metricDevice.getGroupId());
-//                mDeviceArray.put(metricDevice.getGroupId(), metricDevice);
-//            }
-//        }
-
         List<MetricDevice<?>> serviceList;
         int[] categories = {Metrics.TYPE_SYSTEM, Metrics.TYPE_SENSOR, Metrics.TYPE_USER};
         for (int i = 0; i < categories.length; i ++) {
@@ -134,9 +123,6 @@ public class MetricService implements SensorEventListener {
     }
 
     private void registerDevices(int mode) {
-//        mSensorManager.registerListener(this, mAccelerometer, mode);
-//        mSensorManager.registerListener(this, mGyroscope, mode);
-//        mSensorManager.registerListener(this, mBarometer, mode);
         for (int i = 0; i < mDeviceArray.size(); i ++) {
             int key = mDeviceArray.keyAt(i);
             mDeviceArray.get(key).registerDevice(mSensorManager, this, mode);
@@ -147,9 +133,6 @@ public class MetricService implements SensorEventListener {
         if (DebugLog.DEBUG) Log.d(TAG, "MetricService.startMonitoring - started");
         dataList = new ArrayList<>();
         registerDevices(mode);
-//        numAccelerometer = 0;
-//        numGyroscope = 0;
-//        numBarometer = 0;
         isActive = true;
         final long curTime = System.currentTimeMillis();
         final long upTime = SystemClock.uptimeMillis();
@@ -174,9 +157,11 @@ public class MetricService implements SensorEventListener {
         endTime = System.currentTimeMillis();
         double offset = (endTime - startTime) / 1000.0;
         AccelerometerService accelerometerService = (AccelerometerService) mDeviceArray.get(Metrics.ACCELEROMETER);
-        double rateAccelerometer = mDeviceArray.get(Metrics.ACCELEROMETER).getCount() / offset;
+        double rateAccelerometer = accelerometerService.getCount() / offset;
         accelerometerService.resetCount();
-//        double rateGyroscope = numGyroscope / offset;
+        GyroscopeService gyroscopeService = (GyroscopeService) mDeviceArray.get(Metrics.GYROSCOPE);
+        double rateGyroscope = gyroscopeService.getCount() / offset;
+        gyroscopeService.resetCount();
 //        double rateBarometer = numBarometer / offset;
         isActive = false;
         String result = String.format(
@@ -184,8 +169,9 @@ public class MetricService implements SensorEventListener {
 //                        "Gyroscope Sampling Rate: %.2fHz\n" +
 //                        "Barometer Sampling Rate: %.2fHz",
 //                rateAccelerometer, rateGyroscope, rateBarometer
-                "Accelerometer Sampling Rate: %.2fHz\n",
-                rateAccelerometer
+                "Accelerometer Sampling Rate: %.2fHz\n" +
+                        "Gyroscope Sampling Rate: %.2fHz\n",
+                rateAccelerometer, rateGyroscope
         );
         if (dataList.size() > 0) {
             new Thread(new Runnable() {
@@ -385,13 +371,11 @@ public class MetricService implements SensorEventListener {
             long upTime = SystemClock.uptimeMillis();
             switch (sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
-//                    AccelerometerService accelerometerService = (AccelerometerService) mDeviceArray.get(Metrics.ACCELEROMETER);
-//                    dataList.addAll(accelerometerService.getData(event, upTime));
                     dataList.addAll(mDeviceArray.get(Metrics.ACCELEROMETER).getData(event, upTime));
                     break;
-//                case Sensor.TYPE_GYROSCOPE:
-//                    getGyroData(event, upTime);
-//                    break;
+                case Sensor.TYPE_GYROSCOPE:
+                    dataList.addAll(mDeviceArray.get(Metrics.GYROSCOPE).getData(event, upTime));
+                    break;
 //                case Sensor.TYPE_PRESSURE:
 //                    getBaroData(event, upTime);
 //                    break;
