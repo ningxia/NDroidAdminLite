@@ -68,6 +68,9 @@ public class MetricService implements SensorEventListener {
     private static final int PARAM_SENSOR_EVENT = 6;
     private static final int PARAM_INTENT = 7;
 
+    private static final IntentFilter batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+    private static Intent batteryStatus = null;
+
 
     public MetricService(Context _context) {
         this.context = _context;
@@ -164,7 +167,7 @@ public class MetricService implements SensorEventListener {
     public String stopMonitoring() {
         if (DebugLog.DEBUG) Log.d(TAG, "MetricService.startMonitoring - stopped");
         mSensorManager.unregisterListener(this);
-//        context.unregisterReceiver(mBroadcastReceiver);
+        context.unregisterReceiver(mBroadcastReceiver);
         endTime = System.currentTimeMillis();
         double offset = (endTime - startTime) / 1000.0;
         AccelerometerService accelerometerService = (AccelerometerService) mDeviceArray.get(Metrics.ACCELEROMETER);
@@ -200,166 +203,6 @@ public class MetricService implements SensorEventListener {
         return result;
     }
 
-//    public void insertDatabaseEntries() {
-//        int storedVersion = appPrefs.getInt(PREF_VERSION, -1);
-//        int appVersion = -1;
-//        try {
-//            appVersion = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
-//        } catch (PackageManager.NameNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//        if (DebugLog.DEBUG) Log.d(TAG, "NDroidAdmin.onCreate - appVersion:" + appVersion +
-//                " storedVersion:" + storedVersion);
-//        if (appVersion > storedVersion) {
-//            new Thread(new Runnable() {
-//                public void run() {
-//                    String[] metrics = {"X", "Y", "Z", "Magnitude"};
-//
-//                    // Accelerometer
-//                    // insert metric group information in database
-//                    if (mAccelerometer == null) {
-//                        if (DebugLog.INFO) Log.i(TAG, "AccelerometerService - sensor not supported on this system");
-//                    }
-//                    else {
-//                        if (DebugLog.DEBUG) Log.d(TAG, "AccelerometerService.insertDatabaseEntries - insert entries");
-//                        database.insertOrReplaceMetricInfo(Metrics.ACCELEROMETER, "Accelerometer", mAccelerometer.getName(),
-//                                SUPPORTED, mAccelerometer.getPower(), mAccelerometer.getMinDelay()/1000,
-//                                mAccelerometer.getMaximumRange() + " " + context.getString(R.string.units_ms2),
-//                                mAccelerometer.getResolution() + " " + context.getString(R.string.units_ms2),
-//                                Metrics.TYPE_SENSOR);
-//                        // insert information for metrics in group into database
-//                        for (int i = 0; i < ACCEL_METRICS; i++) {
-//                            database.insertOrReplaceMetrics(Metrics.ACCELEROMETER + i, Metrics.ACCELEROMETER, metrics[i],
-//                                    context.getString(R.string.units_ms2), mAccelerometer.getMaximumRange());
-//                        }
-//                    }
-//
-//                    // Gyroscope
-//                    // insert metric group information in database
-//                    if (mGyroscope == null) {
-//                        if (DebugLog.INFO) Log.i(TAG, "GyroscopeService - sensor not supported on this system");
-//                    }
-//                    else {
-//                        if (DebugLog.DEBUG) Log.d(TAG, "GyroscopeService.insertDatabaseEntries - insert entries");
-//                        database.insertOrReplaceMetricInfo(Metrics.GYROSCOPE, "Gyroscope", mGyroscope.getName(),
-//                                SUPPORTED, mGyroscope.getPower(), mGyroscope.getMinDelay() / 1000,
-//                                mGyroscope.getMaximumRange() + " " + context.getString(R.string.units_rads),
-//                                mGyroscope.getResolution() + " " + context.getString(R.string.units_rads),
-//                                Metrics.TYPE_SENSOR);
-//                        // insert information for metrics in group into database
-//                        for (int i = 0; i < GYRO_METRICS; i++) {
-//                            database.insertOrReplaceMetrics(Metrics.GYROSCOPE + i, Metrics.GYROSCOPE, metrics[i],
-//                                    context.getString(R.string.units_rads), mGyroscope.getMaximumRange());
-//                        }
-//                    }
-//
-//                    // Barometer
-//                    // insert metric group information in database
-//                    if (mBarometer == null) {
-//                        if (DebugLog.INFO) Log.i(TAG, "BarometerService - sensor not supported on this system");
-//                    }
-//                    else {
-//                        if (DebugLog.DEBUG) Log.d(TAG, "BarometerService.insertDatabaseEntries - insert entries");
-//                        database.insertOrReplaceMetricInfo(Metrics.ATMOSPHERIC_PRESSURE, "Pressure", mBarometer.getName(),
-//                                SUPPORTED, mBarometer.getPower(), mBarometer.getMinDelay() / 1000,
-//                                mBarometer.getMaximumRange() + " " + context.getString(R.string.units_hpa),
-//                                mBarometer.getResolution() + " " + context.getString(R.string.units_hpa),
-//                                Metrics.TYPE_SENSOR);
-//                        // insert information for metrics in group into database
-//                        database.insertOrReplaceMetrics(Metrics.ATMOSPHERIC_PRESSURE, Metrics.ATMOSPHERIC_PRESSURE, "Atmosphere pressure",
-//                                context.getString(R.string.units_hpa), mBarometer.getMaximumRange());
-//                    }
-//
-//                    // Battery
-//                    // insert metric group information in database
-//                    database.insertOrReplaceMetricInfo(Metrics.BATTERY_CATEGORY, "Battery", getTechnology(),
-//                            SUPPORTED, 0, 0, "100 %", "1 %", Metrics.TYPE_SYSTEM);
-//                    // insert information for metrics in group into database
-//                    database.insertOrReplaceMetrics(Metrics.BATTERY_PERCENT, Metrics.BATTERY_CATEGORY,
-//                            "Battery level", context.getString(R.string.units_percent), 100);
-//                    database.insertOrReplaceMetrics(Metrics.BATTERY_STATUS, Metrics.BATTERY_CATEGORY,
-//                            "Status", "", 5);
-//                    database.insertOrReplaceMetrics(Metrics.BATTERY_PLUGGED, Metrics.BATTERY_CATEGORY,
-//                            "Plugged status", "", 2);
-//                    database.insertOrReplaceMetrics(Metrics.BATTERY_HEALTH, Metrics.BATTERY_CATEGORY,
-//                            "Health", "", 7);
-//                    database.insertOrReplaceMetrics(Metrics.BATTERY_TEMPERATURE, Metrics.BATTERY_CATEGORY,
-//                            "Temperature", context.getString(R.string.units_celcius), 100);
-//                    database.insertOrReplaceMetrics(Metrics.BATTERY_VOLTAGE, Metrics.BATTERY_CATEGORY,
-//                            "Voltage", context.getString(R.string.units_volts), 10);
-//                }
-//            }).start();
-//            SharedPreferences.Editor editor = appPrefs.edit();
-//            editor.putInt(PREF_VERSION, appVersion);
-//            editor.commit();
-//        }
-//    }
-
-//    private void getAccelData(SensorEvent event, long timestamp) {
-//        float magnitude = 0;
-//        Float values[] = new Float[ACCEL_METRICS];
-//        for (int i = 0; i < (ACCEL_METRICS - 1); i++) {
-//            values[i] = event.values[i];
-//            magnitude += event.values[i] * event.values[i];
-//        }
-//        values[ACCEL_METRICS - 1] = FloatMath.sqrt(magnitude);
-//        for (int i = 0; i < ACCEL_METRICS; i ++) {
-//            dataList.add(new DataEntry(Metrics.ACCELEROMETER + i, timestamp, values[i]));
-//        }
-//    }
-
-//    private void getGyroData(SensorEvent event, long timestamp) {
-//        float magnitude = 0;
-//        Float values[] = new Float[GYRO_METRICS];
-//        for (int i = 0; i < (GYRO_METRICS - 1); i++) {
-//            values[i] = event.values[i];
-//            magnitude += event.values[i] * event.values[i];
-//        }
-//        values[GYRO_METRICS - 1] = FloatMath.sqrt(magnitude);
-//        for (int i = 0; i < GYRO_METRICS; i ++) {
-//            dataList.add(new DataEntry(Metrics.GYROSCOPE + i, timestamp, values[i]));
-//        }
-//    }
-
-//    private void getBaroData(SensorEvent event, long timestamp) {
-//        dataList.add(new DataEntry(Metrics.ATMOSPHERIC_PRESSURE + 0, timestamp, event.values[0]));
-//    }
-
-//    /**
-//     * Get string describing battery used with device.
-//     *
-//     * @return    technology description of battery
-//     */
-//    private String getTechnology() {
-//        String technology = batteryStatus.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY);
-//        if (technology == null)
-//            return " ";
-//        return technology;
-//    }
-
-//    private void getBatteryData(long timestamp, Intent intent) {
-//        if (DebugLog.DEBUG) Log.d(TAG, "BatteryService.batteryReceiver - updating battery values: " + timestamp);
-//        Integer values[] = new Integer[BATTERY_METRICS];
-//        if (intent == null) return;
-//        int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-//        int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-//        values[Metrics.BATTERY_STATUS - Metrics.BATTERY_CATEGORY] = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-//        values[Metrics.BATTERY_PLUGGED - Metrics.BATTERY_CATEGORY] = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-//        values[Metrics.BATTERY_HEALTH - Metrics.BATTERY_CATEGORY] = intent.getIntExtra(BatteryManager.EXTRA_HEALTH, -1);
-//        // temperature returned is tenths of a degree centigrade.
-//        //  temp = value / 10 (degrees celcius)
-//        float temp = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
-//        float temperature = temp / 10.0f;
-//        // voltage returned is millivolts
-//        float volt = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1);
-//        float voltage = volt / 1000.0f;
-//        values[Metrics.BATTERY_PERCENT - Metrics.BATTERY_CATEGORY] = level * 100 / scale;
-////        for (int i = 0; i < BATTERY_METRICS; i ++) {
-////            dataList.add(new DataEntry(Metrics.BATTERY_PERCENT, timestamp, values[i]));
-////        }
-//        dataList.add(new DataEntry(Metrics.BATTERY_PERCENT, timestamp, values[0]));
-//    }
-
     @Override
     public void onSensorChanged(SensorEvent event) {
         Sensor sensor = event.sensor;
@@ -382,12 +225,13 @@ public class MetricService implements SensorEventListener {
                 default:
             }
 
-//            long curTime = System.currentTimeMillis();
-//            if (curTime - batteryTimer >= BATTERY_PERIOD) {
-//                batteryStatus = context.registerReceiver(null, batteryIntentFilter);
-//                getBatteryData(upTime, batteryStatus);
-//                batteryTimer = curTime;
-//            }
+            long curTime = System.currentTimeMillis();
+            if (curTime - batteryTimer >= BATTERY_PERIOD) {
+                batteryStatus = context.registerReceiver(null, batteryIntentFilter);
+                params.put(PARAM_INTENT, batteryStatus);
+                dataList.addAll(mDeviceArray.get(Metrics.BATTERY_CATEGORY).getData(params));
+                batteryTimer = curTime;
+            }
 
             if (dataList.size() >= BATCH_SIZE) {
                 final ArrayList<DataEntry> dl = new ArrayList<>(dataList);
@@ -419,7 +263,7 @@ public class MetricService implements SensorEventListener {
                 params.put(PARAM_INTENT, intent);
                 params.put(PARAM_TIMESTAMP, upTime);
                 if (intent.getAction().equals(Intent.ACTION_BATTERY_CHANGED)) {
-//                    dataList.addAll(mDeviceArray.get(Metrics.BATTERY_CATEGORY).getData(params));
+                    dataList.addAll(mDeviceArray.get(Metrics.BATTERY_CATEGORY).getData(params));
                 }
             }
         }
