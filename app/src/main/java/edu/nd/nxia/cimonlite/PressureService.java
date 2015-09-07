@@ -82,8 +82,11 @@ public final class PressureService extends MetricDevice<Float> {
     }
 
     @Override
-    void registerDevice(SensorManager sensorManager, SensorEventListener eventListener, int mode) {
-        sensorManager.registerListener(eventListener, mPressure, mode);
+    void registerDevice(SparseArray<Object> params) {
+        SensorManager sensorManager = (SensorManager) params.get(PARAM_SENSOR_MANAGER);
+        SensorEventListener sensorEventListener = (SensorEventListener) params.get(PARAM_SENSOR_EVENT_LISTENER);
+        int mode = (int) params.get(PARAM_MODE);
+        sensorManager.registerListener(sensorEventListener, mPressure, mode);
     }
 
     @Override
@@ -108,7 +111,9 @@ public final class PressureService extends MetricDevice<Float> {
 	}
 
     @Override
-    List<DataEntry> getData(SensorEvent event, long timestamp) {
+    List<DataEntry> getData(SparseArray<Object> params) {
+        SensorEvent event = (SensorEvent) params.get(PARAM_SENSOR_EVENT);
+        long timestamp = (long) params.get(PARAM_TIMESTAMP);
         mCounter ++;
         List<DataEntry> dataList = new ArrayList<>();
         dataList.add(new DataEntry(Metrics.ATMOSPHERIC_PRESSURE + 0, timestamp, event.values[0]));

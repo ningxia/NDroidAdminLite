@@ -39,12 +39,10 @@ public class MetricService implements SensorEventListener {
     private static final int SUPPORTED = 1;
 
     private Context context;
+    private SparseArray<Object> parameters;
 
-    private static final int sensorDelay = SensorManager.SENSOR_DELAY_FASTEST;
-    private static final int ACCEL_METRICS = 4;
-    private static final int GYRO_METRICS = 4;
-    private static final int BARO_METRICS = 1;
-    private static final int BATTERY_METRICS = 6;
+    private static final int BATTERY_PERIOD = 1000 * 60;
+    private static final int BATCH_SIZE = 1000;
     private SensorManager mSensorManager;
 
     private long startTime;
@@ -53,7 +51,6 @@ public class MetricService implements SensorEventListener {
     private boolean isActive;
 
     CimonDatabaseAdapter database;
-    private static final int BATCH_SIZE = 1000;
     private SparseArray<MetricDevice<?>> mDeviceArray;
     private List<DataEntry> dataList;
     private int monitorId;
@@ -61,24 +58,37 @@ public class MetricService implements SensorEventListener {
     SharedPreferences appPrefs;
     SharedPreferences.Editor editor;
 
-    private static final IntentFilter batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-    private static Intent batteryStatus = null;
-    private static final int BATTERY_PERIOD = 1000 * 60;
+
+    private static final int PARAM_CONTEXT = 0;
+    private static final int PARAM_SENSOR_MANAGER = 1;
+    private static final int PARAM_SENSOR_EVENT_LISTENER = 2;
+    private static final int PARAM_BROADCAST_RECEIVER = 3;
+    private static final int PARAM_MODE = 4;
+    private static final int PARAM_TIMESTAMP = 5;
+    private static final int PARAM_SENSOR_EVENT = 6;
+    private static final int PARAM_INTENT = 7;
+
 
     public MetricService(Context _context) {
         this.context = _context;
+        this.parameters = new SparseArray<>();
         this.mDeviceArray = new SparseArray<>();
         initDevices();
         database = CimonDatabaseAdapter.getInstance(context);
         appPrefs = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
-        mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        this.mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        initParameters();
+    }
+
+    private void initParameters() {
+        parameters.put(PARAM_CONTEXT, context);
+        parameters.put(PARAM_SENSOR_MANAGER, mSensorManager);
+        parameters.put(PARAM_SENSOR_EVENT_LISTENER, this);
+        parameters.put(PARAM_BROADCAST_RECEIVER, mBroadcastReceiver);
+        parameters.put(PARAM_MODE, -1);
     }
 
     public void initDevices() {
-//        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-//        mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-//        mBarometer = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
-//        batteryStatus = context.registerReceiver(batteryReceiver, batteryIntentFilter);
         List<MetricDevice<?>> serviceList;
         int[] categories = {Metrics.TYPE_SYSTEM, Metrics.TYPE_SENSOR, Metrics.TYPE_USER};
         for (int i = 0; i < categories.length; i ++) {
@@ -123,9 +133,10 @@ public class MetricService implements SensorEventListener {
     }
 
     private void registerDevices(int mode) {
+        parameters.put(PARAM_MODE, mode);
         for (int i = 0; i < mDeviceArray.size(); i ++) {
             int key = mDeviceArray.keyAt(i);
-            mDeviceArray.get(key).registerDevice(mSensorManager, this, mode);
+            mDeviceArray.get(key).registerDevice(parameters);
         }
     }
 
@@ -153,7 +164,7 @@ public class MetricService implements SensorEventListener {
     public String stopMonitoring() {
         if (DebugLog.DEBUG) Log.d(TAG, "MetricService.startMonitoring - stopped");
         mSensorManager.unregisterListener(this);
-//        context.unregisterReceiver(batteryReceiver);
+//        context.unregisterReceiver(mBroadcastReceiver);
         endTime = System.currentTimeMillis();
         double offset = (endTime - startTime) / 1000.0;
         AccelerometerService accelerometerService = (AccelerometerService) mDeviceArray.get(Metrics.ACCELEROMETER);
@@ -349,34 +360,24 @@ public class MetricService implements SensorEventListener {
 //        dataList.add(new DataEntry(Metrics.BATTERY_PERCENT, timestamp, values[0]));
 //    }
 
-//    /**
-//     * BroadcastReceiver for receiving battery data updates.
-//     */
-//    private BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            if (isActive) {
-//                long upTime = SystemClock.uptimeMillis();
-//                getBatteryData(upTime, intent);
-//            }
-//        }
-//    };
-
     @Override
     public void onSensorChanged(SensorEvent event) {
         Sensor sensor = event.sensor;
 
         if (isActive) {
             long upTime = SystemClock.uptimeMillis();
+            SparseArray<Object> params = new SparseArray<>();
+            params.put(PARAM_SENSOR_EVENT, event);
+            params.put(PARAM_TIMESTAMP, upTime);
             switch (sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
-                    dataList.addAll(mDeviceArray.get(Metrics.ACCELEROMETER).getData(event, upTime));
+                    dataList.addAll(mDeviceArray.get(Metrics.ACCELEROMETER).getData(params));
                     break;
                 case Sensor.TYPE_GYROSCOPE:
-                    dataList.addAll(mDeviceArray.get(Metrics.GYROSCOPE).getData(event, upTime));
+                    dataList.addAll(mDeviceArray.get(Metrics.GYROSCOPE).getData(params));
                     break;
                 case Sensor.TYPE_PRESSURE:
-                    dataList.addAll(mDeviceArray.get(Metrics.ATMOSPHERIC_PRESSURE).getData(event, upTime));
+                    dataList.addAll(mDeviceArray.get(Metrics.ATMOSPHERIC_PRESSURE).getData(params));
                     break;
                 default:
             }
@@ -405,4 +406,23 @@ public class MetricService implements SensorEventListener {
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
+
+    /**
+     * BroadcastReceiver for receiving battery data updates.
+     */
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (isActive) {
+                long upTime = SystemClock.uptimeMillis();
+                SparseArray<Object> params = new SparseArray<>();
+                params.put(PARAM_INTENT, intent);
+                params.put(PARAM_TIMESTAMP, upTime);
+                if (intent.getAction().equals(Intent.ACTION_BATTERY_CHANGED)) {
+//                    dataList.addAll(mDeviceArray.get(Metrics.BATTERY_CATEGORY).getData(params));
+                }
+            }
+        }
+    };
+
 }

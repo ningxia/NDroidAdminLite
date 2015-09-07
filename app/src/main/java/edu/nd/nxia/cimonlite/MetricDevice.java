@@ -1,9 +1,9 @@
 package edu.nd.nxia.cimonlite;
 
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
+
 import android.hardware.SensorManager;
 import android.util.Log;
+import android.util.SparseArray;
 
 import java.util.ArrayList;
 import java.util.EventListener;
@@ -31,6 +31,16 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     protected SensorManager sensorManager;
     protected T[] values;
 
+    protected static final int PARAM_CONTEXT = 0;
+    protected static final int PARAM_SENSOR_MANAGER = 1;
+    protected static final int PARAM_SENSOR_EVENT_LISTENER = 2;
+    protected static final int PARAM_BROADCAST_RECEIVER = 3;
+    protected static final int PARAM_MODE = 4;
+    protected static final int PARAM_TIMESTAMP = 5;
+    protected static final int PARAM_SENSOR_EVENT = 6;
+    protected static final int PARAM_INTENT = 7;
+
+
     /**
      * Initialize device
      */
@@ -39,7 +49,7 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     /**
      * Register device
      */
-    abstract void registerDevice(SensorManager sensorManager, SensorEventListener eventListener, int mode);
+    abstract void registerDevice(SparseArray<Object> params);
 
     /**
      * Insert entries for metric group and metrics into database.
@@ -49,7 +59,7 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     /**
      * Get device data
      */
-    abstract List<DataEntry> getData(SensorEvent event, long timestamp);
+    abstract List<DataEntry> getData(SparseArray<Object> params);
 
     public int getGroupId() {
         return this.groupId;

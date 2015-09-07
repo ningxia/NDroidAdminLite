@@ -27,6 +27,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.FloatMath;
 import android.util.Log;
+import android.util.SparseArray;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,8 +91,11 @@ public final class GyroscopeService extends MetricDevice<Float> {
     }
 
     @Override
-    void registerDevice(SensorManager sensorManager, SensorEventListener eventListener, int mode) {
-        sensorManager.registerListener(eventListener, mGyroscope, mode);
+    void registerDevice(SparseArray<Object> params) {
+        SensorManager sensorManager = (SensorManager) params.get(PARAM_SENSOR_MANAGER);
+        SensorEventListener sensorEventListener = (SensorEventListener) params.get(PARAM_SENSOR_EVENT_LISTENER);
+        int mode = (int) params.get(PARAM_MODE);
+        sensorManager.registerListener(sensorEventListener, mGyroscope, mode);
     }
 
     @Override
@@ -119,7 +123,9 @@ public final class GyroscopeService extends MetricDevice<Float> {
 	}
 
     @Override
-    List<DataEntry> getData(SensorEvent event, long timestamp) {
+    List<DataEntry> getData(SparseArray<Object> params) {
+        SensorEvent event = (SensorEvent) params.get(PARAM_SENSOR_EVENT);
+        long timestamp = (long) params.get(PARAM_TIMESTAMP);
         mCounter ++;
         float magnitude = 0;
         Float values[] = new Float[GYRO_METRICS];
@@ -134,11 +140,6 @@ public final class GyroscopeService extends MetricDevice<Float> {
         }
         return dataList;
     }
-
-//    @Override
-//    int getGroupId() {
-//        return this.groupId;
-//    }
 
     int getCount() {
         return this.mCounter;

@@ -27,6 +27,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.FloatMath;
 import android.util.Log;
+import android.util.SparseArray;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,8 +91,11 @@ public final class AccelerometerService extends MetricDevice<Float> {
     }
 
     @Override
-    void registerDevice(SensorManager sensorManager, SensorEventListener eventListener, int mode) {
-        sensorManager.registerListener(eventListener, mAccelerometer, mode);
+    void registerDevice(SparseArray<Object> params) {
+        SensorManager sensorManager = (SensorManager) params.get(PARAM_SENSOR_MANAGER);
+        SensorEventListener sensorEventListener = (SensorEventListener) params.get(PARAM_SENSOR_EVENT_LISTENER);
+        int mode = (int) params.get(PARAM_MODE);
+        sensorManager.registerListener(sensorEventListener, mAccelerometer, mode);
     }
 
     @Override
@@ -122,12 +126,14 @@ public final class AccelerometerService extends MetricDevice<Float> {
      * Process SensorEvent data obtained from onSensorChanged() event.
      * Update values, and push to orientation monitor if it is active.
      *
-     * @param event         accelerometer data received from onSensorChanged() event
-     * @param timestamp     the timestamp when the event occurred
+     * @param params        include accelerometer onSensorChanged() event
+     *                      and the timestamp when the event occurred
      * @return              list of data of type {@link DataEntry}
      */
     @Override
-    List<DataEntry> getData(SensorEvent event, long timestamp) {
+    List<DataEntry> getData(SparseArray<Object> params) {
+        SensorEvent event = (SensorEvent) params.get(PARAM_SENSOR_EVENT);
+        long timestamp = (long) params.get(PARAM_TIMESTAMP);
         mCounter ++;
         float magnitude = 0;
         Float values[] = new Float[ACCEL_METRICS];
@@ -142,10 +148,6 @@ public final class AccelerometerService extends MetricDevice<Float> {
         }
         return dataList;
     }
-
-//    public int getGroupId() {
-//        return this.groupId;
-//    }
 
     public int getCount() {
         return this.mCounter;
