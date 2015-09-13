@@ -85,7 +85,9 @@ public final class LocationService extends MetricDevice<Double> {
 	}
 
     @Override
-    void initDevice() {
+    void initDevice(long period) {
+        this.period = period;
+        this.timer = System.currentTimeMillis();
         Context context = MyApplication.getAppContext();
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         List<String> providers = locationManager.getProviders(true);
@@ -116,9 +118,11 @@ public final class LocationService extends MetricDevice<Double> {
 		
 		float power = 0;
 		String description = null;
-		List<String> providers = mLocationManager.getProviders(true);
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+		List<String> providers = locationManager.getProviders(true);
+        LocationProvider locProvider;
 		for (String provider : providers) {
-			LocationProvider locProvider = mLocationManager.getProvider(provider);
+			locProvider = locationManager.getProvider(provider);
 			power += locProvider.getPowerRequirement();
 			if (description == null) {
 				description = locProvider.getName();
@@ -129,7 +133,7 @@ public final class LocationService extends MetricDevice<Double> {
 		}
 		// insert metric group information in database
 		database.insertOrReplaceMetricInfo(groupId, title, description, 
-				SUPPORTED, power, mLocationManager.getGpsStatus(null).getTimeToFirstFix(),
+				SUPPORTED, power, locationManager.getGpsStatus(null).getTimeToFirstFix(),
 				"Global coordinate", "1" + context.getString(R.string.units_degrees), 
 				Metrics.TYPE_SENSOR);
 		// insert information for metrics in group into database
@@ -148,7 +152,7 @@ public final class LocationService extends MetricDevice<Double> {
         Location location = (Location) params.get(PARAM_LOCATION);
         checkLocation(location);
         long upTime = SystemClock.uptimeMillis();
-        if ((upTime - lastUpdate) > FIVE_MINUTES) {
+        if ((upTime - lastUpdate) >= FIVE_MINUTES) {
             mCoordinate = getLastLocation();
         }
         Double values[] = new Double[LOCATION_METRICS];
@@ -228,7 +232,7 @@ public final class LocationService extends MetricDevice<Double> {
 	 *             is invalid or considered lesser quality 
 	 */
 	private boolean checkLocation(Location newCoordinate) {
-        if (DebugLog.DEBUG) Log.d(TAG, "LocationService.checkLocation - check quality of location");
+//        if (DebugLog.DEBUG) Log.d(TAG, "LocationService.checkLocation - check quality of location");
         if (newCoordinate == null) {
             return false;
         }

@@ -52,12 +52,13 @@ public class MetricService implements SensorEventListener {
 
     private long startTime;
     private long endTime;
-    private long batteryTimer;
+    private long mTimer;
     private boolean isActive;
 
     CimonDatabaseAdapter database;
     private SparseArray<MetricDevice<?>> mDeviceArray;
     private List<DataEntry> dataList;
+    private SparseArray<Long> mPeriodArray;
     private int monitorId;
 
     SharedPreferences appPrefs;
@@ -84,12 +85,22 @@ public class MetricService implements SensorEventListener {
         this.context = _context;
         this.parameters = new SparseArray<>();
         this.mDeviceArray = new SparseArray<>();
+        this.mPeriodArray = new SparseArray<>();
+        initPeriods();
         initDevices();
         database = CimonDatabaseAdapter.getInstance(context);
         appPrefs = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
         this.mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         this.mLocationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         initParameters();
+    }
+
+    private void initPeriods() {
+        mPeriodArray.put(Metrics.ACCELEROMETER, 0L);
+        mPeriodArray.put(Metrics.GYROSCOPE, 0L);
+        mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 0L);
+        mPeriodArray.put(Metrics.LOCATION_CATEGORY, 2000L);
+        mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
     }
 
     private void initParameters() {
@@ -107,10 +118,10 @@ public class MetricService implements SensorEventListener {
         int[] categories = {Metrics.TYPE_SYSTEM, Metrics.TYPE_SENSOR, Metrics.TYPE_USER};
         for (int i = 0; i < categories.length; i ++) {
             serviceList = MetricDevice.getDevices(categories[i]);
-            if (serviceList.size() != 0) {
+            if (!serviceList.isEmpty()) {
                 for (MetricDevice<?> metricDevice : serviceList) {
                     if (DebugLog.DEBUG) Log.d(TAG, "MetricService.initDevices: groupId " + metricDevice.getGroupId());
-                    metricDevice.initDevice();
+                    metricDevice.initDevice(mPeriodArray.get(metricDevice.getGroupId()));
                     mDeviceArray.put(metricDevice.getGroupId(), metricDevice);
                 }
             }
@@ -132,9 +143,10 @@ public class MetricService implements SensorEventListener {
         if (appVersion > storedVersion) {
             new Thread(new Runnable() {
                 public void run() {
+                    MetricDevice<?> metricDevice;
                     for (int i = 0; i < mDeviceArray.size(); i ++) {
                         int key = mDeviceArray.keyAt(i);
-                        MetricDevice<?> metricDevice = mDeviceArray.get(key);
+                        metricDevice = mDeviceArray.get(key);
                         metricDevice.insertDatabaseEntries();
                     }
                 }
@@ -172,7 +184,7 @@ public class MetricService implements SensorEventListener {
             monitorId = runningMonitor;
         }
         startTime = System.currentTimeMillis();
-        batteryTimer = startTime;
+        mTimer = startTime;
     }
 
     public String stopMonitoring() {
@@ -224,6 +236,9 @@ public class MetricService implements SensorEventListener {
             SparseArray<Object> params = new SparseArray<>();
             params.put(PARAM_SENSOR_EVENT, event);
             params.put(PARAM_TIMESTAMP, upTime);
+            params.put(PARAM_LOCATION, null);
+            batteryStatus = context.registerReceiver(null, batteryIntentFilter);
+            params.put(PARAM_INTENT, batteryStatus);
             switch (sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
                     dataList.addAll(mDeviceArray.get(Metrics.ACCELEROMETER).getData(params));
@@ -238,11 +253,23 @@ public class MetricService implements SensorEventListener {
             }
 
             long curTime = System.currentTimeMillis();
-            if (curTime - batteryTimer >= BATTERY_PERIOD) {
-                batteryStatus = context.registerReceiver(null, batteryIntentFilter);
-                params.put(PARAM_INTENT, batteryStatus);
-                dataList.addAll(mDeviceArray.get(Metrics.BATTERY_CATEGORY).getData(params));
-                batteryTimer = curTime;
+//            if (curTime - mTimer >= BATTERY_PERIOD) {
+//                batteryStatus = context.registerReceiver(null, batteryIntentFilter);
+//                params.put(PARAM_INTENT, batteryStatus);
+//                dataList.addAll(mDeviceArray.get(Metrics.BATTERY_CATEGORY).getData(params));
+//                mTimer = curTime;
+//            }
+
+            for (int i = 0; i < mDeviceArray.size(); i ++) {
+                int key = mDeviceArray.keyAt(i);
+                MetricDevice<?> metricDevice = mDeviceArray.get(key);
+                long period = metricDevice.getPeriod();
+                if (period > 0) {
+                    if (curTime - metricDevice.getTimer() >= period) {
+                        dataList.addAll(metricDevice.getData(params));
+                        metricDevice.setTimer(curTime);
+                    }
+                }
             }
 
             if (dataList.size() >= BATCH_SIZE) {

@@ -290,7 +290,7 @@ public final class CimonDatabaseAdapter {
      */
     public synchronized int insertMonitor(long offsettime) {
         if (DebugLog.DEBUG)
-            Log.d(TAG, "CimonDatabaseAdapter.insertMonitor - insert into Monitor table: time-" + offsettime);
+            Log.d(TAG, "CimonDatabaseAdapter.insertMonitor - insert into Monitor table: offsetTime-" + offsettime);
         ContentValues values = new ContentValues();
         values.put(MonitorTable.COLUMN_TIME_OFFSET, offsettime);
         values.put(MonitorTable.COLUMN_ENDTIME, 0);

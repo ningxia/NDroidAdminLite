@@ -27,8 +27,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     protected boolean supportedMetric = true;
     protected int groupId;
     protected int metricsCount;
+    protected long period = 0;
+    protected long timer = 0;
 
-    protected SensorManager sensorManager;
     protected T[] values;
 
     protected static final int PARAM_CONTEXT = 0;
@@ -47,7 +48,7 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     /**
      * Initialize device
      */
-    abstract void initDevice();
+    abstract void initDevice(long period);
 
     /**
      * Register device
@@ -66,6 +67,18 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
 
     public int getGroupId() {
         return this.groupId;
+    }
+
+    public long getPeriod() {
+        return this.period;
+    }
+
+    public long getTimer() {
+        return this.timer;
+    }
+
+    public void setTimer(long timestamp) {
+        this.timer = timestamp;
     }
 
     /**
