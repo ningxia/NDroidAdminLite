@@ -153,16 +153,13 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch location service");
                 return LocationService.getInstance();
             case Metrics.ACCELEROMETER:
-                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch accelerometer device");
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch accelerometer service");
                 return AccelerometerService.getInstance();
-//            case Metrics.MAGNET_X:
-//            case Metrics.MAGNET_Y:
-//            case Metrics.MAGNET_Z:
-//            case Metrics.MAGNET_MAGNITUDE:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch magnetometer service");
-//                return MagnetometerService.getInstance();
+            case Metrics.MAGNETOMETER:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch magnetometer service");
+                return MagnetometerService.getInstance();
             case Metrics.GYROSCOPE:
-                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch gyroscope device");
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch gyroscope service");
                 return GyroscopeService.getInstance();
 //            case Metrics.LINEAR_X:
 //            case Metrics.LINEAR_Y:
@@ -185,7 +182,7 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch ambient temperature service");
 //                return TemperatureService.getInstance();
             case Metrics.ATMOSPHERIC_PRESSURE:
-                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch atmospheric pressure device");
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch atmospheric pressure service");
                 return PressureService.getInstance();
 //            case Metrics.PROXIMITY:
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch proximity service");

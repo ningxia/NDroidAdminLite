@@ -101,6 +101,7 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 0L);
         mPeriodArray.put(Metrics.LOCATION_CATEGORY, 2000L);
         mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
+        mPeriodArray.put(Metrics.MAGNETOMETER, 0L);
     }
 
     private void initParameters() {
@@ -249,17 +250,14 @@ public class MetricService implements SensorEventListener {
                 case Sensor.TYPE_PRESSURE:
                     dataList.addAll(mDeviceArray.get(Metrics.ATMOSPHERIC_PRESSURE).getData(params));
                     break;
+                case Sensor.TYPE_MAGNETIC_FIELD:
+                    dataList.addAll(mDeviceArray.get(Metrics.MAGNETOMETER).getData(params));
+                    break;
                 default:
             }
 
+            // Add timer mechanism for event driven devices, such as Bluetooth.
             long curTime = System.currentTimeMillis();
-//            if (curTime - mTimer >= BATTERY_PERIOD) {
-//                batteryStatus = context.registerReceiver(null, batteryIntentFilter);
-//                params.put(PARAM_INTENT, batteryStatus);
-//                dataList.addAll(mDeviceArray.get(Metrics.BATTERY_CATEGORY).getData(params));
-//                mTimer = curTime;
-//            }
-
             for (int i = 0; i < mDeviceArray.size(); i ++) {
                 int key = mDeviceArray.keyAt(i);
                 MetricDevice<?> metricDevice = mDeviceArray.get(key);

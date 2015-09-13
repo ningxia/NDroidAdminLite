@@ -65,6 +65,7 @@ public final class LocationService extends MetricDevice<Double> {
 	private Location mCoordinate;
 	private LocationManager mLocationManager;
     private LocationListener mLocationListener;
+    private List<String> mProviders;
     private long lastUpdate = 0;
 
 
@@ -88,10 +89,9 @@ public final class LocationService extends MetricDevice<Double> {
     void initDevice(long period) {
         this.period = period;
         this.timer = System.currentTimeMillis();
-        Context context = MyApplication.getAppContext();
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        List<String> providers = locationManager.getProviders(true);
-        if ((providers == null) || (providers.isEmpty())) {
+        mLocationManager = (LocationManager) MyApplication.getAppContext().getSystemService(Context.LOCATION_SERVICE);
+        mProviders = mLocationManager.getProviders(true);
+        if ((mProviders == null) || (mProviders.isEmpty())) {
             if (DebugLog.INFO) Log.i(TAG, "LocationService - sensor not supported on this system");
             supportedMetric = false;
             mLocationManager = null;
@@ -118,11 +118,11 @@ public final class LocationService extends MetricDevice<Double> {
 		
 		float power = 0;
 		String description = null;
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-		List<String> providers = locationManager.getProviders(true);
+//        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+//		List<String> providers = locationManager.getProviders(true);
         LocationProvider locProvider;
-		for (String provider : providers) {
-			locProvider = locationManager.getProvider(provider);
+		for (String provider : mProviders) {
+			locProvider = mLocationManager.getProvider(provider);
 			power += locProvider.getPowerRequirement();
 			if (description == null) {
 				description = locProvider.getName();
@@ -133,7 +133,7 @@ public final class LocationService extends MetricDevice<Double> {
 		}
 		// insert metric group information in database
 		database.insertOrReplaceMetricInfo(groupId, title, description, 
-				SUPPORTED, power, locationManager.getGpsStatus(null).getTimeToFirstFix(),
+				SUPPORTED, power, mLocationManager.getGpsStatus(null).getTimeToFirstFix(),
 				"Global coordinate", "1" + context.getString(R.string.units_degrees), 
 				Metrics.TYPE_SENSOR);
 		// insert information for metrics in group into database
