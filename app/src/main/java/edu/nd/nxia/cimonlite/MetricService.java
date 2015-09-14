@@ -94,12 +94,15 @@ public class MetricService implements SensorEventListener {
     }
 
     private void initPeriods() {
+        // Hard coded sampling period for now, will get configurations from server.
+
         // Sensors
         mPeriodArray.put(Metrics.LOCATION_CATEGORY, 2000L);
         mPeriodArray.put(Metrics.ACCELEROMETER, 0L);
         mPeriodArray.put(Metrics.MAGNETOMETER, 0L);
         mPeriodArray.put(Metrics.GYROSCOPE, 0L);
         mPeriodArray.put(Metrics.LINEAR_ACCEL, 0L);
+        mPeriodArray.put(Metrics.ORIENTATION, 0L);
         mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 0L);
 
         mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
@@ -162,10 +165,21 @@ public class MetricService implements SensorEventListener {
 
     private void registerDevices(int mode) {
         parameters.put(PARAM_MODE, mode);
+        int key;
         for (int i = 0; i < mDeviceArray.size(); i ++) {
-            int key = mDeviceArray.keyAt(i);
+            key = mDeviceArray.keyAt(i);
             mDeviceArray.get(key).registerDevice(parameters);
         }
+
+        // OrientationService is associated with AccelerometerService and MagnetometerService
+        OrientationService orientationService = (OrientationService) mDeviceArray.get(Metrics.ORIENTATION);
+        if (orientationService != null) {
+            AccelerometerService accelerometerService = (AccelerometerService) mDeviceArray.get(Metrics.ACCELEROMETER);
+            MagnetometerService magnetometerService = (MagnetometerService) mDeviceArray.get(Metrics.MAGNETOMETER);
+            accelerometerService.registerOrientation(orientationService);
+            magnetometerService.registerOrientation(orientationService);
+        }
+
     }
 
     public void startMonitoring(int mode) {
@@ -252,12 +266,18 @@ public class MetricService implements SensorEventListener {
                     break;
                 case Sensor.TYPE_MAGNETIC_FIELD:
                     dataList.addAll(mDeviceArray.get(Metrics.MAGNETOMETER).getData(params));
+//                    dataList.addAll(mDeviceArray.get(Metrics.ORIENTATION).getData(params));
                     break;
                 case Sensor.TYPE_LINEAR_ACCELERATION:
 //                    if (DebugLog.DEBUG) Log.d(TAG, "MetricService.onSensorChanged: Linear Accel changed...");
                     dataList.addAll(mDeviceArray.get(Metrics.LINEAR_ACCEL).getData(params));
                     break;
                 default:
+            }
+
+            List<DataEntry> orientData = mDeviceArray.get(Metrics.ORIENTATION).getData(params);
+            if (orientData != null || !orientData.isEmpty()) {
+                dataList.addAll(orientData);
             }
 
             // Add timer mechanism for event driven devices, such as Bluetooth.

@@ -118,8 +118,6 @@ public final class LocationService extends MetricDevice<Double> {
 		
 		float power = 0;
 		String description = null;
-//        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-//		List<String> providers = locationManager.getProviders(true);
         LocationProvider locProvider;
 		for (String provider : mProviders) {
 			locProvider = mLocationManager.getProvider(provider);

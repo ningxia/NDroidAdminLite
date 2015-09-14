@@ -65,11 +65,8 @@ public final class MagnetometerService extends MetricDevice<Float> {
 
     private static SensorManager mSensorManager;
     private static Sensor mMagnetometer;
-//    private static OrientationService orientService = null;
+    private static OrientationService orientationService = null;
 
-    private long eventTime;
-    private long startupPeriod;
-    private long avgStartup;
 
     private MagnetometerService() {
         if (DebugLog.DEBUG) Log.d(TAG, "MagnetometerService - constructor");
@@ -141,6 +138,11 @@ public final class MagnetometerService extends MetricDevice<Float> {
             magnitude += event.values[i] * event.values[i];
         }
         values[MAGNET_METRICS - 1] = FloatMath.sqrt(magnitude);
+
+        if (orientationService != null) {
+            orientationService.onSensorUpdate(event);
+        }
+
         List<DataEntry> dataList = new ArrayList<>();
         for (int i = 0; i < MAGNET_METRICS; i ++) {
             dataList.add(new DataEntry(Metrics.MAGNETOMETER + i, timestamp, values[i]));
@@ -148,21 +150,18 @@ public final class MagnetometerService extends MetricDevice<Float> {
         return dataList;
     }
 
-//    /**
-//     * Register an active orientation monitor service with magnetometer service.
-//     * Orientation service requires both accelerometer and magnetometer data.  These
-//     * services must be activated and provide data to the orientation service when
-//     * there is an active orientation monitor.
-//     *
-//     * @param oService    reference to orientation service, used for providing updates
-//     * @return    minimum update interval (milliseconds) of magnetometer
-//     */
-//    public long registerOrientation(OrientationService oService) {
-//        if (orientService == null) {
-//            orientService = oService;
-//            getMetricInfo();
-//        }
-//        return minInterval;
-//    }
+    /**
+     * Register an active orientation monitor service with magnetometer service.
+     * Orientation service requires both accelerometer and magnetometer data.  These
+     * services must be activated and provide data to the orientation service when
+     * there is an active orientation monitor.
+     *
+     * @param oService    reference to orientation service, used for providing updates
+     */
+    public void registerOrientation(OrientationService oService) {
+        if (orientationService == null) {
+            orientationService = oService;
+        }
+    }
 
 }

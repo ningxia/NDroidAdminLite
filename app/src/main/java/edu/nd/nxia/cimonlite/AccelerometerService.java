@@ -63,6 +63,7 @@ public final class AccelerometerService extends MetricDevice<Float> {
 
     private static SensorManager mSensorManager;
 	private static Sensor mAccelerometer;
+    private static OrientationService orientationService = null;
     private int mCounter;
 	
 	private AccelerometerService() {
@@ -143,6 +144,11 @@ public final class AccelerometerService extends MetricDevice<Float> {
             magnitude += event.values[i] * event.values[i];
         }
         values[ACCEL_METRICS - 1] = FloatMath.sqrt(magnitude);
+
+        if (orientationService != null) {
+            orientationService.onSensorUpdate(event);
+        }
+
         List<DataEntry> dataList = new ArrayList<>();
         for (int i = 0; i < ACCEL_METRICS; i ++) {
             dataList.add(new DataEntry(Metrics.ACCELEROMETER + i, timestamp, values[i]));
@@ -158,21 +164,18 @@ public final class AccelerometerService extends MetricDevice<Float> {
         this.mCounter = 0;
     }
 
-//	/**
-//	 * Register an active orientation monitor service with accelerometer service.
-//	 * Orientation service requires both accelerometer and magnetometer data.  These
-//	 * services must be activated and provide data to the orientation service when
-//	 * there is an active orientation monitor.
-//	 *
-//	 * @param oService    reference to orientation service, used for providing updates
-//	 * @return    minimum update interval (milliseconds) of accelerometer
-//	 */
-//	public long registerOrientation(OrientationService oService) {
-//		if (orientService == null) {
-//			orientService = oService;
-//			getMetricInfo();
-//		}
-//		return minInterval;
-//	}
+    /**
+     * Register an active orientation monitor service with accelerometer service.
+     * Orientation service requires both accelerometer and magnetometer data.  These
+     * services must be activated and provide data to the orientation service when
+     * there is an active orientation monitor.
+     *
+     * @param oService    reference to orientation service, used for providing updates
+     */
+    public void registerOrientation(OrientationService oService) {
+        if (orientationService == null) {
+            orientationService = oService;
+        }
+    }
 
 }
