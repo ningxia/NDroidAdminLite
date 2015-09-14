@@ -240,7 +240,9 @@ public final class CimonDatabaseAdapter {
                 ContentValues contentValues = new ContentValues(values);
                 contentValues.put(DataTable.COLUMN_METRIC_ID, entry.metricId);
                 contentValues.put(DataTable.COLUMN_TIMESTAMP, this.upTimeToRealTime(entry.timestamp));
-
+//                if (entry.value == null) {
+//                    Log.d(TAG, "CimonDatabaseAdapter.insertBatchGroupData: null metricId " + entry.metricId);
+//                }
                 if (entry.isByte()) {
                     contentValues.put(DataTable.COLUMN_VALUE, (Byte) entry.value);
                 }

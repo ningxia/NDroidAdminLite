@@ -105,6 +105,7 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.ORIENTATION, 0L);
         mPeriodArray.put(Metrics.PROXIMITY, 1000L);
         mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 0L);
+        mPeriodArray.put(Metrics.LIGHT, 1000L);
 
         mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
     }
@@ -275,7 +276,7 @@ public class MetricService implements SensorEventListener {
             }
 
             List<DataEntry> orientData = mDeviceArray.get(Metrics.ORIENTATION).getData(params);
-            if (orientData != null || !orientData.isEmpty()) {
+            if (!(orientData == null || orientData.isEmpty())) {
                 dataList.addAll(orientData);
             }
 

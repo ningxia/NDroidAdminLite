@@ -136,6 +136,9 @@ public final class OrientationService extends MetricDevice<Float> {
 
     @Override
     List<DataEntry> getData(SparseArray<Object> params) {
+        if (values == null || values[0] == null) {
+            return null;
+        }
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
         List<DataEntry> dataList = new ArrayList<>();
         for (int i = 0; i < ORIENT_METRICS; i ++) {
