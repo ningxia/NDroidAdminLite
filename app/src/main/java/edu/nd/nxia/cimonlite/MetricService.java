@@ -103,6 +103,7 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.GYROSCOPE, 0L);
         mPeriodArray.put(Metrics.LINEAR_ACCEL, 0L);
         mPeriodArray.put(Metrics.ORIENTATION, 0L);
+        mPeriodArray.put(Metrics.PROXIMITY, 1000L);
         mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 0L);
 
         mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
@@ -266,10 +267,8 @@ public class MetricService implements SensorEventListener {
                     break;
                 case Sensor.TYPE_MAGNETIC_FIELD:
                     dataList.addAll(mDeviceArray.get(Metrics.MAGNETOMETER).getData(params));
-//                    dataList.addAll(mDeviceArray.get(Metrics.ORIENTATION).getData(params));
                     break;
                 case Sensor.TYPE_LINEAR_ACCELERATION:
-//                    if (DebugLog.DEBUG) Log.d(TAG, "MetricService.onSensorChanged: Linear Accel changed...");
                     dataList.addAll(mDeviceArray.get(Metrics.LINEAR_ACCEL).getData(params));
                     break;
                 default:
@@ -286,7 +285,7 @@ public class MetricService implements SensorEventListener {
                 int key = mDeviceArray.keyAt(i);
                 MetricDevice<?> metricDevice = mDeviceArray.get(key);
                 long period = metricDevice.getPeriod();
-                if (period > 0) {
+                if (period > 0L) {
                     if (curTime - metricDevice.getTimer() >= period) {
                         dataList.addAll(metricDevice.getData(params));
                         metricDevice.setTimer(curTime);

@@ -51,14 +51,14 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     abstract void initDevice(long period);
 
     /**
-     * Register device
-     */
-    abstract void registerDevice(SparseArray<Object> params);
-
-    /**
      * Insert entries for metric group and metrics into database.
      */
     abstract void insertDatabaseEntries();
+
+    /**
+     * Register device
+     */
+    abstract void registerDevice(SparseArray<Object> params);
 
     /**
      * Get device data
@@ -179,9 +179,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
             case Metrics.ATMOSPHERIC_PRESSURE:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch atmospheric pressure service");
                 return PressureService.getInstance();
-//            case Metrics.PROXIMITY:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch proximity service");
-//                return ProximityService.getInstance();
+            case Metrics.PROXIMITY:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch proximity service");
+                return ProximityService.getInstance();
 //            case Metrics.SCREEN_ON:
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch screen state service");
 //                return ScreenService.getInstance();
