@@ -45,14 +45,12 @@ public class MetricService implements SensorEventListener {
     private Context context;
     private SparseArray<Object> parameters;
 
-    private static final int BATTERY_PERIOD = 1000 * 60;
     private static final int BATCH_SIZE = 1000;
     private SensorManager mSensorManager;
     private LocationManager mLocationManager;
 
     private long startTime;
     private long endTime;
-    private long mTimer;
     private boolean isActive;
 
     CimonDatabaseAdapter database;
@@ -96,12 +94,15 @@ public class MetricService implements SensorEventListener {
     }
 
     private void initPeriods() {
-        mPeriodArray.put(Metrics.ACCELEROMETER, 0L);
-        mPeriodArray.put(Metrics.GYROSCOPE, 0L);
-        mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 0L);
+        // Sensors
         mPeriodArray.put(Metrics.LOCATION_CATEGORY, 2000L);
-        mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
+        mPeriodArray.put(Metrics.ACCELEROMETER, 0L);
         mPeriodArray.put(Metrics.MAGNETOMETER, 0L);
+        mPeriodArray.put(Metrics.GYROSCOPE, 0L);
+        mPeriodArray.put(Metrics.LINEAR_ACCEL, 0L);
+        mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 0L);
+
+        mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
     }
 
     private void initParameters() {
@@ -185,7 +186,6 @@ public class MetricService implements SensorEventListener {
             monitorId = runningMonitor;
         }
         startTime = System.currentTimeMillis();
-        mTimer = startTime;
     }
 
     public String stopMonitoring() {
@@ -252,6 +252,10 @@ public class MetricService implements SensorEventListener {
                     break;
                 case Sensor.TYPE_MAGNETIC_FIELD:
                     dataList.addAll(mDeviceArray.get(Metrics.MAGNETOMETER).getData(params));
+                    break;
+                case Sensor.TYPE_LINEAR_ACCELERATION:
+//                    if (DebugLog.DEBUG) Log.d(TAG, "MetricService.onSensorChanged: Linear Accel changed...");
+                    dataList.addAll(mDeviceArray.get(Metrics.LINEAR_ACCEL).getData(params));
                     break;
                 default:
             }

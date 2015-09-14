@@ -161,12 +161,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
             case Metrics.GYROSCOPE:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch gyroscope service");
                 return GyroscopeService.getInstance();
-//            case Metrics.LINEAR_X:
-//            case Metrics.LINEAR_Y:
-//            case Metrics.LINEAR_Z:
-//            case Metrics.LINEAR_MAGNITUDE:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch linear acceleration service");
-//                return LinearAccelService.getInstance();
+            case Metrics.LINEAR_ACCEL:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch linear acceleration service");
+                return LinearAccelService.getInstance();
 //            case Metrics.ORIENT_AZIMUTH:
 //            case Metrics.ORIENT_PITCH:
 //            case Metrics.ORIENT_ROLL:
