@@ -107,6 +107,7 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 0L);
         mPeriodArray.put(Metrics.LIGHT, 1000L);
         mPeriodArray.put(Metrics.HUMIDITY, 1000L);
+        mPeriodArray.put(Metrics.TEMPERATURE, 1000L);
 
         mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
     }
@@ -281,6 +282,7 @@ public class MetricService implements SensorEventListener {
                 dataList.addAll(orientData);
             }
 
+            // TODO: match sensor type if period exists
             // Add timer mechanism for event driven devices, such as Bluetooth.
             long curTime = System.currentTimeMillis();
             for (int i = 0; i < mDeviceArray.size(); i ++) {

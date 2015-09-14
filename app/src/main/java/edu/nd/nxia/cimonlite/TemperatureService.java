@@ -32,43 +32,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Monitoring service for humidity sensor.
- * Humidity sensor metrics:
- * <li>Relative humidity
- * <p>
+ * Monitoring service for temperature sensor.
+ * Temperature metrics:
+ * <li>Ambient temperature
+ *
  * @author darts
  *
- * @see MetricService
- *
  */
-public final class HumidityService extends MetricDevice<Float> {
+public final class TemperatureService extends MetricDevice<Float> {
 
     private static final String TAG = "NDroid";
-    private static final int HUMID_METRICS = 1;
-    private static final long THIRTY_SECONDS = 30000;
+    private static final int TEMP_METRICS = 1;
+    private static final long FIVE_SECONDS = 5000;
 
     // NOTE: title and string array must be defined above instance,
     //   otherwise, they will be null in constructor
-    private static final String title = "Humidity";
-    private static final String metrics = "Relative humidity";
-    private static final HumidityService INSTANCE = new HumidityService();
+    private static final String title = "Temperature";
+    private static final String metrics = "Ambient temperature";
+    private static final TemperatureService INSTANCE = new TemperatureService();
     private static byte counter = 0;
 
     private static SensorManager mSensorManager;
-    private static Sensor mHumidity;
+    private static Sensor mTemperature;
 
-    private HumidityService() {
-        if (DebugLog.DEBUG) Log.d(TAG, "HumidityService - constructor");
+    private TemperatureService() {
+        if (DebugLog.DEBUG) Log.d(TAG, "TemperatureService - constructor");
         if (INSTANCE != null) {
-            throw new IllegalStateException("HumidityService already instantiated");
+            throw new IllegalStateException("TemperatureService already instantiated");
         }
-        groupId = Metrics.HUMIDITY;
-        metricsCount = HUMID_METRICS;
-        values = new Float[HUMID_METRICS];
+        groupId = Metrics.TEMPERATURE;
+        metricsCount = TEMP_METRICS;
+        values = new Float[TEMP_METRICS];
     }
 
-    public static HumidityService getInstance() {
-        if (DebugLog.DEBUG) Log.d(TAG, "HumidityService.getInstance - get single instance");
+    public static TemperatureService getInstance() {
+        if (DebugLog.DEBUG) Log.d(TAG, "TemperatureService.getInstance - get single instance");
         if (!INSTANCE.supportedMetric) return null;
         return INSTANCE;
     }
@@ -79,11 +77,13 @@ public final class HumidityService extends MetricDevice<Float> {
         this.timer = System.currentTimeMillis();
         Context context = MyApplication.getAppContext();
         mSensorManager = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
-        mHumidity = mSensorManager.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY);
-        if (mHumidity == null) {
-            if (DebugLog.INFO) Log.i(TAG, "HumidityService - sensor not supported on this system");
-            mSensorManager = null;
+        mTemperature = mSensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
+        if (mTemperature == null) {
+            if (DebugLog.INFO) Log.i(TAG, "TemperatureService - TYPE_TEMPERATURE not supported.  Trying " +
+                    "TYPE_AMBIENT_TEMPERATURE");
+            if (DebugLog.INFO) Log.i(TAG, "TemperatureService - sensor not supported on this system.");
             supportedMetric = false;
+            mSensorManager = null;
             return;
         }
     }
@@ -99,14 +99,14 @@ public final class HumidityService extends MetricDevice<Float> {
         }
 
         // insert metric group information in database
-        database.insertOrReplaceMetricInfo(groupId, title, mHumidity.getName(),
-                SUPPORTED, mHumidity.getPower(), mHumidity.getMinDelay()/1000,
-                mHumidity.getMaximumRange() + " " + context.getString(R.string.units_percent),
-                mHumidity.getResolution() + " " + context.getString(R.string.units_percent),
+        database.insertOrReplaceMetricInfo(groupId, title, mTemperature.getName(),
+                SUPPORTED, mTemperature.getPower(), mTemperature.getMinDelay()/1000,
+                mTemperature.getMaximumRange() + " " + context.getString(R.string.units_celcius),
+                mTemperature.getResolution() + " " + context.getString(R.string.units_celcius),
                 Metrics.TYPE_SENSOR);
         // insert information for metrics in group into database
         database.insertOrReplaceMetrics(groupId, groupId, metrics,
-                context.getString(R.string.units_percent), mHumidity.getMaximumRange());
+                context.getString(R.string.units_celcius), mTemperature.getMaximumRange());
     }
 
     @Override
@@ -114,7 +114,7 @@ public final class HumidityService extends MetricDevice<Float> {
         SensorManager sensorManager = (SensorManager) params.get(PARAM_SENSOR_MANAGER);
         SensorEventListener sensorEventListener = (SensorEventListener) params.get(PARAM_SENSOR_EVENT_LISTENER);
         int mode = (int) params.get(PARAM_MODE);
-        sensorManager.registerListener(sensorEventListener, mHumidity, mode);
+        sensorManager.registerListener(sensorEventListener, mTemperature, mode);
     }
 
     @Override
@@ -123,7 +123,7 @@ public final class HumidityService extends MetricDevice<Float> {
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
         values[0] = event.values[0];
         List<DataEntry> dataList = new ArrayList<>();
-        dataList.add(new DataEntry(Metrics.HUMIDITY, timestamp, values[0]));
+        dataList.add(new DataEntry(Metrics.TEMPERATURE, timestamp, values[0]));
         return dataList;
     }
 
