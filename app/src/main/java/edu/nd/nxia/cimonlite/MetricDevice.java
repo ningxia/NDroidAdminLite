@@ -170,9 +170,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
             case Metrics.LIGHT:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch light sensor service");
                 return LightService.getInstance();
-//            case Metrics.HUMIDITY:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch relative humidity service");
-//                return HumidityService.getInstance();
+            case Metrics.HUMIDITY:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch relative humidity service");
+                return HumidityService.getInstance();
 //            case Metrics.TEMPERATURE:
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch ambient temperature service");
 //                return TemperatureService.getInstance();

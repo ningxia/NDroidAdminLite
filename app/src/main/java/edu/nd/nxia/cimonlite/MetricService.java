@@ -106,6 +106,7 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.PROXIMITY, 1000L);
         mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 0L);
         mPeriodArray.put(Metrics.LIGHT, 1000L);
+        mPeriodArray.put(Metrics.HUMIDITY, 1000L);
 
         mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
     }
