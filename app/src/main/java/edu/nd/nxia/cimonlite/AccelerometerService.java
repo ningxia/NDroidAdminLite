@@ -82,6 +82,7 @@ public final class AccelerometerService extends MetricDevice<Float> {
 
     @Override
     void initDevice(long period) {
+        this.type = TYPE_SENSOR;
         this.period = period;
         mSensorManager = (SensorManager) MyApplication.getAppContext().getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);

@@ -25,12 +25,17 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     protected static final int NOTSUPPORTED = 0;
 
     protected boolean supportedMetric = true;
+    protected int type;
     protected int groupId;
     protected int metricsCount;
     protected long period = 0;
     protected long timer = 0;
 
     protected T[] values;
+
+    protected static final int TYPE_SENSOR = 0;
+    protected static final int TYPE_RECEIVER = 1;
+    protected static final int TYPE_OTHER = 2;
 
     protected static final int PARAM_CONTEXT = 0;
     protected static final int PARAM_SENSOR_MANAGER = 1;
@@ -65,6 +70,10 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
      */
     abstract List<DataEntry> getData(SparseArray<Object> params);
 
+    public int getType() {
+        return this.type;
+    }
+
     public int getGroupId() {
         return this.groupId;
     }
@@ -94,19 +103,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
 //            case Metrics.TIME_DAY:
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch time service");
 //                return null;
-//            case Metrics.MEMORY_TOTAL:
-//            case Metrics.MEMORY_AVAIL:
-//            case Metrics.MEMORY_CACHED:
-//            case Metrics.MEMORY_ACTIVE:
-//            case Metrics.MEMORY_INACTIVE:
-//            case Metrics.MEMORY_DIRTY:
-//            case Metrics.MEMORY_BUFFERS:
-//            case Metrics.MEMORY_ANONPAGES:
-//            case Metrics.MEMORY_SWAPTOTAL:
-//            case Metrics.MEMORY_SWAPFREE:
-//            case Metrics.MEMORY_SWAPCACHED:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch memory service");
-//                return MemoryService.getInstance();
+            case Metrics.MEMORY_CATEGORY:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch memory service");
+                return MemoryService.getInstance();
 //            case Metrics.CPU_LOAD1:
 //            case Metrics.CPU_LOAD5:
 //            case Metrics.CPU_LOAD15:

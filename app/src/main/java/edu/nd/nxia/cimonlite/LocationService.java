@@ -87,6 +87,7 @@ public final class LocationService extends MetricDevice<Double> {
 
     @Override
     void initDevice(long period) {
+        this.type = TYPE_RECEIVER;
         this.period = period;
         this.timer = System.currentTimeMillis();
         mLocationManager = (LocationManager) MyApplication.getAppContext().getSystemService(Context.LOCATION_SERVICE);

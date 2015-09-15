@@ -75,6 +75,7 @@ public final class HumidityService extends MetricDevice<Float> {
 
     @Override
     void initDevice(long period) {
+        this.type = TYPE_SENSOR;
         this.period = period;
         this.timer = System.currentTimeMillis();
         Context context = MyApplication.getAppContext();

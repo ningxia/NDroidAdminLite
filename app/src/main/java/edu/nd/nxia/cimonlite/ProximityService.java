@@ -72,6 +72,7 @@ public final class ProximityService extends MetricDevice<Float> {
 
     @Override
     void initDevice(long period) {
+        this.type = TYPE_SENSOR;
         this.period = period;
         this.timer = System.currentTimeMillis();
         mSensorManager = (SensorManager) MyApplication.getAppContext().getSystemService(Context.SENSOR_SERVICE);

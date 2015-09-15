@@ -81,6 +81,7 @@ public final class GyroscopeService extends MetricDevice<Float> {
 
     @Override
     void initDevice(long period) {
+        this.type = TYPE_SENSOR;
         this.period = period;
         mSensorManager = (SensorManager) MyApplication.getAppContext().getSystemService(Context.SENSOR_SERVICE);
         mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);

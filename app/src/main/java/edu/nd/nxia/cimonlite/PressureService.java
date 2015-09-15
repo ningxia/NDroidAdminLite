@@ -72,6 +72,7 @@ public final class PressureService extends MetricDevice<Float> {
 
     @Override
     void initDevice(long period) {
+        this.type = TYPE_SENSOR;
         this.period = period;
         mSensorManager = (SensorManager) MyApplication.getAppContext().getSystemService(Context.SENSOR_SERVICE);
         mPressure = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);

@@ -86,6 +86,8 @@ public final class MagnetometerService extends MetricDevice<Float> {
 
     @Override
     void initDevice(long period) {
+        this.type = TYPE_SENSOR;
+        this.period = period;
         Context context = MyApplication.getAppContext();
         mSensorManager = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);

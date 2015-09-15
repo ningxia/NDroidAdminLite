@@ -102,6 +102,7 @@ public final class BatteryService extends MetricDevice<Integer> {
 
     @Override
     void initDevice(long period) {
+        this.type = TYPE_RECEIVER;
         this.period = period;
         this.timer = System.currentTimeMillis();
         this.batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
