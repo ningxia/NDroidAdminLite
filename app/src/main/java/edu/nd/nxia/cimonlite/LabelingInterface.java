@@ -538,4 +538,10 @@ public class LabelingInterface extends Activity {
         super.onResume();
         showStatus();
     }
+
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
+    }
+
 }
