@@ -239,7 +239,7 @@ public final class CimonDatabaseAdapter {
                 DataEntry entry = data.get(i);
                 ContentValues contentValues = new ContentValues(values);
                 contentValues.put(DataTable.COLUMN_METRIC_ID, entry.metricId);
-                contentValues.put(DataTable.COLUMN_TIMESTAMP, this.upTimeToRealTime(entry.timestamp));
+                contentValues.put(DataTable.COLUMN_TIMESTAMP, entry.timestamp);
 
                 if (entry.isByte()) {
                     contentValues.put(DataTable.COLUMN_VALUE, (Byte) entry.value);
@@ -262,7 +262,7 @@ public final class CimonDatabaseAdapter {
                 if (database.insert(DataTable.TABLE_DATA, null, contentValues) >= 0) {
                     rowsInserted++;
                 }
-//                if (DebugLog.DEBUG) Log.d(TAG, "insertBatchData: " + metric + " t: " + this.upTimeToRealTime(entry.timestamp) + " - v: " + entry.value);
+                if (DebugLog.DEBUG) Log.d(TAG, "insertBatchData: " + Integer.toString(entry.metricId) + " t: " + Long.toString(entry.timestamp));
             }
             // Transaction is successful and all the records have been inserted
             database.setTransactionSuccessful();

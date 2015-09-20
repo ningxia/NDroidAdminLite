@@ -27,7 +27,8 @@ public class DataEntry<T> {
      */
     public DataEntry(int metricId, long timestamp, T value) {
         this.metricId = metricId;
-        this.timestamp = SystemClock.elapsedRealtime();
+        //this.timestamp = SystemClock.elapsedRealtime();
+        this.timestamp = timestamp;
         this.value = value;
     }
 

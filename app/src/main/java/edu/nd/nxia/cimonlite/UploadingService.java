@@ -34,12 +34,12 @@ import edu.nd.nxia.cimonlite.database.MetricsTable;
  * Upadloing Service For Data
  *
  * @author Xiao(Sean) Bo
- *
  */
 public class UploadingService extends Service {
     private static final String TAG = "CimonUploadingService";
     private static final String[] uploadTables = {MetricInfoTable.TABLE_METRICINFO, LabelingHistory.TABLE_NAME, MetricsTable.TABLE_METRICS, DataTable.TABLE_DATA};
-    //private static final String[] uploadTables = {MetricsTable.TABLE_METRICS};
+    //private static final String[] uploadTables = {DataTable.TABLE_DATA};
+    //private static final String[] uploadTables = {};
     private static final int period = 1000 * 10;
     private static int count;
     private static int MAXRECORDS = 3000;
@@ -56,14 +56,6 @@ public class UploadingService extends Service {
 
     @Override
     public void onCreate() {
-//        SecretKeySpec key = new SecretKeySpec(keyCode.getBytes(),algorithm);
-//        try{
-//            cipher = Cipher.getInstance(algorithm);
-//            //cipher.init(Cipher.ENCRYPT_MODE,key);
-//        }catch(Exception e){
-//            Log.d(TAG,"Fail to initialize cipher");
-//            e.printStackTrace();
-//        }
         context = MyApplication.getAppContext();
         count = 0;
     }
@@ -80,6 +72,7 @@ public class UploadingService extends Service {
             public void run() {
                 Log.d(TAG, "Uploading thread:" + Integer.toString(count) + "\n Time window:"
                         + Integer.toString(startHour) + "~" + Integer.toString(endHour));
+                sendMsg(null, getDeviceID());
                 if (count < 1) {
                     runUpload();
                 }
@@ -107,6 +100,7 @@ public class UploadingService extends Service {
             count++;
             new Thread(new Runnable() {
                 public void run() {
+
                     try {
                         for (String table : uploadTables) {
                             Log.d(TAG, "Upload: " + table);
@@ -114,7 +108,7 @@ public class UploadingService extends Service {
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
-                    }finally {
+                    } finally {
                         count--;
                     }
                 }
@@ -125,6 +119,7 @@ public class UploadingService extends Service {
 
     /**
      * Get count
+     *
      * @return
      */
     public static int getCount() {
@@ -145,7 +140,7 @@ public class UploadingService extends Service {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                }finally {
+                } finally {
                     count--;
                 }
             }
@@ -157,11 +152,10 @@ public class UploadingService extends Service {
      *
      * @param tableName table to update
      * @author Xiao(Sean) Bo
-     *
      */
     private void uploadFromTable(String tableName) {
         Cursor cursor = this.getCursor(tableName);
-        Log.d(TAG,tableName + " " + cursor.getCount());
+        Log.d(TAG, tableName + " " + cursor.getCount());
         while (cursor.getCount() > 0) {
             //Update cursor
             try {
@@ -216,7 +210,7 @@ public class UploadingService extends Service {
                 }
             }
             records.put(record);
-            Log.d(TAG,record.toString());
+            Log.d(TAG, record.toString());
             if (records.length() >= this.MAXRECORDS) {
                 batchUpload(records, tableName, rowIDs);
                 records = new JSONArray();
@@ -243,11 +237,11 @@ public class UploadingService extends Service {
             JSONException {
         DataCommunicator comm = new DataCommunicator();
         JSONObject mainPackage = new JSONObject();
-        try{
-            mainPackage.put("records", Cipher.encryptString(records.toString(),true));
-        }catch(Exception e){
-            if(DebugLog.DEBUG)
-                Log.d(TAG,"Failed to encrypt data");
+        try {
+            mainPackage.put("records", Cipher.encryptString(records.toString(), true));
+        } catch (Exception e) {
+            if (DebugLog.DEBUG)
+                Log.d(TAG, "Failed to encrypt data");
             e.printStackTrace();
         }
         //mainPackage.put("records2",records);
@@ -292,7 +286,7 @@ public class UploadingService extends Service {
      * @author Xiao(Sean) Bo
      */
 
-    private String getDeviceID() {
+    public static String getDeviceID() {
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         return telephonyManager.getDeviceId();
     }
@@ -321,16 +315,23 @@ public class UploadingService extends Service {
      *
      * @author Xiao(Sean) Bo
      */
-    private static void sendMsg(String msg, String deviceID) {
-        try {
-            DataCommunicator comm = new DataCommunicator();
-            JSONObject data = new JSONObject();
-            data.put("table", "test");
-            data.put("info", msg);
-            data.put("id", deviceID);
-            comm.postData(data.toString().getBytes());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private static void sendMsg(String msg, final String deviceID) {
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    DataCommunicator comm = new DataCommunicator();
+                    JSONObject data = new JSONObject();
+                    data.put("table", "Ping");
+                    data.put("device_id", deviceID);
+                    data.put("version", 1);
+                    data.put("total_row", -1);
+                    long phoneTimeStamp = System.currentTimeMillis();
+                    data.put("phone_time", phoneTimeStamp);
+                    comm.postData(data.toString().getBytes());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 }

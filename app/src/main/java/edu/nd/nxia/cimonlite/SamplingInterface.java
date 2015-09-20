@@ -58,6 +58,7 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
 
         startUploadingService();
         startLabelingReminderService();
+        startPingService();
     }
 
     @Override
@@ -125,6 +126,12 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
 
     private void startUploadingService(){
         Intent intent = new Intent(context,UploadingService.class);
+        startService(intent);
+        if (DebugLog.DEBUG) Log.d(TAG, "MainActivity.startUploadingService - started");
+    }
+
+    private void startPingService(){
+        Intent intent = new Intent(context,PingService.class);
         startService(intent);
         if (DebugLog.DEBUG) Log.d(TAG, "MainActivity.startUploadingService - started");
     }

@@ -70,7 +70,8 @@ public class MetricService implements SensorEventListener {
     CimonDatabaseAdapter database;
     private List<DataEntry> dataList;
     private int monitorId;
-    private long lastUpdate = 0;
+    //private long lastUpdate = 0;
+    private long lastUpdate;
 
     SharedPreferences appPrefs;
     SharedPreferences.Editor editor;
@@ -84,6 +85,7 @@ public class MetricService implements SensorEventListener {
         initSensors();
         database = CimonDatabaseAdapter.getInstance(context);
         appPrefs = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
+        this.lastUpdate = System.currentTimeMillis();
     }
 
     private void initSensors() {
@@ -360,8 +362,9 @@ public class MetricService implements SensorEventListener {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (isActive) {
-                long upTime = SystemClock.uptimeMillis();
-                getBatteryData(upTime, intent);
+                //long upTime = SystemClock.uptimeMillis();
+                long timeStamp = System.currentTimeMillis();
+                getBatteryData(timeStamp, intent);
             }
         }
     };
@@ -463,8 +466,9 @@ public class MetricService implements SensorEventListener {
 
     private void getLocationData() {
         if (isActive) {
-            long upTime = SystemClock.uptimeMillis();
-            if ((upTime - lastUpdate) > FIVE_MINUTES) {
+            //long upTime = SystemClock.uptimeMillis();
+            long curTime = System.currentTimeMillis();
+            if ((curTime - lastUpdate) > FIVE_MINUTES) {
                 coordinate = getLastLocation();
             }
             Double values[] = new Double[LOCATION_METRICS];
@@ -472,9 +476,11 @@ public class MetricService implements SensorEventListener {
             values[1] = coordinate.getLongitude();
             values[2] = (double) coordinate.getAccuracy();
             values[3] = (double) coordinate.getSpeed();
-            lastUpdate = upTime;
+            lastUpdate = curTime;
+            long timeStamp = System.currentTimeMillis();
             for (int i = 0; i < LOCATION_METRICS; i ++) {
-                dataList.add(new DataEntry(Metrics.LOCATION_CATEGORY + i, upTime, values[i]));
+                //dataList.add(new DataEntry(Metrics.LOCATION_CATEGORY + i, upTime, values[i]));
+                dataList.add(new DataEntry(Metrics.LOCATION_CATEGORY + i, timeStamp, values[i]));
             }
         }
     }
@@ -484,20 +490,21 @@ public class MetricService implements SensorEventListener {
         Sensor sensor = event.sensor;
 
         if (isActive) {
-            long upTime = SystemClock.uptimeMillis();
+            long timeStamp = System.currentTimeMillis();
+            Log.d(TAG,"Event timeStamp:" + Long.toString(timeStamp));
             switch (sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
-                    getAccelData(event, upTime);
+                    getAccelData(event, timeStamp);
                     numAccelerometer ++;
 //                    Log.d(TAG, "Accelerometer: " + curTime);
                     break;
                 case Sensor.TYPE_GYROSCOPE:
-                    getGyroData(event, upTime);
+                    getGyroData(event, timeStamp);
                     numGyroscope ++;
 //                    Log.d(TAG, "Gyroscope: " + curTime);
                     break;
                 case Sensor.TYPE_PRESSURE:
-                    getBaroData(event, upTime);
+                    getBaroData(event, timeStamp);
                     numBarometer ++;
 //                    Log.d(TAG, "Barometer: " + curTime);
                     break;
@@ -507,7 +514,7 @@ public class MetricService implements SensorEventListener {
             long curTime = System.currentTimeMillis();
             if (curTime - batteryTimer >= BATTERY_PERIOD) {
                 batteryStatus = context.registerReceiver(null, batteryIntentFilter);
-                getBatteryData(upTime, batteryStatus);
+                getBatteryData(curTime, batteryStatus);
                 batteryTimer = curTime;
             }
 
