@@ -141,6 +141,10 @@ public final class OrientationService extends MetricDevice<Float> {
             return null;
         }
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
+        if (timestamp - timer < period - timeOffset) {
+            return null;
+        }
+        setTimer(timestamp);
         List<DataEntry> dataList = new ArrayList<>();
         for (int i = 0; i < ORIENT_METRICS; i ++) {
             dataList.add(new DataEntry(Metrics.ORIENTATION + i, timestamp, values[i]));

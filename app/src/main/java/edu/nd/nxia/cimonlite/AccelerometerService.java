@@ -84,6 +84,7 @@ public final class AccelerometerService extends MetricDevice<Float> {
     void initDevice(long period) {
         this.type = TYPE_SENSOR;
         this.period = period;
+        this.timer = System.currentTimeMillis();
         mSensorManager = (SensorManager) MyApplication.getAppContext().getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         if (mAccelerometer == null) {
@@ -137,6 +138,11 @@ public final class AccelerometerService extends MetricDevice<Float> {
     List<DataEntry> getData(SparseArray<Object> params) {
         SensorEvent event = (SensorEvent) params.get(PARAM_SENSOR_EVENT);
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
+//        Log.d(TAG, "AccelerometerService - timestamp: " + timestamp + " timer " + timer + " period: " + period);
+        if (timestamp - timer < period - timeOffset) {
+            return null;
+        }
+        setTimer(timestamp);
         mCounter ++;
         float magnitude = 0;
         Float values[] = new Float[ACCEL_METRICS];
@@ -149,7 +155,6 @@ public final class AccelerometerService extends MetricDevice<Float> {
         if (orientationService != null) {
             orientationService.onSensorUpdate(event);
         }
-
         List<DataEntry> dataList = new ArrayList<>();
         for (int i = 0; i < ACCEL_METRICS; i ++) {
             dataList.add(new DataEntry(Metrics.ACCELEROMETER + i, timestamp, values[i]));

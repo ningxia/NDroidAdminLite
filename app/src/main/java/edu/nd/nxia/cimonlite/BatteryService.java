@@ -142,6 +142,10 @@ public final class BatteryService extends MetricDevice<Integer> {
     List<DataEntry> getData(SparseArray<Object> params) {
         Intent intent = (Intent) params.get(PARAM_INTENT);
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
+        if (timestamp - timer < period - timeOffset) {
+            return null;
+        }
+        setTimer(timestamp);
         Integer values[] = new Integer[BATT_INT_METRICS];
         int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
         int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
@@ -159,7 +163,8 @@ public final class BatteryService extends MetricDevice<Integer> {
 //        for (int i = 0; i < BATTERY_METRICS; i ++) {
 //            dataList.add(new DataEntry(Metrics.BATTERY_PERCENT, timestamp, values[i]));
 //        }
-        if (DebugLog.DEBUG) Log.d(TAG, "BatteryService.batteryReceiver - updating battery values: " + values[0]);
+        if (DebugLog.DEBUG)
+            Log.d(TAG, "BatteryService.batteryReceiver - updating battery values: " + values[0]);
         List<DataEntry> dataList = new ArrayList<>();
         dataList.add(new DataEntry(Metrics.BATTERY_PERCENT, timestamp, values[0]));
         return dataList;

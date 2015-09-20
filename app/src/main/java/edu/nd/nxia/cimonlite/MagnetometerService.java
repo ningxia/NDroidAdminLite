@@ -134,6 +134,10 @@ public final class MagnetometerService extends MetricDevice<Float> {
     List<DataEntry> getData(SparseArray<Object> params) {
         SensorEvent event = (SensorEvent) params.get(PARAM_SENSOR_EVENT);
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
+        if (timestamp - timer < period - timeOffset) {
+            return null;
+        }
+        setTimer(timestamp);
         float magnitude = 0;
         for (int i = 0; i < (MAGNET_METRICS - 1); i++) {
             values[i] = event.values[i];

@@ -29,6 +29,7 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     protected int groupId;
     protected int metricsCount;
     protected long period = 0;
+    protected long timeOffset = 3;
     protected long timer = 0;
 
     protected T[] values;
@@ -83,11 +84,18 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     }
 
     public long getTimer() {
-        return this.timer;
+        if (period > 0) {
+            return this.timer;
+        }
+        else {
+            return 0;
+        }
     }
 
     public void setTimer(long timestamp) {
-        this.timer = timestamp;
+        if (period > 0) {
+            this.timer = timestamp;
+        }
     }
 
     /**

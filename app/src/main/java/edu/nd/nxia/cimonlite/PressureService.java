@@ -74,6 +74,7 @@ public final class PressureService extends MetricDevice<Float> {
     void initDevice(long period) {
         this.type = TYPE_SENSOR;
         this.period = period;
+        this.timer = System.currentTimeMillis();
         mSensorManager = (SensorManager) MyApplication.getAppContext().getSystemService(Context.SENSOR_SERVICE);
         mPressure = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
         if (mPressure == null) {
@@ -108,15 +109,19 @@ public final class PressureService extends MetricDevice<Float> {
 				mPressure.getResolution() + " " + context.getString(R.string.units_hpa), 
 				Metrics.TYPE_SENSOR);
 		// insert information for metrics in group into database
-		database.insertOrReplaceMetrics(groupId, groupId, metrics, 
-				context.getString(R.string.units_hpa), mPressure.getMaximumRange());
+		database.insertOrReplaceMetrics(groupId, groupId, metrics,
+                context.getString(R.string.units_hpa), mPressure.getMaximumRange());
 	}
 
     @Override
     List<DataEntry> getData(SparseArray<Object> params) {
         SensorEvent event = (SensorEvent) params.get(PARAM_SENSOR_EVENT);
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
-        mCounter ++;
+        if (timestamp - timer < period - timeOffset) {
+            return null;
+        }
+        setTimer(timestamp);
+        mCounter++;
         List<DataEntry> dataList = new ArrayList<>();
         dataList.add(new DataEntry(Metrics.ATMOSPHERIC_PRESSURE + 0, timestamp, event.values[0]));
         return dataList;

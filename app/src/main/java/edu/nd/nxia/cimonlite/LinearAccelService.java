@@ -133,6 +133,10 @@ public final class LinearAccelService extends MetricDevice<Float> {
     List<DataEntry> getData(SparseArray<Object> params) {
         SensorEvent event = (SensorEvent) params.get(PARAM_SENSOR_EVENT);
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
+        if (timestamp - timer < period - timeOffset) {
+            return null;
+        }
+        setTimer(timestamp);
         float magnitude = 0;
         Float values[] = new Float[ACCEL_METRICS];
         for (int i = 0; i < (ACCEL_METRICS - 1); i++) {

@@ -122,6 +122,10 @@ public final class HumidityService extends MetricDevice<Float> {
     List<DataEntry> getData(SparseArray<Object> params) {
         SensorEvent event = (SensorEvent) params.get(PARAM_SENSOR_EVENT);
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
+        if (timestamp - timer < period - timeOffset) {
+            return null;
+        }
+        setTimer(timestamp);
         values[0] = event.values[0];
         List<DataEntry> dataList = new ArrayList<>();
         dataList.add(new DataEntry(Metrics.HUMIDITY, timestamp, values[0]));

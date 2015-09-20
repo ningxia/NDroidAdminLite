@@ -101,13 +101,13 @@ public class MetricService implements SensorEventListener {
 
         // Sensors
         mPeriodArray.put(Metrics.LOCATION_CATEGORY, 2000L);
-        mPeriodArray.put(Metrics.ACCELEROMETER, 0L);
-        mPeriodArray.put(Metrics.MAGNETOMETER, 0L);
-        mPeriodArray.put(Metrics.GYROSCOPE, 0L);
-        mPeriodArray.put(Metrics.LINEAR_ACCEL, 0L);
-        mPeriodArray.put(Metrics.ORIENTATION, 0L);
+        mPeriodArray.put(Metrics.ACCELEROMETER, 20L);
+        mPeriodArray.put(Metrics.MAGNETOMETER, 100L);
+        mPeriodArray.put(Metrics.GYROSCOPE, 20L);
+        mPeriodArray.put(Metrics.LINEAR_ACCEL, 100L);
+        mPeriodArray.put(Metrics.ORIENTATION, 100L);
         mPeriodArray.put(Metrics.PROXIMITY, 1000L);
-        mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 1000L);
+        mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 20L);
         mPeriodArray.put(Metrics.LIGHT, 1000L);
         mPeriodArray.put(Metrics.HUMIDITY, 1000L);
         mPeriodArray.put(Metrics.TEMPERATURE, 1000L);
@@ -258,111 +258,62 @@ public class MetricService implements SensorEventListener {
             long upTime = SystemClock.uptimeMillis();
             SparseArray<Object> params = new SparseArray<>();
             params.put(PARAM_SENSOR_EVENT, event);
-            params.put(PARAM_TIMESTAMP, upTime);
+            params.put(PARAM_TIMESTAMP, curTime);
             params.put(PARAM_LOCATION, null);
             batteryStatus = context.registerReceiver(null, batteryIntentFilter);
             params.put(PARAM_INTENT, batteryStatus);
-            long period;
+            List<DataEntry> tempData = null;
             switch (sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
-                    dataList.addAll(mDeviceArray.get(Metrics.ACCELEROMETER).getData(params));
+                    tempData = mDeviceArray.get(Metrics.ACCELEROMETER).getData(params);
                     break;
                 case Sensor.TYPE_MAGNETIC_FIELD:
-                    dataList.addAll(mDeviceArray.get(Metrics.MAGNETOMETER).getData(params));
+                    tempData = mDeviceArray.get(Metrics.MAGNETOMETER).getData(params);
                     break;
                 case Sensor.TYPE_GYROSCOPE:
-                    dataList.addAll(mDeviceArray.get(Metrics.GYROSCOPE).getData(params));
+                    tempData = mDeviceArray.get(Metrics.GYROSCOPE).getData(params);
                     break;
                 case Sensor.TYPE_LINEAR_ACCELERATION:
-                    dataList.addAll(mDeviceArray.get(Metrics.LINEAR_ACCEL).getData(params));
+                    tempData = mDeviceArray.get(Metrics.LINEAR_ACCEL).getData(params);
                     break;
                 case Sensor.TYPE_PROXIMITY:
-                    ProximityService proximityService = (ProximityService) mDeviceArray.get(Metrics.PROXIMITY);
-                    period = mPeriodArray.get(Metrics.PROXIMITY);
-                    if (period > 0L && curTime - proximityService.getTimer() > proximityService.getPeriod()) {
-                        dataList.addAll(proximityService.getData(params));
-                    }
+                    tempData = mDeviceArray.get(Metrics.PROXIMITY).getData(params);
                     break;
                 case Sensor.TYPE_PRESSURE:
-                    PressureService pressureService = (PressureService) mDeviceArray.get(Metrics.ATMOSPHERIC_PRESSURE);
-                    period = mPeriodArray.get(Metrics.ATMOSPHERIC_PRESSURE);
-                    if (period > 0L && curTime - pressureService.getTimer() > pressureService.getPeriod()) {
-                        dataList.addAll(pressureService.getData(params));
-                    }
+                    tempData = mDeviceArray.get(Metrics.ATMOSPHERIC_PRESSURE).getData(params);
                     break;
                 case Sensor.TYPE_LIGHT:
-                    LightService lightService = (LightService) mDeviceArray.get(Metrics.LIGHT);
-                    period = mPeriodArray.get(Metrics.LIGHT);
-                    if (period > 0L && curTime - lightService.getTimer() > lightService.getPeriod()) {
-                        dataList.addAll(lightService.getData(params));
-                    }
+                    tempData = mDeviceArray.get(Metrics.LIGHT).getData(params);
                     break;
                 case Sensor.TYPE_RELATIVE_HUMIDITY:
+                    tempData = mDeviceArray.get(Metrics.HUMIDITY).getData(params);
+                    break;
                 case Sensor.TYPE_AMBIENT_TEMPERATURE:
+                    tempData = mDeviceArray.get(Metrics.TEMPERATURE).getData(params);
+                    break;
                 default:
             }
+            if (tempData != null) {
+                dataList.addAll(tempData);
+                tempData.clear();
+            }
 
-            // TODO: match sensor type if period exists
-            // Add timer mechanism for event driven devices, such as Bluetooth.
-
+            // Handle devices other than sensors.
             int key;
             MetricDevice<?> metricDevice;
             for (int i = 0; i < mDeviceArray.size(); i ++) {
                 key = mDeviceArray.keyAt(i);
                 metricDevice = mDeviceArray.get(key);
-                period = metricDevice.getPeriod();
-                if (metricDevice.getType() == MetricDevice.TYPE_RECEIVER) {
-                    if (period > 0L) {
-                        if (curTime - metricDevice.getTimer() >= period) {
-                            dataList.addAll(metricDevice.getData(params));
-                            metricDevice.setTimer(curTime);
-                        }
+                if (metricDevice.getType() > MetricDevice.TYPE_SENSOR) {
+                    tempData = metricDevice.getData(params);
+                    if (tempData != null) {
+                        dataList.addAll(tempData);
+                        tempData.clear();
                     }
                 }
             }
 
-            List<DataEntry> orientData = mDeviceArray.get(Metrics.ORIENTATION).getData(params);
-            if (!(orientData == null || orientData.isEmpty())) {
-                dataList.addAll(orientData);
-            }
-
-//            int key;
-//            long value;
-//            MetricDevice<?> metricDevice;
-//            for (int i = 0; i < mPeriodArray.size(); i ++) {
-//                key = mPeriodArray.keyAt(i);
-//                value = mPeriodArray.get(key);
-//                metricDevice = mDeviceArray.get(key);
-//                if (metricDevice != null && value > 0L && (curTime - metricDevice.getTimer() > metricDevice.getPeriod())) {
-//                    dataList.addAll(metricDevice.getData(params));
-//                    metricDevice.setTimer(curTime);
-////                    switch (key) {
-////                        case Metrics.MEMORY_CATEGORY:
-////                            dataList.addAll(metricDevice.getData(params));
-////                            break;
-////                        case Metrics.LOCATION_CATEGORY:
-////                            dataList.addAll(metricDevice.getData(params));
-////                            break;
-////                        case Metrics.PROXIMITY:
-////                            dataList.addAll(metricDevice.getData(params));
-////                            break;
-////                        case Metrics.ATMOSPHERIC_PRESSURE:
-////                            dataList.addAll(metricDevice.getData(params));
-////                            break;
-////                        case Metrics.LIGHT:
-////                            dataList.addAll(metricDevice.getData(params));
-////                            break;
-////                        case Metrics.HUMIDITY:
-////                            dataList.addAll(metricDevice.getData(params));
-////                            break;
-////                        case Metrics.TEMPERATURE:
-////                            dataList.addAll(metricDevice.getData(params));
-////                            break;
-////                        default:
-////                    }
-//                }
-//            }
-
+            // Insert data into database.
             if (dataList.size() >= BATCH_SIZE) {
                 final ArrayList<DataEntry> dl = new ArrayList<>(dataList);
                 new Thread(new Runnable() {
@@ -388,12 +339,14 @@ public class MetricService implements SensorEventListener {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (isActive) {
-                long upTime = SystemClock.uptimeMillis();
                 SparseArray<Object> params = new SparseArray<>();
                 params.put(PARAM_INTENT, intent);
-                params.put(PARAM_TIMESTAMP, upTime);
+                params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
                 if (intent.getAction().equals(Intent.ACTION_BATTERY_CHANGED)) {
-                    dataList.addAll(mDeviceArray.get(Metrics.BATTERY_CATEGORY).getData(params));
+                    List<DataEntry> tempData = mDeviceArray.get(Metrics.BATTERY_CATEGORY).getData(params);
+                    if (tempData != null) {
+                        dataList.addAll(tempData);
+                    }
                 }
             }
         }
@@ -411,7 +364,11 @@ public class MetricService implements SensorEventListener {
             }
             SparseArray<Object> params = new SparseArray<>();
             params.put(PARAM_LOCATION, location);
-            mDeviceArray.get(Metrics.LOCATION_CATEGORY).getData(params);
+            params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
+            List<DataEntry> tempData = mDeviceArray.get(Metrics.LOCATION_CATEGORY).getData(params);
+            if (tempData != null) {
+                dataList.addAll(tempData);
+            }
         }
 
         @Override

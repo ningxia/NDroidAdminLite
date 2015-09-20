@@ -149,9 +149,13 @@ public final class LocationService extends MetricDevice<Double> {
     @Override
     List<DataEntry> getData(SparseArray<Object> params) {
         Location location = (Location) params.get(PARAM_LOCATION);
+        long timestamp = (long) params.get(PARAM_TIMESTAMP);
+        if (timestamp - timer < period - timeOffset) {
+            return null;
+        }
+        setTimer(timestamp);
         checkLocation(location);
-        long upTime = SystemClock.uptimeMillis();
-        if ((upTime - lastUpdate) >= FIVE_MINUTES) {
+        if ((timestamp - lastUpdate) >= FIVE_MINUTES) {
             mCoordinate = getLastLocation();
         }
         Double values[] = new Double[LOCATION_METRICS];
@@ -159,10 +163,10 @@ public final class LocationService extends MetricDevice<Double> {
         values[1] = mCoordinate.getLongitude();
         values[2] = (double) mCoordinate.getAccuracy();
         values[3] = (double) mCoordinate.getSpeed();
-        lastUpdate = upTime;
+        lastUpdate = timestamp;
         List<DataEntry> dataList = new ArrayList<>();
-        for (int i = 0; i < LOCATION_METRICS; i ++) {
-            dataList.add(new DataEntry(Metrics.LOCATION_CATEGORY + i, upTime, values[i]));
+        for (int i = 0; i < LOCATION_METRICS; i++) {
+            dataList.add(new DataEntry(Metrics.LOCATION_CATEGORY + i, timestamp, values[i]));
 //            if (DebugLog.DEBUG) Log.d(TAG, "LocationService.getData " + metrics[i] + ": " + values[i]);
         }
         return dataList;

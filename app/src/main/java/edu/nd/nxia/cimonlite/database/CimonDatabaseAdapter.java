@@ -148,7 +148,7 @@ public final class CimonDatabaseAdapter {
         ContentValues values = new ContentValues();
         values.put(DataTable.COLUMN_METRIC_ID, metric);
         values.put(DataTable.COLUMN_MONITOR_ID, monitor);
-        values.put(DataTable.COLUMN_TIMESTAMP, this.upTimeToRealTime(timestamp));
+        values.put(DataTable.COLUMN_TIMESTAMP, timestamp);
         //values.put(DataTable.COLUMN_TIMESTAMP, timestamp);
         values.put(DataTable.COLUMN_VALUE, value);
 
@@ -185,7 +185,7 @@ public final class CimonDatabaseAdapter {
         try {
             for (DataEntry entry : data) {
                 ContentValues contentValues = new ContentValues(values);
-                contentValues.put(DataTable.COLUMN_TIMESTAMP, this.upTimeToRealTime(entry.timestamp));
+                contentValues.put(DataTable.COLUMN_TIMESTAMP, entry.timestamp);
 
                 if (entry.isByte()) {
                     contentValues.put(DataTable.COLUMN_VALUE, (Byte) entry.value);
@@ -239,7 +239,7 @@ public final class CimonDatabaseAdapter {
                 DataEntry entry = data.get(i);
                 ContentValues contentValues = new ContentValues(values);
                 contentValues.put(DataTable.COLUMN_METRIC_ID, entry.metricId);
-                contentValues.put(DataTable.COLUMN_TIMESTAMP, this.upTimeToRealTime(entry.timestamp));
+                contentValues.put(DataTable.COLUMN_TIMESTAMP, entry.timestamp);
 //                if (entry.value == null) {
 //                    Log.d(TAG, "CimonDatabaseAdapter.insertBatchGroupData: null metricId " + entry.metricId);
 //                }

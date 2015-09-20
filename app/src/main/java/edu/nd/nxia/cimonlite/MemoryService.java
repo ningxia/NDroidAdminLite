@@ -158,6 +158,10 @@ public final class MemoryService extends MetricDevice<Integer> {
     @Override
     List<DataEntry> getData(SparseArray<Object> params) {
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
+        if (timestamp - timer < period - timeOffset) {
+            return null;
+        }
+        setTimer(timestamp);
         fetchValues();
         List<DataEntry> dataList = new ArrayList<>();
         for (int i = 0; i < MEM_METRICS; i ++) {

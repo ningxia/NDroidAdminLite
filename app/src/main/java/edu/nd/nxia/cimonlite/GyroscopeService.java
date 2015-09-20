@@ -83,6 +83,7 @@ public final class GyroscopeService extends MetricDevice<Float> {
     void initDevice(long period) {
         this.type = TYPE_SENSOR;
         this.period = period;
+        this.timer = System.currentTimeMillis();
         mSensorManager = (SensorManager) MyApplication.getAppContext().getSystemService(Context.SENSOR_SERVICE);
         mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         if (mGyroscope == null) {
@@ -119,8 +120,8 @@ public final class GyroscopeService extends MetricDevice<Float> {
 				Metrics.TYPE_SENSOR);
 		// insert information for metrics in group into database
 		for (int i = 0; i < GYRO_METRICS; i++) {
-			database.insertOrReplaceMetrics(groupId + i, groupId, metrics[i], 
-					context.getString(R.string.units_rads), mGyroscope.getMaximumRange());
+			database.insertOrReplaceMetrics(groupId + i, groupId, metrics[i],
+                    context.getString(R.string.units_rads), mGyroscope.getMaximumRange());
 		}
 	}
 
@@ -128,7 +129,11 @@ public final class GyroscopeService extends MetricDevice<Float> {
     List<DataEntry> getData(SparseArray<Object> params) {
         SensorEvent event = (SensorEvent) params.get(PARAM_SENSOR_EVENT);
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
-        mCounter ++;
+        if (timestamp - timer < period - timeOffset) {
+            return null;
+        }
+        setTimer(timestamp);
+        mCounter++;
         float magnitude = 0;
         Float values[] = new Float[GYRO_METRICS];
         for (int i = 0; i < (GYRO_METRICS - 1); i++) {
@@ -137,7 +142,7 @@ public final class GyroscopeService extends MetricDevice<Float> {
         }
         values[GYRO_METRICS - 1] = FloatMath.sqrt(magnitude);
         List<DataEntry> dataList = new ArrayList<>();
-        for (int i = 0; i < GYRO_METRICS; i ++) {
+        for (int i = 0; i < GYRO_METRICS; i++) {
             dataList.add(new DataEntry(Metrics.GYROSCOPE + i, timestamp, values[i]));
         }
         return dataList;
