@@ -16,6 +16,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.Environment;
@@ -82,6 +83,7 @@ public class MetricService implements SensorEventListener {
     private static final int PARAM_FILE_OBSERVER = 11;
     private static final int PARAM_FILE_EVENT = 12;
     private static final int PARAM_BLUETOOTH_INTENT = 13;
+    private static final int PARAM_WIFI_INTENT = 14;
 
     private static final IntentFilter batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     private static final IntentFilter bluetoothIntentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -131,6 +133,7 @@ public class MetricService implements SensorEventListener {
 
         // User
         mPeriodArray.put(Metrics.BLUETOOTH_CATEGORY, 20000L);
+        mPeriodArray.put(Metrics.WIFI_CATEGORY, 5000L);
 
     }
 
@@ -374,6 +377,10 @@ public class MetricService implements SensorEventListener {
                 else if (intent.getAction().equals(BluetoothDevice.ACTION_FOUND)) {
                     params.put(PARAM_BLUETOOTH_INTENT, intent);
                     tempData = mDeviceArray.get(Metrics.BLUETOOTH_CATEGORY).getData(params);
+                }
+                else if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
+                    params.put(PARAM_WIFI_INTENT, intent);
+                    tempData = mDeviceArray.get(Metrics.WIFI_CATEGORY).getData(params);
                 }
                 if (tempData != null) {
                     dataList.addAll(tempData);

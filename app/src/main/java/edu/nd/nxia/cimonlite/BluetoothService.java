@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.SystemClock;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -43,7 +42,6 @@ public class BluetoothService extends MetricDevice<String> {
         groupId = Metrics.BLUETOOTH_CATEGORY;
         metricsCount = BLUETOOTH_METRICS;
         tempData = new ArrayList<>();
-
         values = new String[BLUETOOTH_METRICS];
     }
 

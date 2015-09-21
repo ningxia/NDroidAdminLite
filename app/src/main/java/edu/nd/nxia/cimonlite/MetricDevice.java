@@ -52,6 +52,7 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     protected static final int PARAM_FILE_OBSERVER = 11;
     protected static final int PARAM_FILE_EVENT = 12;
     protected static final int PARAM_BLUETOOTH_INTENT = 13;
+    protected static final int PARAM_WIFI_INTENT = 14;
 
     /**
      * Initialize device
@@ -190,9 +191,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
             case Metrics.BLUETOOTH_CATEGORY:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Bluetooth activity service");
                 return BluetoothService.getInstance();
-//            case Metrics.WIFI_NETWORK:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Wifi activity service");
-//                return WifiService.getInstance();
+            case Metrics.WIFI_CATEGORY:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Wifi activity service");
+                return WifiService.getInstance();
 //            case Metrics.SMSSENT:
 //            case Metrics.SMSRECEIVED:
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch SMS information service");
