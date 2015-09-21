@@ -13,6 +13,8 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -101,6 +103,7 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.CPULOAD_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.PROCESSOR_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.NETBYTES_CATEGORY, 1000L);
+        mPeriodArray.put(Metrics.NETSTATUS_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
 
         // Sensors
@@ -345,11 +348,15 @@ public class MetricService implements SensorEventListener {
                 SparseArray<Object> params = new SparseArray<>();
                 params.put(PARAM_INTENT, intent);
                 params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
+                List<DataEntry> tempData;
                 if (intent.getAction().equals(Intent.ACTION_BATTERY_CHANGED)) {
-                    List<DataEntry> tempData = mDeviceArray.get(Metrics.BATTERY_CATEGORY).getData(params);
-                    if (tempData != null) {
-                        dataList.addAll(tempData);
-                    }
+                    tempData = mDeviceArray.get(Metrics.BATTERY_CATEGORY).getData(params);
+                }
+                else {
+                    tempData = mDeviceArray.get(Metrics.NETSTATUS_CATEGORY).getData(params);
+                }
+                if (tempData != null) {
+                    dataList.addAll(tempData);
                 }
             }
         }
