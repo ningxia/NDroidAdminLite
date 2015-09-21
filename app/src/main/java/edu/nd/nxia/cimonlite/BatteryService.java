@@ -102,7 +102,7 @@ public final class BatteryService extends MetricDevice<Integer> {
 
     @Override
     void initDevice(long period) {
-        this.type = TYPE_RECEIVER;
+        this.type = TYPE_OTHER;
         this.period = period;
         this.timer = System.currentTimeMillis();
         this.batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
@@ -140,7 +140,7 @@ public final class BatteryService extends MetricDevice<Integer> {
 
     @Override
     List<DataEntry> getData(SparseArray<Object> params) {
-        Intent intent = (Intent) params.get(PARAM_INTENT);
+        Intent intent = (Intent) params.get(PARAM_BATTERY_INTENT);
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
         if (timestamp - timer < period - timeOffset) {
             return null;

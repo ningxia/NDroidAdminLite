@@ -162,35 +162,7 @@ public final class MemoryService extends MetricDevice<Integer> {
             return null;
         }
         setTimer(timestamp);
-        BufferedReader reader = null;
-//        if (DebugLog.DEBUG) Log.d(TAG, "MemoryService.getData - updating mem values");
-        try {
-            reader = new BufferedReader(new InputStreamReader(
-                    new FileInputStream(new File("/proc/meminfo"))), 1024);
-            String line;
-            int index = 0;
-            while ( (line = reader.readLine()) != null) {
-                if (line.startsWith(memTypes[index])) {
-                    values[ mapping[index++] ] = getMemValue(line);
-                    if (index == MEM_METRICS) {
-                        break;
-                    }
-                }
-            }
-        }
-        catch (Exception e) {
-            if (DebugLog.WARNING) Log.w(TAG, "MemoryService.fetchValues - read mem values failed!");
-        }
-        finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                }
-                catch (IOException ie) {
-                    if (DebugLog.WARNING) Log.w(TAG, "MemoryService.fetchValues - close reader failed!");
-                }
-            }
-        }
+        fetchValues();
         List<DataEntry> dataList = new ArrayList<>();
         for (int i = 0; i < MEM_METRICS; i ++) {
             dataList.add(new DataEntry(Metrics.MEMORY_CATEGORY + i, timestamp, values[i]));
@@ -240,7 +212,35 @@ public final class MemoryService extends MetricDevice<Integer> {
      * Obtain updated values related to memory usage from /proc/meminfo.
      */
     private void fetchValues() {
-
+        BufferedReader reader = null;
+//        if (DebugLog.DEBUG) Log.d(TAG, "MemoryService.getData - updating mem values");
+        try {
+            reader = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(new File("/proc/meminfo"))), 1024);
+            String line;
+            int index = 0;
+            while ( (line = reader.readLine()) != null) {
+                if (line.startsWith(memTypes[index])) {
+                    values[ mapping[index++] ] = getMemValue(line);
+                    if (index == MEM_METRICS) {
+                        break;
+                    }
+                }
+            }
+        }
+        catch (Exception e) {
+            if (DebugLog.WARNING) Log.w(TAG, "MemoryService.fetchValues - read mem values failed!");
+        }
+        finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                }
+                catch (IOException ie) {
+                    if (DebugLog.WARNING) Log.w(TAG, "MemoryService.fetchValues - close reader failed!");
+                }
+            }
+        }
     }
 
 }

@@ -1,5 +1,6 @@
 package edu.nd.nxia.cimonlite;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -74,15 +75,18 @@ public class MetricService implements SensorEventListener {
     private static final int PARAM_MODE = 4;
     private static final int PARAM_TIMESTAMP = 5;
     private static final int PARAM_SENSOR_EVENT = 6;
-    private static final int PARAM_INTENT = 7;
+    private static final int PARAM_BATTERY_INTENT = 7;
     private static final int PARAM_LOCATION_MANAGER = 8;
     private static final int PARAM_LOCATION_LISTENER = 9;
     private static final int PARAM_LOCATION = 10;
     private static final int PARAM_FILE_OBSERVER = 11;
     private static final int PARAM_FILE_EVENT = 12;
+    private static final int PARAM_BLUETOOTH_INTENT = 13;
 
     private static final IntentFilter batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+    private static final IntentFilter bluetoothIntentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
     private static Intent batteryStatus = null;
+    private static Intent bluetoothStatus = null;
 
 
     public MetricService(Context _context) {
@@ -124,6 +128,9 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.LIGHT, 1000L);
         mPeriodArray.put(Metrics.HUMIDITY, 1000L);
         mPeriodArray.put(Metrics.TEMPERATURE, 1000L);
+
+        // User
+        mPeriodArray.put(Metrics.BLUETOOTH_CATEGORY, 20000L);
 
     }
 
@@ -269,13 +276,14 @@ public class MetricService implements SensorEventListener {
 
         if (isActive) {
             long curTime = System.currentTimeMillis();
-            long upTime = SystemClock.uptimeMillis();
             SparseArray<Object> params = new SparseArray<>();
             params.put(PARAM_SENSOR_EVENT, event);
             params.put(PARAM_TIMESTAMP, curTime);
             params.put(PARAM_LOCATION, null);
             batteryStatus = context.registerReceiver(null, batteryIntentFilter);
-            params.put(PARAM_INTENT, batteryStatus);
+            bluetoothStatus = context.registerReceiver(null, bluetoothIntentFilter);
+            params.put(PARAM_BATTERY_INTENT, batteryStatus);
+            params.put(PARAM_BLUETOOTH_INTENT, bluetoothStatus);
             List<DataEntry> tempData = null;
             switch (sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
@@ -312,7 +320,7 @@ public class MetricService implements SensorEventListener {
                 tempData.clear();
             }
 
-            // Handle devices other than sensors.
+            // Handle other devices with periodic property, such as BatteryService
             int key;
             MetricDevice<?> metricDevice;
             for (int i = 0; i < mDeviceArray.size(); i ++) {
@@ -354,14 +362,18 @@ public class MetricService implements SensorEventListener {
         public void onReceive(Context context, Intent intent) {
             if (isActive) {
                 SparseArray<Object> params = new SparseArray<>();
-                params.put(PARAM_INTENT, intent);
                 params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
-                List<DataEntry> tempData;
+                List<DataEntry> tempData = null;
                 if (intent.getAction().equals(Intent.ACTION_BATTERY_CHANGED)) {
+                    params.put(PARAM_BATTERY_INTENT, intent);
                     tempData = mDeviceArray.get(Metrics.BATTERY_CATEGORY).getData(params);
                 }
-                else {
+                else if (intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
                     tempData = mDeviceArray.get(Metrics.NETSTATUS_CATEGORY).getData(params);
+                }
+                else if (intent.getAction().equals(BluetoothDevice.ACTION_FOUND)) {
+                    params.put(PARAM_BLUETOOTH_INTENT, intent);
+                    tempData = mDeviceArray.get(Metrics.BLUETOOTH_CATEGORY).getData(params);
                 }
                 if (tempData != null) {
                     dataList.addAll(tempData);
