@@ -151,7 +151,7 @@ public final class CpuUtilService extends MetricDevice<Long> {
         }
         setTimer(timestamp);
         BufferedReader reader = null;
-//        if (DebugLog.DEBUG) Log.d(TAG, "CpuUtilService.getProcInfo - updating proc values");
+//        if (DebugLog.DEBUG) Log.d(TAG, "CpuUtilService.getData - updating proc values");
         try {
             reader = new BufferedReader(new InputStreamReader(
                     new FileInputStream(new File("/proc/stat"))), 1024);

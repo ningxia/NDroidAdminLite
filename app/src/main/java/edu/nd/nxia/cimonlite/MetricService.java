@@ -97,9 +97,10 @@ public class MetricService implements SensorEventListener {
         // Hard coded sampling period for now, will get configurations from server.
 
         // System
-        mPeriodArray.put(Metrics.MEMORY_CATEGORY, 60000L);
-        mPeriodArray.put(Metrics.CPULOAD_CATEGORY, 60000L);
+        mPeriodArray.put(Metrics.MEMORY_CATEGORY, 1000L);
+        mPeriodArray.put(Metrics.CPULOAD_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.PROCESSOR_CATEGORY, 1000L);
+        mPeriodArray.put(Metrics.NETBYTES_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
 
         // Sensors
