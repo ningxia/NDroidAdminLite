@@ -49,7 +49,8 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     protected static final int PARAM_LOCATION_MANAGER = 8;
     protected static final int PARAM_LOCATION_LISTENER = 9;
     protected static final int PARAM_LOCATION = 10;
-
+    protected static final int PARAM_FILE_OBSERVER = 11;
+    protected static final int PARAM_FILE_EVENT = 12;
 
     /**
      * Initialize device
@@ -129,10 +130,7 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
             case Metrics.NETSTATUS_CATEGORY:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch net connected service");
                 return NetConnectedService.getInstance();
-//            case Metrics.SDCARD_READS:
-//            case Metrics.SDCARD_WRITES:
-//            case Metrics.SDCARD_CREATES:
-//            case Metrics.SDCARD_DELETES:
+//            case Metrics.SDCARD_CATEGORY:
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch sdcard file access service");
 //                return FileAccessService.getInstance();
 //            case Metrics.INSTRUCTION_CNT:

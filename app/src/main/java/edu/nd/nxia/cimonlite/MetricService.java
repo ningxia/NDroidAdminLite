@@ -17,6 +17,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.FileObserver;
 import android.os.SystemClock;
 import android.util.FloatMath;
 import android.util.Log;
@@ -76,6 +78,8 @@ public class MetricService implements SensorEventListener {
     private static final int PARAM_LOCATION_MANAGER = 8;
     private static final int PARAM_LOCATION_LISTENER = 9;
     private static final int PARAM_LOCATION = 10;
+    private static final int PARAM_FILE_OBSERVER = 11;
+    private static final int PARAM_FILE_EVENT = 12;
 
     private static final IntentFilter batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     private static Intent batteryStatus = null;
@@ -102,10 +106,11 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.MEMORY_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.CPULOAD_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.PROCESSOR_CATEGORY, 1000L);
+        mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
         mPeriodArray.put(Metrics.NETBYTES_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.NETSTATUS_CATEGORY, 1000L);
 //        mPeriodArray.put(Metrics.INSTRUCTION_CNT, 1000L);                 // Deprecated API level 23
-        mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
+//        mPeriodArray.put(Metrics.SDCARD_CATEGORY, 1000L);
 
         // Sensors
         mPeriodArray.put(Metrics.LOCATION_CATEGORY, 2000L);
@@ -130,6 +135,7 @@ public class MetricService implements SensorEventListener {
         parameters.put(PARAM_MODE, -1);
         parameters.put(PARAM_LOCATION_MANAGER, mLocationManager);
         parameters.put(PARAM_LOCATION_LISTENER, mLocationListener);
+        parameters.put(PARAM_FILE_OBSERVER, mAccessObserver);
     }
 
     public void initDevices() {
@@ -218,10 +224,11 @@ public class MetricService implements SensorEventListener {
 
     public String stopMonitoring() {
         if (DebugLog.DEBUG) Log.d(TAG, "MetricService.stopMonitoring - stopped");
+        endTime = System.currentTimeMillis();
         mSensorManager.unregisterListener(this);
         context.unregisterReceiver(mBroadcastReceiver);
         mLocationManager.removeUpdates(mLocationListener);
-        endTime = System.currentTimeMillis();
+        mAccessObserver.stopWatching();
         double offset = (endTime - startTime) / 1000.0;
         AccelerometerService accelerometerService = (AccelerometerService) mDeviceArray.get(Metrics.ACCELEROMETER);
         double rateAccelerometer = accelerometerService.getCount() / offset;
@@ -403,5 +410,34 @@ public class MetricService implements SensorEventListener {
             }
         }
     };
+
+    /**
+     * Extends file observer to handle file access events.
+     * Updates event counts in onEvent() handler.
+     *
+     * @author darts
+     *
+     */
+    public class AccessObserver extends FileObserver {
+
+        public AccessObserver(String path, int mask) {
+            super(path, mask);
+        }
+
+        @Override
+        public void onEvent(int event, String path) {
+            if (DebugLog.DEBUG) Log.d(TAG, "MetricService.AccessObserver.onEvent - access triggered");
+            SparseArray<Object> params = new SparseArray<>();
+            params.put(PARAM_FILE_EVENT, event);
+            params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
+            List<DataEntry> tempData = mDeviceArray.get(Metrics.SDCARD_CATEGORY).getData(params);
+            if (tempData != null) {
+                dataList.addAll(tempData);
+            }
+        }
+    }
+
+    private AccessObserver mAccessObserver = new AccessObserver(Environment.getExternalStorageDirectory().getPath(),
+            FileObserver.ACCESS | FileObserver.MODIFY | FileObserver.CREATE | FileObserver.DELETE);
 
 }
