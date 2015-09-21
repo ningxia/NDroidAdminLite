@@ -104,11 +104,12 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.PROCESSOR_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.NETBYTES_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.NETSTATUS_CATEGORY, 1000L);
+//        mPeriodArray.put(Metrics.INSTRUCTION_CNT, 1000L);                 // Deprecated API level 23
         mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
 
         // Sensors
         mPeriodArray.put(Metrics.LOCATION_CATEGORY, 2000L);
-        mPeriodArray.put(Metrics.ACCELEROMETER, 15L);
+        mPeriodArray.put(Metrics.ACCELEROMETER, 20L);
         mPeriodArray.put(Metrics.MAGNETOMETER, 100L);
         mPeriodArray.put(Metrics.GYROSCOPE, 20L);
         mPeriodArray.put(Metrics.LINEAR_ACCEL, 100L);

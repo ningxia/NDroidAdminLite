@@ -124,7 +124,7 @@ public final class NetConnectedService extends MetricDevice<Byte> {
         if (timestamp - timer < period - timeOffset) {
             return null;
         }
-        if (DebugLog.DEBUG) Log.d(TAG, "NetConnectedServcie.getData - updating connectivity values");
+//        if (DebugLog.DEBUG) Log.d(TAG, "NetConnectedServcie.getData - updating connectivity values");
         setTimer(timestamp);
         connectivityManager = (ConnectivityManager) MyApplication.getAppContext(
         ).getSystemService(Context.CONNECTIVITY_SERVICE);
