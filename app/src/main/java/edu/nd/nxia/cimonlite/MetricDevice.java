@@ -117,17 +117,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
             case Metrics.CPULOAD_CATEGORY:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch cpu service");
                 return CpuService.getInstance();
-//            case Metrics.PROC_TOTAL:
-//            case Metrics.PROC_USER:
-//            case Metrics.PROC_NICE:
-//            case Metrics.PROC_SYSTEM:
-//            case Metrics.PROC_IDLE:
-//            case Metrics.PROC_IOWAIT:
-//            case Metrics.PROC_IRQ:
-//            case Metrics.PROC_SOFTIRQ:
-//            case Metrics.PROC_CTXT:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch proc service");
-//                return CpuUtilService.getInstance();
+            case Metrics.PROCESSOR_CATEGORY:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch proc service");
+                return CpuUtilService.getInstance();
             case Metrics.BATTERY_CATEGORY:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch battery service");
                 return BatteryService.getInstance();
