@@ -33,7 +33,7 @@ public class BluetoothService extends MetricDevice<String> {
 
     private static BluetoothAdapter mBluetoothAdapter;
     private static IntentFilter mBluetoothIntentFilter;
-    private static List<BluetoothDevice> devices;
+    private static List<DataEntry> tempData;
 
     private BluetoothService() {
         if (DebugLog.DEBUG) Log.d(TAG, "BluetoothService - constructor");
@@ -42,7 +42,7 @@ public class BluetoothService extends MetricDevice<String> {
         }
         groupId = Metrics.BLUETOOTH_CATEGORY;
         metricsCount = BLUETOOTH_METRICS;
-        devices = new ArrayList<>();
+        tempData = new ArrayList<>();
 
         values = new String[BLUETOOTH_METRICS];
     }
@@ -85,7 +85,7 @@ public class BluetoothService extends MetricDevice<String> {
             Intent intent = (Intent) params.get(PARAM_BLUETOOTH_INTENT);
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             if (DebugLog.DEBUG) Log.d(TAG, "BluetoothService.getData - discovered Bluetooth device: " + device.getAddress());
-            devices.add(device);
+            tempData.add(new DataEntry(Metrics.BLUETOOTH_DEVICE, timestamp, device.getAddress()));
         }
         if (timestamp - timer < period) {
             return null;
@@ -95,9 +95,10 @@ public class BluetoothService extends MetricDevice<String> {
         setTimer(timestamp);
         mBluetoothAdapter.startDiscovery();
         List<DataEntry> dataList = new ArrayList<>();
-        for (int i = 0; i < devices.size(); i ++) {
-            dataList.add(new DataEntry(Metrics.BLUETOOTH_DEVICE, timestamp, devices.get(i).getAddress()));
+        for (int i = 0; i < tempData.size(); i ++) {
+            dataList.add(tempData.get(i));
         }
+        tempData.clear();
         return dataList;
     }
 

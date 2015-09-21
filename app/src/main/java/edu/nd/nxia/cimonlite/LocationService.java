@@ -66,6 +66,7 @@ public final class LocationService extends MetricDevice<Double> {
 	private LocationManager mLocationManager;
     private LocationListener mLocationListener;
     private List<String> mProviders;
+    private List<DataEntry> tempData;
     private long lastUpdate = 0;
 
 
@@ -77,6 +78,7 @@ public final class LocationService extends MetricDevice<Double> {
 		groupId = Metrics.LOCATION_CATEGORY;
 		metricsCount = ALL_METRICS;
 		values = new Double[LOCATION_METRICS];
+        tempData = new ArrayList<>();
 	}
 	
 	public static LocationService getInstance() {
@@ -148,27 +150,31 @@ public final class LocationService extends MetricDevice<Double> {
 
     @Override
     List<DataEntry> getData(SparseArray<Object> params) {
-        Location location = (Location) params.get(PARAM_LOCATION);
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
+        if (params.get(PARAM_LOCATION) != null) {
+            Location location = (Location) params.get(PARAM_LOCATION);
+            if ((timestamp - lastUpdate) >= FIVE_MINUTES) {
+                mCoordinate = getLastLocation();
+            }
+            Double values[] = new Double[LOCATION_METRICS];
+            values[0] = mCoordinate.getLatitude();
+            values[1] = mCoordinate.getLongitude();
+            values[2] = (double) mCoordinate.getAccuracy();
+            values[3] = (double) mCoordinate.getSpeed();
+            lastUpdate = timestamp;
+            for (int i = 0; i < LOCATION_METRICS; i++) {
+                tempData.add(new DataEntry(Metrics.LOCATION_CATEGORY + i, timestamp, values[i]));
+            }
+        }
         if (timestamp - timer < period - timeOffset) {
             return null;
         }
         setTimer(timestamp);
-        checkLocation(location);
-        if ((timestamp - lastUpdate) >= FIVE_MINUTES) {
-            mCoordinate = getLastLocation();
-        }
-        Double values[] = new Double[LOCATION_METRICS];
-        values[0] = mCoordinate.getLatitude();
-        values[1] = mCoordinate.getLongitude();
-        values[2] = (double) mCoordinate.getAccuracy();
-        values[3] = (double) mCoordinate.getSpeed();
-        lastUpdate = timestamp;
         List<DataEntry> dataList = new ArrayList<>();
-        for (int i = 0; i < LOCATION_METRICS; i++) {
-            dataList.add(new DataEntry(Metrics.LOCATION_CATEGORY + i, timestamp, values[i]));
-//            if (DebugLog.DEBUG) Log.d(TAG, "LocationService.getData " + metrics[i] + ": " + values[i]);
+        for (int i = 0; i < tempData.size(); i ++) {
+            dataList.add(tempData.get(i));
         }
+        tempData.clear();
         return dataList;
     }
 
