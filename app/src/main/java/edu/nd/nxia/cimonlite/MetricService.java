@@ -97,11 +97,13 @@ public class MetricService implements SensorEventListener {
         // Hard coded sampling period for now, will get configurations from server.
 
         // System
-        mPeriodArray.put(Metrics.MEMORY_CATEGORY, 1000L);
+        mPeriodArray.put(Metrics.MEMORY_CATEGORY, 60000L);
+        mPeriodArray.put(Metrics.CPULOAD_CATEGORY, 1000L);
+        mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
 
         // Sensors
         mPeriodArray.put(Metrics.LOCATION_CATEGORY, 2000L);
-        mPeriodArray.put(Metrics.ACCELEROMETER, 20L);
+        mPeriodArray.put(Metrics.ACCELEROMETER, 15L);
         mPeriodArray.put(Metrics.MAGNETOMETER, 100L);
         mPeriodArray.put(Metrics.GYROSCOPE, 20L);
         mPeriodArray.put(Metrics.LINEAR_ACCEL, 100L);
@@ -112,7 +114,6 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.HUMIDITY, 1000L);
         mPeriodArray.put(Metrics.TEMPERATURE, 1000L);
 
-        mPeriodArray.put(Metrics.BATTERY_CATEGORY, 60000L);
     }
 
     private void initParameters() {
@@ -355,12 +356,12 @@ public class MetricService implements SensorEventListener {
     private LocationListener mLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onLocationChanged - new location");
+//            if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onLocationChanged - new location");
             if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
-                if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onLocationChanged - from gps");
+//                if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onLocationChanged - from gps");
             }
             else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
-                if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onLocationChanged - from network");
+//                if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onLocationChanged - from network");
             }
             SparseArray<Object> params = new SparseArray<>();
             params.put(PARAM_LOCATION, location);
