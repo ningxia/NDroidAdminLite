@@ -53,6 +53,7 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     protected static final int PARAM_FILE_EVENT = 12;
     protected static final int PARAM_BLUETOOTH_INTENT = 13;
     protected static final int PARAM_WIFI_INTENT = 14;
+    protected static final int PARAM_SCREEN_INTENT = 15;
 
     /**
      * Initialize device
@@ -171,9 +172,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
             case Metrics.PROXIMITY:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch proximity service");
                 return ProximityService.getInstance();
-//            case Metrics.SCREEN_ON:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch screen state service");
-//                return ScreenService.getInstance();
+            case Metrics.SCREEN_ON:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch screen state service");
+                return ScreenService.getInstance();
 //            case Metrics.PHONESTATE:
 //            case Metrics.OUTGOINGCALLS:
 //            case Metrics.INCOMINGCALLS:

@@ -84,6 +84,7 @@ public class MetricService implements SensorEventListener {
     private static final int PARAM_FILE_EVENT = 12;
     private static final int PARAM_BLUETOOTH_INTENT = 13;
     private static final int PARAM_WIFI_INTENT = 14;
+    private static final int PARAM_SCREEN_INTENT = 15;
 
     private static final IntentFilter batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     private static final IntentFilter bluetoothIntentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -132,6 +133,7 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.TEMPERATURE, 1000L);
 
         // User
+        mPeriodArray.put(Metrics.SCREEN_ON, 5000L);
         mPeriodArray.put(Metrics.BLUETOOTH_CATEGORY, 20000L);
         mPeriodArray.put(Metrics.WIFI_CATEGORY, 5000L);
 
@@ -381,6 +383,10 @@ public class MetricService implements SensorEventListener {
                 else if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
                     params.put(PARAM_WIFI_INTENT, intent);
                     tempData = mDeviceArray.get(Metrics.WIFI_CATEGORY).getData(params);
+                }
+                else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON) || intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+                    params.put(PARAM_SCREEN_INTENT, intent);
+                    tempData = mDeviceArray.get(Metrics.SCREEN_ON).getData(params);
                 }
                 if (tempData != null) {
                     dataList.addAll(tempData);
