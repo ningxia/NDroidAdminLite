@@ -22,6 +22,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.FileObserver;
 import android.os.SystemClock;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.util.FloatMath;
 import android.util.Log;
 import android.util.SparseArray;
@@ -85,6 +87,8 @@ public class MetricService implements SensorEventListener {
     private static final int PARAM_BLUETOOTH_INTENT = 13;
     private static final int PARAM_WIFI_INTENT = 14;
     private static final int PARAM_SCREEN_INTENT = 15;
+    private static final int PARAM_PHONE_LISTENER = 16;
+    private static final int PARAM_PHONE_STATE = 17;
 
     private static final IntentFilter batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     private static final IntentFilter bluetoothIntentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -133,9 +137,10 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.TEMPERATURE, 1000L);
 
         // User
-        mPeriodArray.put(Metrics.SCREEN_ON, 5000L);
+        mPeriodArray.put(Metrics.SCREEN_ON, 180000L);
         mPeriodArray.put(Metrics.BLUETOOTH_CATEGORY, 20000L);
         mPeriodArray.put(Metrics.WIFI_CATEGORY, 5000L);
+        mPeriodArray.put(Metrics.PHONE_CALL_CATEGORY, 1000L);
 
     }
 
@@ -148,6 +153,7 @@ public class MetricService implements SensorEventListener {
         parameters.put(PARAM_LOCATION_MANAGER, mLocationManager);
         parameters.put(PARAM_LOCATION_LISTENER, mLocationListener);
         parameters.put(PARAM_FILE_OBSERVER, mAccessObserver);
+        parameters.put(PARAM_PHONE_LISTENER, mPhoneStateListener);
     }
 
     public void initDevices() {
@@ -464,5 +470,24 @@ public class MetricService implements SensorEventListener {
 
     private AccessObserver mAccessObserver = new AccessObserver(Environment.getExternalStorageDirectory().getPath(),
             FileObserver.ACCESS | FileObserver.MODIFY | FileObserver.CREATE | FileObserver.DELETE);
+
+
+    private class MyPhoneStateListener extends PhoneStateListener {
+
+        @Override
+        public void onCallStateChanged(int state, String incomingNumber) {
+            if (state == TelephonyManager.CALL_STATE_IDLE) {
+                SparseArray<Object> params = new SparseArray<>();
+                params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
+                params.put(PARAM_PHONE_STATE, state);
+                List<DataEntry> tempData = mDeviceArray.get(Metrics.PHONE_CALL_CATEGORY).getData(params);
+                if (tempData != null) {
+                    dataList.addAll(tempData);
+                }
+            }
+        }
+    }
+
+    private MyPhoneStateListener mPhoneStateListener = new MyPhoneStateListener();
 
 }

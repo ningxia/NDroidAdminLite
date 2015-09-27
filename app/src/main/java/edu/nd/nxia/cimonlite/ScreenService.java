@@ -79,7 +79,7 @@ public final class ScreenService extends MetricDevice<Byte> {
 
     @Override
     void initDevice(long period) {
-        this.type = TYPE_OTHER;
+        this.type = TYPE_RECEIVER;
         this.period = period;
         this.timer = System.currentTimeMillis();
     }

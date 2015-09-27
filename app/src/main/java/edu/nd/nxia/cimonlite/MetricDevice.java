@@ -54,6 +54,8 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     protected static final int PARAM_BLUETOOTH_INTENT = 13;
     protected static final int PARAM_WIFI_INTENT = 14;
     protected static final int PARAM_SCREEN_INTENT = 15;
+    protected static final int PARAM_PHONE_LISTENER = 16;
+    protected static final int PARAM_PHONE_STATE = 17;
 
     /**
      * Initialize device
