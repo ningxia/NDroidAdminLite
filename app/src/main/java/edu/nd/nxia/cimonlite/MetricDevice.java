@@ -181,20 +181,6 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
             case Metrics.SCREEN_ON:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch screen state service");
                 return ScreenService.getInstance();
-//            case Metrics.PHONESTATE:
-//            case Metrics.OUTGOINGCALLS:
-//            case Metrics.INCOMINGCALLS:
-//            case Metrics.MISSEDCALLS:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch telephony activity service");
-//                return PhoneStateService.getInstance();
-//            case Metrics.OUTGOINGSMS:
-//            case Metrics.INCOMINGSMS:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch sms activity service");
-//                return SMSService.getInstance();
-//            case Metrics.OUTGOINGMMS:
-//            case Metrics.INCOMINGMMS:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch mms activity service");
-//                return MMSService.getInstance();
             case Metrics.BLUETOOTH_CATEGORY:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Bluetooth activity service");
                 return BluetoothService.getInstance();
@@ -204,10 +190,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
             case Metrics.SMS_INFO_CATEGORY:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch SMS information service");
                 return SMSInfoService.getInstance();
-//            case Metrics.MMSSENT:
-//            case Metrics.MMSRECEIVED:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch MMS information service");
-//                return MMSInfoService.getInstance();
+            case Metrics.MMS_INFO_CATEGORY:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch MMS information service");
+                return MMSInfoService.getInstance();
             case Metrics.PHONE_CALL_CATEGORY:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Phone call service");
                 return PhoneCallService.getInstance();

@@ -152,6 +152,7 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.BLUETOOTH_CATEGORY, 20000L);
         mPeriodArray.put(Metrics.WIFI_CATEGORY, 5000L);
         mPeriodArray.put(Metrics.SMS_INFO_CATEGORY, 1000L);
+        mPeriodArray.put(Metrics.MMS_INFO_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.PHONE_CALL_CATEGORY, 1000L);
 
     }
@@ -167,6 +168,7 @@ public class MetricService implements SensorEventListener {
         parameters.put(PARAM_FILE_OBSERVER, mAccessObserver);
         parameters.put(PARAM_PHONE_LISTENER, mPhoneStateListener);
         parameters.put(PARAM_SMS_OBSERVER, mSmsContentObserver);
+        parameters.put(PARAM_MMS_OBSERVER, mMmsContentObserver);
     }
 
     public void initDevices() {
@@ -528,5 +530,31 @@ public class MetricService implements SensorEventListener {
         }
     }
     private SmsContentObserver mSmsContentObserver = new SmsContentObserver(null);
+
+
+    public class MmsContentObserver extends ContentObserver {
+
+        /**
+         * Creates a content observer.
+         *
+         * @param handler The handler to run {@link #onChange} on, or null if none.
+         */
+        public MmsContentObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            if (DebugLog.DEBUG) Log.d(TAG, "MetricService.SmsContentObserver: changed");
+            SparseArray<Object> params = new SparseArray<>();
+            params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
+            params.put(PARAM_MMS_STATE, selfChange);
+            List<DataEntry> tempData = mDeviceArray.get(Metrics.MMS_INFO_CATEGORY).getData(params);
+            if (tempData != null) {
+                dataList.addAll(tempData);
+            }
+        }
+    }
+    private SmsContentObserver mMmsContentObserver = new SmsContentObserver(null);
 
 }
