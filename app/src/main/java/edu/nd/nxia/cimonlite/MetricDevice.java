@@ -56,6 +56,10 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     protected static final int PARAM_SCREEN_INTENT = 15;
     protected static final int PARAM_PHONE_LISTENER = 16;
     protected static final int PARAM_PHONE_STATE = 17;
+    protected static final int PARAM_SMS_OBSERVER = 18;
+    protected static final int PARAM_SMS_STATE = 19;
+    protected static final int PARAM_MMS_OBSERVER = 20;
+    protected static final int PARAM_MMS_STATE = 21;
 
     /**
      * Initialize device
@@ -197,19 +201,16 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
             case Metrics.WIFI_CATEGORY:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Wifi activity service");
                 return WifiService.getInstance();
-//            case Metrics.SMSSENT:
-//            case Metrics.SMSRECEIVED:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch SMS information service");
-//                return SMSInfoService.getInstance();
+            case Metrics.SMS_INFO_CATEGORY:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch SMS information service");
+                return SMSInfoService.getInstance();
 //            case Metrics.MMSSENT:
 //            case Metrics.MMSRECEIVED:
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch MMS information service");
 //                return MMSInfoService.getInstance();
-//            case Metrics.PHONE_CALL_OUTGOING:
-//            case Metrics.PHONE_CALL_INCOMING:
-//            case Metrics.PHONE_CALL_MISSED:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Phone call service");
-//                return PhoneCallService.getInstance();
+            case Metrics.PHONE_CALL_CATEGORY:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Phone call service");
+                return PhoneCallService.getInstance();
 //            case Metrics.CALLSTATE:
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Call state service");
 //                return CallStateService.getInstance();

@@ -2,11 +2,13 @@ package edu.nd.nxia.cimonlite;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.ContentObserver;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -21,6 +23,7 @@ import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.FileObserver;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
@@ -56,6 +59,8 @@ public class MetricService implements SensorEventListener {
     private static final int BATCH_SIZE = 1000;
     private SensorManager mSensorManager;
     private LocationManager mLocationManager;
+    private TelephonyManager mTelephonyManager;
+    private ContentResolver mContentResolver;
 
     private long startTime;
     private long endTime;
@@ -89,6 +94,10 @@ public class MetricService implements SensorEventListener {
     private static final int PARAM_SCREEN_INTENT = 15;
     private static final int PARAM_PHONE_LISTENER = 16;
     private static final int PARAM_PHONE_STATE = 17;
+    private static final int PARAM_SMS_OBSERVER = 18;
+    private static final int PARAM_SMS_STATE = 19;
+    private static final int PARAM_MMS_OBSERVER = 20;
+    private static final int PARAM_MMS_STATE = 21;
 
     private static final IntentFilter batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     private static final IntentFilter bluetoothIntentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -107,6 +116,8 @@ public class MetricService implements SensorEventListener {
         appPrefs = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
         this.mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         this.mLocationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        this.mTelephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        this.mContentResolver = context.getContentResolver();
         initParameters();
     }
 
@@ -140,6 +151,7 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.SCREEN_ON, 180000L);
         mPeriodArray.put(Metrics.BLUETOOTH_CATEGORY, 20000L);
         mPeriodArray.put(Metrics.WIFI_CATEGORY, 5000L);
+        mPeriodArray.put(Metrics.SMS_INFO_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.PHONE_CALL_CATEGORY, 1000L);
 
     }
@@ -154,6 +166,7 @@ public class MetricService implements SensorEventListener {
         parameters.put(PARAM_LOCATION_LISTENER, mLocationListener);
         parameters.put(PARAM_FILE_OBSERVER, mAccessObserver);
         parameters.put(PARAM_PHONE_LISTENER, mPhoneStateListener);
+        parameters.put(PARAM_SMS_OBSERVER, mSmsContentObserver);
     }
 
     public void initDevices() {
@@ -247,6 +260,8 @@ public class MetricService implements SensorEventListener {
         context.unregisterReceiver(mBroadcastReceiver);
         mLocationManager.removeUpdates(mLocationListener);
         mAccessObserver.stopWatching();
+        mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
+        mContentResolver.unregisterContentObserver(mSmsContentObserver);
         double offset = (endTime - startTime) / 1000.0;
         AccelerometerService accelerometerService = (AccelerometerService) mDeviceArray.get(Metrics.ACCELEROMETER);
         double rateAccelerometer = accelerometerService.getCount() / offset;
@@ -467,7 +482,6 @@ public class MetricService implements SensorEventListener {
             }
         }
     }
-
     private AccessObserver mAccessObserver = new AccessObserver(Environment.getExternalStorageDirectory().getPath(),
             FileObserver.ACCESS | FileObserver.MODIFY | FileObserver.CREATE | FileObserver.DELETE);
 
@@ -487,7 +501,32 @@ public class MetricService implements SensorEventListener {
             }
         }
     }
-
     private MyPhoneStateListener mPhoneStateListener = new MyPhoneStateListener();
+
+
+    public class SmsContentObserver extends ContentObserver {
+
+        /**
+         * Creates a content observer.
+         *
+         * @param handler The handler to run {@link #onChange} on, or null if none.
+         */
+        public SmsContentObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            if (DebugLog.DEBUG) Log.d(TAG, "MetricService.SmsContentObserver: changed");
+            SparseArray<Object> params = new SparseArray<>();
+            params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
+            params.put(PARAM_SMS_STATE, selfChange);
+            List<DataEntry> tempData = mDeviceArray.get(Metrics.SMS_INFO_CATEGORY).getData(params);
+            if (tempData != null) {
+                dataList.addAll(tempData);
+            }
+        }
+    }
+    private SmsContentObserver mSmsContentObserver = new SmsContentObserver(null);
 
 }
