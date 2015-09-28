@@ -62,6 +62,7 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     protected static final int PARAM_MMS_STATE = 21;
     protected static final int PARAM_BROWSER_OBSERVER = 22;
     protected static final int PARAM_BROWSER_STATE = 23;
+    protected static final int PARAM_CALL_INTENT = 24;
 
     /**
      * Initialize device
@@ -198,9 +199,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
             case Metrics.PHONE_CALL_CATEGORY:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Phone call service");
                 return PhoneCallService.getInstance();
-//            case Metrics.CALLSTATE:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Call state service");
-//                return CallStateService.getInstance();
+            case Metrics.CALLSTATE_CATEGORY:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Call state service");
+                return CallStateService.getInstance();
             case Metrics.BROWSER_HISTORY_CATEGORY:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Browser history service");
                 return BrowserHistoryService.getInstance();

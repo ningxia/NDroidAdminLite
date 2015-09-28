@@ -16,6 +16,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -100,6 +101,7 @@ public class MetricService implements SensorEventListener {
     private static final int PARAM_MMS_STATE = 21;
     private static final int PARAM_BROWSER_OBSERVER = 22;
     private static final int PARAM_BROWSER_STATE = 23;
+    private static final int PARAM_CALL_INTENT = 24;
 
     private static final IntentFilter batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     private static final IntentFilter bluetoothIntentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -155,6 +157,7 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.WIFI_CATEGORY, 5000L);
         mPeriodArray.put(Metrics.APPLICATION_CATEGORY, 5000L);
         mPeriodArray.put(Metrics.BROWSER_HISTORY_CATEGORY, 24 * 360000L);
+        mPeriodArray.put(Metrics.CALLSTATE_CATEGORY, 10000L);
         mPeriodArray.put(Metrics.SMS_INFO_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.MMS_INFO_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.PHONE_CALL_CATEGORY, 1000L);
@@ -415,6 +418,10 @@ public class MetricService implements SensorEventListener {
                 else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON) || intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
                     params.put(PARAM_SCREEN_INTENT, intent);
                     tempData = mDeviceArray.get(Metrics.SCREEN_ON).getData(params);
+                }
+                else if (intent.getAction().equals(AudioManager.RINGER_MODE_CHANGED_ACTION)) {
+                    params.put(PARAM_CALL_INTENT, intent);
+                    tempData = mDeviceArray.get(Metrics.CALLSTATE_CATEGORY).getData(params);
                 }
                 if (tempData != null) {
                     dataList.addAll(tempData);
