@@ -93,7 +93,7 @@ public class CallStateService extends MetricDevice<String> {
     }
 
     private void fetchValues() {
-        if (DebugLog.DEBUG) Log.d(TAG, "CallStateService.fetchValues - updating Call State values");
+//        if (DebugLog.DEBUG) Log.d(TAG, "CallStateService.fetchValues - updating Call State values");
         switch (mAudioManager.getRingerMode()) {
             case AudioManager.RINGER_MODE_SILENT:
                 values[CALLSTATE] = "Silent";

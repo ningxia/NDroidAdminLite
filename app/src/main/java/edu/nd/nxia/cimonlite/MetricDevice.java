@@ -208,10 +208,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
             case Metrics.APPLICATION_CATEGORY:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Application service");
                 return ApplicationService.getInstance();
-//            case Metrics.CELL_CID:
-//            case Metrics.CELL_LAC:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Cell Location service");
-//                return CellLocationService.getInstance();
+            case Metrics.CELL_LOCATION_CATEGORY:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Cell Location service");
+                return CellLocationService.getInstance();
             default:
                 if (DebugLog.INFO) Log.i(TAG, "MetricDevice.getDevice - unrecognized group: " + groupId);
                 return null;
