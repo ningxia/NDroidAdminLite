@@ -204,9 +204,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
             case Metrics.BROWSER_HISTORY_CATEGORY:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Browser history service");
                 return BrowserHistoryService.getInstance();
-//            case Metrics.APPLICATION:
-//                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Application service");
-//                return ApplicationService.getInstance();
+            case Metrics.APPLICATION_CATEGORY:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Application service");
+                return ApplicationService.getInstance();
 //            case Metrics.CELL_CID:
 //            case Metrics.CELL_LAC:
 //                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Cell Location service");

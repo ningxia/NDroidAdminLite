@@ -153,6 +153,7 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.SCREEN_ON, 180000L);
         mPeriodArray.put(Metrics.BLUETOOTH_CATEGORY, 20000L);
         mPeriodArray.put(Metrics.WIFI_CATEGORY, 5000L);
+        mPeriodArray.put(Metrics.APPLICATION_CATEGORY, 5000L);
         mPeriodArray.put(Metrics.BROWSER_HISTORY_CATEGORY, 24 * 360000L);
         mPeriodArray.put(Metrics.SMS_INFO_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.MMS_INFO_CATEGORY, 1000L);
