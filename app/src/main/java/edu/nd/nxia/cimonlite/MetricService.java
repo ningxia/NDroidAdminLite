@@ -98,6 +98,8 @@ public class MetricService implements SensorEventListener {
     private static final int PARAM_SMS_STATE = 19;
     private static final int PARAM_MMS_OBSERVER = 20;
     private static final int PARAM_MMS_STATE = 21;
+    private static final int PARAM_BROWSER_OBSERVER = 22;
+    private static final int PARAM_BROWSER_STATE = 23;
 
     private static final IntentFilter batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     private static final IntentFilter bluetoothIntentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -151,6 +153,7 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.SCREEN_ON, 180000L);
         mPeriodArray.put(Metrics.BLUETOOTH_CATEGORY, 20000L);
         mPeriodArray.put(Metrics.WIFI_CATEGORY, 5000L);
+        mPeriodArray.put(Metrics.BROWSER_HISTORY_CATEGORY, 24 * 360000L);
         mPeriodArray.put(Metrics.SMS_INFO_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.MMS_INFO_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.PHONE_CALL_CATEGORY, 1000L);
@@ -169,6 +172,7 @@ public class MetricService implements SensorEventListener {
         parameters.put(PARAM_PHONE_LISTENER, mPhoneStateListener);
         parameters.put(PARAM_SMS_OBSERVER, mSmsContentObserver);
         parameters.put(PARAM_MMS_OBSERVER, mMmsContentObserver);
+        parameters.put(PARAM_BROWSER_OBSERVER, mBrowserContentObserver);
     }
 
     public void initDevices() {
@@ -422,12 +426,12 @@ public class MetricService implements SensorEventListener {
         @Override
         public void onLocationChanged(Location location) {
 //            if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onLocationChanged - new location");
-            if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
+//            if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
 //                if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onLocationChanged - from gps");
-            }
-            else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
+//            }
+//            else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
 //                if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onLocationChanged - from network");
-            }
+//            }
             SparseArray<Object> params = new SparseArray<>();
             params.put(PARAM_LOCATION, location);
             params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
@@ -555,6 +559,31 @@ public class MetricService implements SensorEventListener {
             }
         }
     }
-    private SmsContentObserver mMmsContentObserver = new SmsContentObserver(null);
+    private MmsContentObserver mMmsContentObserver = new MmsContentObserver(null);
+
+
+    /**
+     * Content observer to be notified of changes to SMS database tables.
+     * @author ningxia
+     */
+    private class BrowserContentObserver extends ContentObserver {
+
+        public BrowserContentObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            if (DebugLog.DEBUG) Log.d(TAG, "MetricService.BrowserContentObserver: changed");
+            SparseArray<Object> params = new SparseArray<>();
+            params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
+            params.put(PARAM_BROWSER_STATE, selfChange);
+            List<DataEntry> tempData = mDeviceArray.get(Metrics.BROWSER_HISTORY_CATEGORY).getData(params);
+            if (tempData != null) {
+                dataList.addAll(tempData);
+            }
+        }
+    }
+    private BrowserContentObserver mBrowserContentObserver = new BrowserContentObserver(null);
 
 }
