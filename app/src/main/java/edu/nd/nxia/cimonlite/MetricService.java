@@ -102,6 +102,8 @@ public class MetricService implements SensorEventListener {
     private static final int PARAM_BROWSER_OBSERVER = 22;
     private static final int PARAM_BROWSER_STATE = 23;
     private static final int PARAM_CALL_INTENT = 24;
+    private static final int PARAM_IMAGE_OBSERVER = 25;
+    private static final int PARAM_IMAGE_STATE = 26;
 
     private static final IntentFilter batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     private static final IntentFilter bluetoothIntentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -159,6 +161,7 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.BROWSER_HISTORY_CATEGORY, 24 * 360000L);
         mPeriodArray.put(Metrics.CALLSTATE_CATEGORY, 30000L);
         mPeriodArray.put(Metrics.CELL_LOCATION_CATEGORY, 10000L);
+        mPeriodArray.put(Metrics.MEDIA_IMAGE_CATEGORY, 10000L);
         mPeriodArray.put(Metrics.SMS_INFO_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.MMS_INFO_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.PHONE_CALL_CATEGORY, 1000L);
@@ -178,6 +181,7 @@ public class MetricService implements SensorEventListener {
         parameters.put(PARAM_SMS_OBSERVER, mSmsContentObserver);
         parameters.put(PARAM_MMS_OBSERVER, mMmsContentObserver);
         parameters.put(PARAM_BROWSER_OBSERVER, mBrowserContentObserver);
+        parameters.put(PARAM_IMAGE_OBSERVER, mImageContentObserver);
     }
 
     public void initDevices() {
@@ -594,5 +598,30 @@ public class MetricService implements SensorEventListener {
         }
     }
     private BrowserContentObserver mBrowserContentObserver = new BrowserContentObserver(null);
+
+
+    /**
+     * Content observer to be notified of changes to MediaStore Image database tables.
+     * @author ningxia
+     */
+    private class ImageContentObserver extends ContentObserver {
+
+        public ImageContentObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            if (DebugLog.DEBUG) Log.d(TAG, "MetricService.ImageContentObserver: changed");
+            SparseArray<Object> params = new SparseArray<>();
+            params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
+            params.put(PARAM_IMAGE_STATE, selfChange);
+            List<DataEntry> tempData = mDeviceArray.get(Metrics.MEDIA_IMAGE_CATEGORY).getData(params);
+            if (tempData != null) {
+                dataList.addAll(tempData);
+            }
+        }
+    }
+    private ImageContentObserver mImageContentObserver = new ImageContentObserver(null);
 
 }

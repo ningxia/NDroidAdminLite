@@ -724,7 +724,34 @@ public final class Metrics {
      */
     public static final int APPLICATION = 225;
 
-    public static final int MAX_METRIC = 230;
+    /** Category for MediaStore Image related metrics. */
+    public static final int MEDIA_IMAGE_CATEGORY = 230;
+    /**
+     * Image information
+     * Type: String <br>
+     * Units: none
+     */
+    public static final int MEDIA_IMAGE = 230;
+
+    /** Category for MediaStore Audio related metrics. */
+    public static final int MEDIA_AUDIO_CATEGORY = 235;
+    /**
+     * Audio information
+     * Type: String <br>
+     * Units: none
+     */
+    public static final int MEDIA_AUDIO = 235;
+
+    /** Category for MediaStore Video related metrics. */
+    public static final int MEDIA_VIDEO_CATEGORY = 240;
+    /**
+     * Video information
+     * Type: String <br>
+     * Units: none
+     */
+    public static final int MEDIA_VIDEO = 240;
+
+    public static final int MAX_METRIC = 245;
 //	public static final int CATEGORY_SIZE = 10;
 
     public static final int[] SYSTEM_METRICS = {MEMORY_CATEGORY,
@@ -752,14 +779,15 @@ public final class Metrics {
 
     public static final int[] USER_METRICS = {SCREEN_ON,
             TELEPHONY,
-            SMS_CATEGORY,
-            MMS_CATEGORY,
+            SMS_INFO_CATEGORY,
+            MMS_INFO_CATEGORY,
             BLUETOOTH_CATEGORY,
             WIFI_CATEGORY,
             CALLSTATE,
             BROWSER_HISTORY_CATEGORY,
             APPLICATION_CATEGORY,
-            CELL_LOCATION_CATEGORY
+            CELL_LOCATION_CATEGORY,
+            MEDIA_IMAGE_CATEGORY
     };
 
     /**

@@ -63,6 +63,8 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     protected static final int PARAM_BROWSER_OBSERVER = 22;
     protected static final int PARAM_BROWSER_STATE = 23;
     protected static final int PARAM_CALL_INTENT = 24;
+    protected static final int PARAM_IMAGE_OBSERVER = 25;
+    protected static final int PARAM_IMAGE_STATE = 26;
 
     /**
      * Initialize device
@@ -211,6 +213,9 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
             case Metrics.CELL_LOCATION_CATEGORY:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch Cell Location service");
                 return CellLocationService.getInstance();
+            case Metrics.MEDIA_IMAGE_CATEGORY:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch MediaStore Image service");
+                return MediaImageService.getInstance();
             default:
                 if (DebugLog.INFO) Log.i(TAG, "MetricDevice.getDevice - unrecognized group: " + groupId);
                 return null;
