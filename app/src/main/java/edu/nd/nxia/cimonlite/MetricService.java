@@ -491,7 +491,7 @@ public class MetricService implements SensorEventListener {
 
         if (isActive) {
             long timeStamp = System.currentTimeMillis();
-            Log.d(TAG,"Event timeStamp:" + Long.toString(timeStamp));
+//            Log.d(TAG,"Event timeStamp:" + Long.toString(timeStamp));
             switch (sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
                     getAccelData(event, timeStamp);
