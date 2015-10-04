@@ -148,11 +148,13 @@ public final class BrowserHistoryService extends MetricDevice<String> {
         long nextID = firstID;
         StringBuilder sb = new StringBuilder();
         String title;
+        String date;
         String url;
         while (nextID != prevID) {
             title = cur.getString(cur.getColumnIndexOrThrow(BROWSING_TITLE));
+            date = cur.getString(cur.getColumnIndexOrThrow(BROWSING_DATE));
             url = cur.getString(cur.getColumnIndexOrThrow(BROWSING_URL));
-            appendInfo(sb, title, url);
+            appendInfo(sb, title, date, url);
             tempData.add(new DataEntry(Metrics.BROWSING_HISTORY, timestamp, sb.toString()));
             if (DebugLog.DEBUG)
             if (!cur.moveToNext()) {
@@ -165,9 +167,13 @@ public final class BrowserHistoryService extends MetricDevice<String> {
         prevID  = firstID;
     }
 
-    private void appendInfo(StringBuilder sb, String title, String url) {
+    private void appendInfo(StringBuilder sb, String title, String date, String url) {
         title = title.replaceAll("\\|", "");
-        sb.append(title).append("+").append(url);
+        sb.append(title)
+                .append("+")
+                .append(date)
+                .append("+")
+                .append(url);
     }
 
 }

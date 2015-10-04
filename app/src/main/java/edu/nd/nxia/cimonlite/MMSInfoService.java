@@ -101,7 +101,7 @@ public final class MMSInfoService extends MetricDevice<String> {
     List<DataEntry> getData(SparseArray<Object> params) {
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
         if (params.get(PARAM_MMS_STATE) != null) {
-            updateMMSData();
+//            updateMMSData();
             getMMSData();
             for (int i = 0; i < MMS_METRICS; i ++) {
                 tempData.add(new DataEntry(Metrics.MMS_INFO_CATEGORY + i, timestamp, values[i]));
@@ -161,16 +161,19 @@ public final class MMSInfoService extends MetricDevice<String> {
         final int TYPE_COLUMN = cur.getColumnIndex(MMS_TYPE);
         StringBuilder sbReceived = new StringBuilder();
         StringBuilder sbSent = new StringBuilder();
+        String mmsAddress;
+        String mmsDate;
         while (nextID != prevMMSID) {
             int type = cur.getInt(TYPE_COLUMN);
-            String MMSAddress = cur.getString(cur.getColumnIndexOrThrow(MMS_ADDRESS));
-            String MMSDate = getDate(cur.getLong(cur.getColumnIndexOrThrow(MMS_DATE)), "hh:ss MM/dd/yyyy");
+            mmsAddress = cur.getString(cur.getColumnIndexOrThrow(MMS_ADDRESS));
+//            String MMSDate = getDate(cur.getLong(cur.getColumnIndexOrThrow(MMS_DATE)), "hh:ss MM/dd/yyyy");
+            mmsDate = cur.getString(cur.getColumnIndexOrThrow(MMS_DATE));
             switch (type) {
                 case MESSAGE_TYPE_INBOX:
-                    appendInfo(sbReceived, MMSAddress, MMSDate);
+                    appendInfo(sbReceived, mmsAddress, mmsDate);
                     break;
                 case MESSAGE_TYPE_SENT:
-                    appendInfo(sbSent, MMSAddress, MMSDate);
+                    appendInfo(sbSent, mmsAddress, mmsDate);
                     break;
                 default:
                     break;

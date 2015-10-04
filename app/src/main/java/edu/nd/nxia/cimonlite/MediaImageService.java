@@ -125,11 +125,11 @@ public final class MediaImageService extends MetricDevice<String> {
         long nextID = firstID;
         StringBuilder sb = new StringBuilder();
         String displayName;
-        String dateTaken;
+        long dateTaken;
         String size;
         while (nextID != prevSMSID) {
             displayName = cur.getString(cur.getColumnIndexOrThrow(DISPLAY_NAME));
-            dateTaken = getDate(cur.getLong(cur.getColumnIndexOrThrow(DATE_TAKEN)), "hh:ss MM/dd/yyyy");
+            dateTaken = cur.getLong(cur.getColumnIndexOrThrow(DATE_TAKEN));
             size = getSize(cur.getLong(cur.getColumnIndexOrThrow(SIZE)));
             appendInfo(sb, displayName, dateTaken, size);
             tempData.add(new DataEntry(Metrics.MEDIA_IMAGE, timestamp, sb.toString()));
@@ -144,17 +144,12 @@ public final class MediaImageService extends MetricDevice<String> {
         prevSMSID  = firstID;
     }
 
-    private void appendInfo(StringBuilder sb, String displayName, String dateTaken, String size) {
+    private void appendInfo(StringBuilder sb, String displayName, long dateTaken, String size) {
         sb.append(displayName)
                 .append("+")
                 .append(dateTaken)
                 .append("+")
                 .append(size);
-    }
-
-    private String getDate(long milliSeconds, String dateFormat) {
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat, Locale.US);
-        return formatter.format(milliSeconds);
     }
 
     private String getSize(Long bytes) {

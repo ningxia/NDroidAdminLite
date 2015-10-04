@@ -101,7 +101,7 @@ public final class SMSInfoService extends MetricDevice<String> {
     List<DataEntry> getData(SparseArray<Object> params) {
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
         if (params.get(PARAM_SMS_STATE) != null) {
-            updateSmsData();
+//            updateSmsData();
             getSmsData();
             for (int i = 0; i < SMS_METRICS; i ++) {
                 tempData.add(new DataEntry(Metrics.SMS_INFO_CATEGORY + i, timestamp, values[i]));
@@ -161,10 +161,13 @@ public final class SMSInfoService extends MetricDevice<String> {
         final int TYPE_COLUMN = cur.getColumnIndex(SMS_TYPE);
         StringBuilder sbReceived = new StringBuilder();
         StringBuilder sbSent = new StringBuilder();
+        String smsAddress;
+        String smsDate;
         while (nextID != prevSMSID) {
             int type = cur.getInt(TYPE_COLUMN);
-            String smsAddress = cur.getString(cur.getColumnIndexOrThrow(SMS_ADDRESS));
-            String smsDate = getDate(cur.getLong(cur.getColumnIndexOrThrow(SMS_DATE)), "hh:ss MM/dd/yyyy");
+            smsAddress = cur.getString(cur.getColumnIndexOrThrow(SMS_ADDRESS));
+//            String smsDate = getDate(cur.getLong(cur.getColumnIndexOrThrow(SMS_DATE)), "hh:ss MM/dd/yyyy");
+            smsDate = cur.getString(cur.getColumnIndexOrThrow(SMS_DATE));
             switch (type) {
                 case MESSAGE_TYPE_INBOX:
                     appendInfo(sbReceived, smsAddress, smsDate);

@@ -124,7 +124,7 @@ public final class PhoneCallService extends MetricDevice<String> {
     List<DataEntry> getData(SparseArray<Object> params) {
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
         if (params.get(PARAM_PHONE_STATE) != null) {
-            updateTelephonyData();
+//            updateTelephonyData();
             getTelephonyData();
             for (int i = 0; i < PHONE_METRICS; i ++) {
                 tempData.add(new DataEntry(Metrics.PHONE_CALL_CATEGORY + i, timestamp, values[i]));
@@ -216,8 +216,10 @@ public final class PhoneCallService extends MetricDevice<String> {
 
             String phoneNumber = cur.getString(cur.getColumnIndex(CallLog.Calls.CACHED_NAME)) == null ?
                     "Unknown Number" : cur.getString(NUMBER_COLUMN);
-            String startTime = getDate(cur.getLong(DATE_COLUMN), "hh:ss MM/dd/yyyy");
-            String endTime = getDate(cur.getLong(DATE_COLUMN) + cur.getLong(DURATION_COLUMN), "hh:ss MM/dd/yyyy");
+//            String startTime = getDate(cur.getLong(DATE_COLUMN), "hh:ss MM/dd/yyyy");
+            String startTime = cur.getString(DATE_COLUMN);
+//            String endTime = getDate(cur.getLong(DATE_COLUMN) + cur.getLong(DURATION_COLUMN), "hh:ss MM/dd/yyyy");
+            long endTime = cur.getLong(DATE_COLUMN) + cur.getLong(DURATION_COLUMN);
 
             int type = cur.getInt(TYPE_COLUMN);
 
@@ -259,7 +261,7 @@ public final class PhoneCallService extends MetricDevice<String> {
         return formatter.format(milliSeconds);
     }
 
-    private void appendCalls(StringBuilder sb, String phoneNumber, String startTime, String endTime) {
+    private void appendCalls(StringBuilder sb, String phoneNumber, String startTime, long endTime) {
         sb.append(phoneNumber)
                 .append("+")
                 .append(startTime)

@@ -78,9 +78,9 @@ public class CellLocationService extends MetricDevice<Integer> {
         if (timestamp - timer < period) {
             return null;
         }
+        setTimer(timestamp);
         fetchValues();
         if (DebugLog.DEBUG) Log.d(TAG, "CellLocationService.getData - updating values");
-        setTimer(timestamp);
         List<DataEntry> dataList = new ArrayList<>();
         for (int i = 0; i < CELL_METRICS; i ++) {
             dataList.add(new DataEntry(Metrics.CELL_LOCATION_CATEGORY + i, timestamp, values[i]));
