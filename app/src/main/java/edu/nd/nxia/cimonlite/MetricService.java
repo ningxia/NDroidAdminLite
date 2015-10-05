@@ -104,6 +104,10 @@ public class MetricService implements SensorEventListener {
     private static final int PARAM_CALL_INTENT = 24;
     private static final int PARAM_IMAGE_OBSERVER = 25;
     private static final int PARAM_IMAGE_STATE = 26;
+    private static final int PARAM_AUDIO_OBSERVER = 27;
+    private static final int PARAM_AUDIO_STATE = 28;
+    private static final int PARAM_VIDEO_OBSERVER = 29;
+    private static final int PARAM_VIDEO_STATE = 30;
 
     private static final IntentFilter batteryIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     private static final IntentFilter bluetoothIntentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -142,9 +146,9 @@ public class MetricService implements SensorEventListener {
 
         // Sensors
         mPeriodArray.put(Metrics.LOCATION_CATEGORY, 2000L);
-        mPeriodArray.put(Metrics.ACCELEROMETER, 20L);
+        mPeriodArray.put(Metrics.ACCELEROMETER, 5L);
         mPeriodArray.put(Metrics.MAGNETOMETER, 100L);
-        mPeriodArray.put(Metrics.GYROSCOPE, 20L);
+        mPeriodArray.put(Metrics.GYROSCOPE, 5L);
         mPeriodArray.put(Metrics.LINEAR_ACCEL, 100L);
         mPeriodArray.put(Metrics.ORIENTATION, 100L);
         mPeriodArray.put(Metrics.PROXIMITY, 1000L);
@@ -162,6 +166,8 @@ public class MetricService implements SensorEventListener {
         mPeriodArray.put(Metrics.CALLSTATE_CATEGORY, 30000L);
         mPeriodArray.put(Metrics.CELL_LOCATION_CATEGORY, 10000L);
         mPeriodArray.put(Metrics.MEDIA_IMAGE_CATEGORY, 10000L);
+        mPeriodArray.put(Metrics.MEDIA_AUDIO_CATEGORY, 10000L);
+        mPeriodArray.put(Metrics.MEDIA_VIDEO_CATEGORY, 10000L);
         mPeriodArray.put(Metrics.SMS_INFO_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.MMS_INFO_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.PHONE_CALL_CATEGORY, 1000L);
@@ -182,6 +188,8 @@ public class MetricService implements SensorEventListener {
         parameters.put(PARAM_MMS_OBSERVER, mMmsContentObserver);
         parameters.put(PARAM_BROWSER_OBSERVER, mBrowserContentObserver);
         parameters.put(PARAM_IMAGE_OBSERVER, mImageContentObserver);
+        parameters.put(PARAM_AUDIO_OBSERVER, mAudioContentObserver);
+        parameters.put(PARAM_VIDEO_OBSERVER, mVideoContentObserver);
     }
 
     public void initDevices() {
@@ -230,6 +238,8 @@ public class MetricService implements SensorEventListener {
     }
 
     private void registerDevices(int mode) {
+        parameters.clear();
+        initParameters();
         parameters.put(PARAM_MODE, mode);
         int key;
         for (int i = 0; i < mDeviceArray.size(); i ++) {
@@ -623,5 +633,54 @@ public class MetricService implements SensorEventListener {
         }
     }
     private ImageContentObserver mImageContentObserver = new ImageContentObserver(null);
+
+    /**
+     * Content observer to be notified of changes to MediaStore Image database tables.
+     * @author ningxia
+     */
+    private class AudioContentObserver extends ContentObserver {
+
+        public AudioContentObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            if (DebugLog.DEBUG) Log.d(TAG, "MetricService.AudioContentObserver: changed");
+            SparseArray<Object> params = new SparseArray<>();
+            params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
+            params.put(PARAM_AUDIO_STATE, selfChange);
+            List<DataEntry> tempData = mDeviceArray.get(Metrics.MEDIA_AUDIO_CATEGORY).getData(params);
+            if (tempData != null) {
+                dataList.addAll(tempData);
+            }
+        }
+    }
+    private AudioContentObserver mAudioContentObserver = new AudioContentObserver(null);
+
+
+    /**
+     * Content observer to be notified of changes to MediaStore Image database tables.
+     * @author ningxia
+     */
+    private class VideoContentObserver extends ContentObserver {
+
+        public VideoContentObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            if (DebugLog.DEBUG) Log.d(TAG, "MetricService.VideoContentObserver: changed");
+            SparseArray<Object> params = new SparseArray<>();
+            params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
+            params.put(PARAM_VIDEO_STATE, selfChange);
+            List<DataEntry> tempData = mDeviceArray.get(Metrics.MEDIA_VIDEO_CATEGORY).getData(params);
+            if (tempData != null) {
+                dataList.addAll(tempData);
+            }
+        }
+    }
+    private VideoContentObserver mVideoContentObserver = new VideoContentObserver(null);
 
 }

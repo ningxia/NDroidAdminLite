@@ -18,49 +18,50 @@ import java.util.Locale;
 import edu.nd.nxia.cimonlite.database.CimonDatabaseAdapter;
 
 /**
- * MediaStore Image service
+ * MediaStore Video service
  * @author ningxia
  */
-public final class MediaImageService extends MetricDevice<String> {
+public final class MediaVideoService extends MetricDevice<String> {
 
     private static final String TAG = "NDroid";
-    private static final int IMAGE_METRICS = 1;
+    private static final int VIDEO_METRICS = 1;
     private static final long THIRTY_SECONDS = 30000;
 
-    private static final String title = "MediaStore Image activity";
-    private static final String[] metrics = {"Image Taken"};
-    private static final int MEDIA_IMAGE = Metrics.MEDIA_IMAGE - Metrics.MEDIA_IMAGE_CATEGORY;
-    private static final MediaImageService INSTANCE = new MediaImageService();
+    private static final String title = "MediaStore Video activity";
+    private static final String[] metrics = {"Video Added"};
+    private static final int MEDIA_VIDEO = Metrics.MEDIA_VIDEO - Metrics.MEDIA_VIDEO_CATEGORY;
+    private static final MediaVideoService INSTANCE = new MediaVideoService();
     private static String description;
 
-    public static final String DISPLAY_NAME = MediaStore.Images.ImageColumns.DISPLAY_NAME;
-    public static final String DATE_TAKEN = MediaStore.Images.ImageColumns.DATE_TAKEN;
-    public static final String SIZE = MediaStore.Images.ImageColumns.SIZE;
+    public static final String DISPLAY_NAME = MediaStore.Video.VideoColumns.DISPLAY_NAME;
+    public static final String DATE_TAKEN = MediaStore.Video.VideoColumns.DATE_TAKEN;
+    public static final String DURATION = MediaStore.Video.VideoColumns.DURATION;
+    public static final String SIZE = MediaStore.Video.VideoColumns.SIZE;
 
-    private static final Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-    private static final String[] image_projection = new String[]{BaseColumns._ID,
+    private static final Uri uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+    private static final String[] projection = new String[]{BaseColumns._ID,
             DISPLAY_NAME, DATE_TAKEN, SIZE};
 
     private static final String SORT_ORDER = BaseColumns._ID + " DESC";
-    private long prevSMSID  = -1;
+    private long prevID  = -1;
 
-    private ContentObserver imageObserver = null;
-    private ContentResolver imageResolver;
+    private ContentObserver observer = null;
+    private ContentResolver resolver;
     private List<DataEntry> tempData;
 
-    private MediaImageService() {
-        if (DebugLog.DEBUG) Log.d(TAG, "MediaImageService - constructor");
+    private MediaVideoService() {
+        if (DebugLog.DEBUG) Log.d(TAG, "MediaVideoService - constructor");
         if (INSTANCE != null) {
-            throw new IllegalStateException("MediaImageService already instantiated");
+            throw new IllegalStateException("MediaVideoService already instantiated");
         }
-        groupId = Metrics.MEDIA_IMAGE_CATEGORY;
-        metricsCount = IMAGE_METRICS;
-        values = new String[IMAGE_METRICS];
+        groupId = Metrics.MEDIA_VIDEO_CATEGORY;
+        metricsCount = VIDEO_METRICS;
+        values = new String[VIDEO_METRICS];
         tempData = new ArrayList<>();
     }
 
-    public static MediaImageService getInstance() {
-        if (DebugLog.DEBUG) Log.d(TAG, "MediaImageService.getInstance - get single instance");
+    public static MediaVideoService getInstance() {
+        if (DebugLog.DEBUG) Log.d(TAG, "MediaVideoService.getInstance - get single instance");
         if (!INSTANCE.supportedMetric) return null;
         return INSTANCE;
     }
@@ -70,7 +71,7 @@ public final class MediaImageService extends MetricDevice<String> {
         this.type = TYPE_RECEIVER;
         this.period = period;
         this.timer = System.currentTimeMillis();
-        imageResolver = MyApplication.getAppContext().getContentResolver();
+        resolver = MyApplication.getAppContext().getContentResolver();
     }
 
     @Override
@@ -83,28 +84,28 @@ public final class MediaImageService extends MetricDevice<String> {
         database.insertOrReplaceMetricInfo(groupId, title, description,
                 SUPPORTED, 0, 0, String.valueOf(Integer.MAX_VALUE), "1", Metrics.TYPE_USER);
         // insert information for metrics in group into database
-        for (int i = 0; i < IMAGE_METRICS; i ++) {
+        for (int i = 0; i < VIDEO_METRICS; i ++) {
             database.insertOrReplaceMetrics(groupId + i, groupId, metrics[i], "", 1000);
         }
     }
 
     @Override
     void registerDevice(SparseArray<Object> params) {
-        imageObserver = (ContentObserver) params.get(PARAM_IMAGE_OBSERVER);
-        imageResolver.registerContentObserver(uri, true, imageObserver);
+        observer = (ContentObserver) params.get(PARAM_VIDEO_OBSERVER);
+        resolver.registerContentObserver(uri, true, observer);
     }
 
     @Override
     List<DataEntry> getData(SparseArray<Object> params) {
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
-        if (params.get(PARAM_IMAGE_STATE) != null) {
-            getImageData(timestamp);
+        if (params.get(PARAM_VIDEO_STATE) != null) {
+            getVideoData(timestamp);
         }
         if (timestamp - timer < period - timeOffset) {
             return null;
         }
         setTimer(timestamp);
-        if (DebugLog.DEBUG) Log.d(TAG, "MediaImageService.getData - data updated");
+        if (DebugLog.DEBUG) Log.d(TAG, "MediaVideoService.getData - data updated");
         List<DataEntry> dataList = new ArrayList<>();
         for (int i = 0; i < tempData.size(); i ++) {
             dataList.add(tempData.get(i));
@@ -113,11 +114,11 @@ public final class MediaImageService extends MetricDevice<String> {
         return dataList;
     }
 
-    private void getImageData(long timestamp) {
-        Cursor cur = imageResolver.query(uri, image_projection, null, null, SORT_ORDER);
+    private void getVideoData(long timestamp) {
+        Cursor cur = resolver.query(uri, projection, null, null, SORT_ORDER);
         if (!cur.moveToFirst()) {
             cur.close();
-            if (DebugLog.DEBUG) Log.d(TAG, "MediaImageService.getImageData - cursor empty?");
+            if (DebugLog.DEBUG) Log.d(TAG, "MediaVideoService.getVideoData - cursor empty?");
             return;
         }
 
@@ -127,13 +128,14 @@ public final class MediaImageService extends MetricDevice<String> {
         String displayName;
         long dateTaken;
         String size;
-        while (nextID != prevSMSID) {
+        while (nextID != prevID) {
             displayName = cur.getString(cur.getColumnIndexOrThrow(DISPLAY_NAME));
             dateTaken = cur.getLong(cur.getColumnIndexOrThrow(DATE_TAKEN));
             size = getSize(cur.getLong(cur.getColumnIndexOrThrow(SIZE)));
             appendInfo(sb, displayName, dateTaken, size);
-            tempData.add(new DataEntry(Metrics.MEDIA_IMAGE, timestamp, sb.toString()));
-            if (DebugLog.DEBUG) Log.d(TAG, "MediaImageService.getImageData - " + sb.toString());
+            Log.d(TAG, "MediaVideoService.getVideoData - dateTaken: " + dateTaken);
+            tempData.add(new DataEntry(Metrics.MEDIA_VIDEO, timestamp, sb.toString()));
+            if (DebugLog.DEBUG) Log.d(TAG, "MediaVideoService.getVideoData - " + sb.toString());
             if (!cur.moveToNext()) {
                 break;
             }
@@ -141,7 +143,7 @@ public final class MediaImageService extends MetricDevice<String> {
             nextID = cur.getLong(cur.getColumnIndex(BaseColumns._ID));
         }
         cur.close();
-        prevSMSID  = firstID;
+        prevID  = firstID;
     }
 
     private void appendInfo(StringBuilder sb, String displayName, long dateTaken, String size) {

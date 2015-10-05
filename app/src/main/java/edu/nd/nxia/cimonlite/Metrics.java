@@ -787,7 +787,9 @@ public final class Metrics {
             BROWSER_HISTORY_CATEGORY,
             APPLICATION_CATEGORY,
             CELL_LOCATION_CATEGORY,
-            MEDIA_IMAGE_CATEGORY
+            MEDIA_IMAGE_CATEGORY,
+            MEDIA_AUDIO_CATEGORY,
+            MEDIA_VIDEO_CATEGORY
     };
 
     /**

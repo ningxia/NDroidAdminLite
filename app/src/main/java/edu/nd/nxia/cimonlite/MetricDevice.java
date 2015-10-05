@@ -65,6 +65,10 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     protected static final int PARAM_CALL_INTENT = 24;
     protected static final int PARAM_IMAGE_OBSERVER = 25;
     protected static final int PARAM_IMAGE_STATE = 26;
+    protected static final int PARAM_AUDIO_OBSERVER = 27;
+    protected static final int PARAM_AUDIO_STATE = 28;
+    protected static final int PARAM_VIDEO_OBSERVER = 29;
+    protected static final int PARAM_VIDEO_STATE = 30;
 
     /**
      * Initialize device
@@ -216,6 +220,12 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
             case Metrics.MEDIA_IMAGE_CATEGORY:
                 if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch MediaStore Image service");
                 return MediaImageService.getInstance();
+            case Metrics.MEDIA_AUDIO:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch MediaStore Audio service");
+                return MediaAudioService.getInstance();
+            case Metrics.MEDIA_VIDEO_CATEGORY:
+                if (DebugLog.DEBUG) Log.d(TAG, "MetricDevice.getDevice - fetch MediaStore Video service");
+                return MediaVideoService.getInstance();
             default:
                 if (DebugLog.INFO) Log.i(TAG, "MetricDevice.getDevice - unrecognized group: " + groupId);
                 return null;
