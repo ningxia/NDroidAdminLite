@@ -101,11 +101,7 @@ public final class MMSInfoService extends MetricDevice<String> {
     List<DataEntry> getData(SparseArray<Object> params) {
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
         if (params.get(PARAM_MMS_STATE) != null) {
-//            updateMMSData();
             getMMSData();
-            for (int i = 0; i < MMS_METRICS; i ++) {
-                tempData.add(new DataEntry(Metrics.MMS_INFO_CATEGORY + i, timestamp, values[i]));
-            }
         }
         if (timestamp - timer < period - timeOffset) {
             return null;
@@ -161,31 +157,31 @@ public final class MMSInfoService extends MetricDevice<String> {
         final int TYPE_COLUMN = cur.getColumnIndex(MMS_TYPE);
         StringBuilder sbReceived = new StringBuilder();
         StringBuilder sbSent = new StringBuilder();
+        int type;
         String mmsAddress;
-        String mmsDate;
+        long mmsDate;
         while (nextID != prevMMSID) {
-            int type = cur.getInt(TYPE_COLUMN);
+            type = cur.getInt(TYPE_COLUMN);
             mmsAddress = cur.getString(cur.getColumnIndexOrThrow(MMS_ADDRESS));
-//            String MMSDate = getDate(cur.getLong(cur.getColumnIndexOrThrow(MMS_DATE)), "hh:ss MM/dd/yyyy");
-            mmsDate = cur.getString(cur.getColumnIndexOrThrow(MMS_DATE));
+            mmsDate = cur.getLong(cur.getColumnIndexOrThrow(MMS_DATE));
             switch (type) {
                 case MESSAGE_TYPE_INBOX:
                     appendInfo(sbReceived, mmsAddress, mmsDate);
+                    tempData.add(new DataEntry(Metrics.MMSRECEIVED, mmsDate, sbReceived.toString()));
+//                    if (DebugLog.DEBUG) Log.d(TAG, "MMSInfoService.getSmsData - received: " + sbReceived.toString());
+                    sbReceived.setLength(0);
                     break;
                 case MESSAGE_TYPE_SENT:
                     appendInfo(sbSent, mmsAddress, mmsDate);
+                    tempData.add(new DataEntry(Metrics.MMSSENT, mmsDate, sbReceived.toString()));
+//                    if (DebugLog.DEBUG) Log.d(TAG, "MMSInfoService.getSmsData - received: " + sbReceived.toString());
+                    sbReceived.setLength(0);
                     break;
                 default:
                     break;
             }
 
-            if (DebugLog.DEBUG) Log.d(TAG, "MMSInfoService.getMMSData - type: " + type);
-
             if (!cur.moveToNext()) {
-                values[MMS_RECEIVED] = sbReceived.substring(0, sbReceived.length() - 1);
-                if (DebugLog.DEBUG) Log.d(TAG, "MMSInfoService.updateMMSData - received: " + values[MMS_RECEIVED]);
-                values[MMS_SENT] = sbSent.substring(0, sbSent.length() - 1);
-                if (DebugLog.DEBUG) Log.d(TAG, "MMSInfoService.updateMMSData - sent: " + values[MMS_SENT]);
                 break;
             }
 
@@ -196,16 +192,10 @@ public final class MMSInfoService extends MetricDevice<String> {
         prevMMSID  = firstID;
     }
 
-    private void appendInfo(StringBuilder sb, String MMSAddress, String MMSDate) {
-        sb.append(MMSAddress)
+    private void appendInfo(StringBuilder sb, String mmsAddress, long mmsDate) {
+        sb.append(mmsAddress)
                 .append("+")
-                .append(MMSDate)
-                .append("|");
-    }
-
-    private String getDate(long milliSeconds, String dateFormat) {
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat, Locale.US);
-        return formatter.format(milliSeconds);
+                .append(mmsDate);
     }
 
 }
