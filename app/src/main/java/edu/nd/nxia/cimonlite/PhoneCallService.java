@@ -44,8 +44,13 @@ public final class PhoneCallService extends MetricDevice<String> {
     private static int PHONE_STATE =	0;
 
     private static final Uri phone_uri = CallLog.Calls.CONTENT_URI;
-    private static final String[] phone_projection = new String[]{CallLog.Calls._ID,
-            CallLog.Calls.DATE, CallLog.Calls.TYPE, CallLog.Calls.NUMBER};	//CallLog.Calls.NUMBER
+    private static final String[] phone_projection = new String[] {
+            CallLog.Calls._ID,
+            CallLog.Calls.NUMBER,
+            CallLog.Calls.TYPE,
+            CallLog.Calls.DATE,
+            CallLog.Calls.DURATION
+    };
 
     TelephonyManager telephonyManager;
     private static final String SORTORDER = CallLog.Calls._ID + " DESC";
@@ -124,11 +129,7 @@ public final class PhoneCallService extends MetricDevice<String> {
     List<DataEntry> getData(SparseArray<Object> params) {
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
         if (params.get(PARAM_PHONE_STATE) != null) {
-//            updateTelephonyData();
             getTelephonyData();
-            for (int i = 0; i < PHONE_METRICS; i ++) {
-                tempData.add(new DataEntry(Metrics.PHONE_CALL_CATEGORY + i, timestamp, values[i]));
-            }
         }
         if (timestamp - timer < period - timeOffset) {
             return null;
@@ -203,49 +204,47 @@ public final class PhoneCallService extends MetricDevice<String> {
             return;
         }
 
+        final int NUMBER_COLUMN = cur.getColumnIndex(CallLog.Calls.NUMBER);
+        final int DATE_COLUMN = cur.getColumnIndex(CallLog.Calls.DATE);
+        final int DURATION_COLUMN = cur.getColumnIndex(CallLog.Calls.DURATION);
+        final int TYPE_COLUMN = cur.getColumnIndex(CallLog.Calls.TYPE);
+
         long firstID = cur.getLong(cur.getColumnIndex(CallLog.Calls._ID));
         long nextID = firstID;
         StringBuilder sbIncoming = new StringBuilder();
         StringBuilder sbOutgoing = new StringBuilder();
         StringBuilder sbMissed = new StringBuilder();
         while (nextID != prevPhoneID) {
-            final int NUMBER_COLUMN = cur.getColumnIndex(CallLog.Calls.NUMBER);
-            final int DATE_COLUMN = cur.getColumnIndex(CallLog.Calls.DATE);
-            final int DURATION_COLUMN = cur.getColumnIndex(CallLog.Calls.DURATION);
-            final int TYPE_COLUMN = cur.getColumnIndex(CallLog.Calls.TYPE);
-
-            String phoneNumber = cur.getString(cur.getColumnIndex(CallLog.Calls.CACHED_NAME)) == null ?
-                    "Unknown Number" : cur.getString(NUMBER_COLUMN);
-//            String startTime = getDate(cur.getLong(DATE_COLUMN), "hh:ss MM/dd/yyyy");
-            String startTime = cur.getString(DATE_COLUMN);
-//            String endTime = getDate(cur.getLong(DATE_COLUMN) + cur.getLong(DURATION_COLUMN), "hh:ss MM/dd/yyyy");
-            long endTime = cur.getLong(DATE_COLUMN) + cur.getLong(DURATION_COLUMN);
+            String phoneNumber = cur.getString(NUMBER_COLUMN);
+            long startTime = cur.getLong(DATE_COLUMN);
+            long endTime = startTime + cur.getLong(DURATION_COLUMN) * 1000;
 
             int type = cur.getInt(TYPE_COLUMN);
 
             switch (type) {
                 case CallLog.Calls.OUTGOING_TYPE:
                     appendCalls(sbOutgoing, phoneNumber, startTime, endTime);
+                    tempData.add(new DataEntry(Metrics.PHONE_CALL_OUTGOING, startTime, sbOutgoing.toString()));
+//                    if (DebugLog.DEBUG) Log.d(TAG, "PhoneCallService.getTelephonyData - incoming: " + sbOutgoing.toString());
+                    sbOutgoing.setLength(0);
                     break;
                 case CallLog.Calls.INCOMING_TYPE:
                     appendCalls(sbIncoming, phoneNumber, startTime, endTime);
+                    tempData.add(new DataEntry(Metrics.PHONE_CALL_INCOMING, startTime, sbIncoming.toString()));
+//                    if (DebugLog.DEBUG) Log.d(TAG, "PhoneCallService.getTelephonyData - outgoing: " + sbIncoming.toString());
+                    sbIncoming.setLength(0);
                     break;
                 case CallLog.Calls.MISSED_TYPE:
                     appendCalls(sbMissed, phoneNumber, startTime, endTime);
+                    tempData.add(new DataEntry(Metrics.PHONE_CALL_MISSED, startTime, sbMissed.toString()));
+//                    if (DebugLog.DEBUG) Log.d(TAG, "PhoneCallService.getTelephonyData - missed: " + sbMissed.toString());
+                    sbMissed.setLength(0);
                     break;
                 default:
                     break;
             }
 
-            if (DebugLog.DEBUG) Log.d(TAG, "PhoneStateService.getTelephonyData - type: " + type);
-
             if (!cur.moveToNext()) {
-                values[INCOMING] = sbIncoming.substring(0, sbIncoming.length() - 1);
-                if (DebugLog.DEBUG) Log.d(TAG, "PhoneCallService.getTelephonyData - incoming: " + values[INCOMING]);
-                values[OUTGOING] = sbOutgoing.substring(0, sbOutgoing.length() - 1);
-                if (DebugLog.DEBUG) Log.d(TAG, "PhoneCallService.getTelephonyData - outgoing: " + values[OUTGOING]);
-                values[MISSED] = sbMissed.substring(0, sbMissed.length() - 1);
-                if (DebugLog.DEBUG) Log.d(TAG, "PhoneCallService.getTelephonyData - missed: " + values[MISSED]);
                 break;
             }
             nextID = cur.getLong(cur.getColumnIndex(CallLog.Calls._ID));
@@ -256,18 +255,12 @@ public final class PhoneCallService extends MetricDevice<String> {
 
     }
 
-    private String getDate(long milliSeconds, String dateFormat) {
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat, Locale.US);
-        return formatter.format(milliSeconds);
-    }
-
-    private void appendCalls(StringBuilder sb, String phoneNumber, String startTime, long endTime) {
+    private void appendCalls(StringBuilder sb, String phoneNumber, long startTime, long endTime) {
         sb.append(phoneNumber)
                 .append("+")
                 .append(startTime)
                 .append("+")
-                .append(endTime)
-                .append("|");
+                .append(endTime);
     }
 
 }

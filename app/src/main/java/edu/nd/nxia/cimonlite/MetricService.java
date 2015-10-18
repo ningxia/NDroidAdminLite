@@ -146,13 +146,13 @@ public class MetricService implements SensorEventListener {
 
         // Sensors
         mPeriodArray.put(Metrics.LOCATION_CATEGORY, 2000L);
-        mPeriodArray.put(Metrics.ACCELEROMETER, 5L);
+        mPeriodArray.put(Metrics.ACCELEROMETER, 50L);
         mPeriodArray.put(Metrics.MAGNETOMETER, 100L);
-        mPeriodArray.put(Metrics.GYROSCOPE, 5L);
+        mPeriodArray.put(Metrics.GYROSCOPE, 50L);
         mPeriodArray.put(Metrics.LINEAR_ACCEL, 100L);
         mPeriodArray.put(Metrics.ORIENTATION, 100L);
         mPeriodArray.put(Metrics.PROXIMITY, 1000L);
-        mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 20L);
+        mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 0L);
         mPeriodArray.put(Metrics.LIGHT, 1000L);
         mPeriodArray.put(Metrics.HUMIDITY, 1000L);
         mPeriodArray.put(Metrics.TEMPERATURE, 1000L);
@@ -517,16 +517,33 @@ public class MetricService implements SensorEventListener {
 
     private class MyPhoneStateListener extends PhoneStateListener {
 
+        boolean callEnded = false;
+
         @Override
         public void onCallStateChanged(int state, String incomingNumber) {
-            if (state == TelephonyManager.CALL_STATE_IDLE) {
-                SparseArray<Object> params = new SparseArray<>();
-                params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
-                params.put(PARAM_PHONE_STATE, state);
-                List<DataEntry> tempData = mDeviceArray.get(Metrics.PHONE_CALL_CATEGORY).getData(params);
-                if (tempData != null) {
-                    dataList.addAll(tempData);
-                }
+            switch (state) {
+                case TelephonyManager.CALL_STATE_IDLE:
+                    if (DebugLog.DEBUG) Log.d(TAG, "PhoneStateListener - state IDLE: " + state);
+                    if (callEnded) {
+                        SparseArray<Object> params = new SparseArray<>();
+                        params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
+                        params.put(PARAM_PHONE_STATE, state);
+                        List<DataEntry> tempData = mDeviceArray.get(Metrics.PHONE_CALL_CATEGORY).getData(params);
+                        if (tempData != null) {
+                            dataList.addAll(tempData);
+                        }
+                    }
+                    break;
+                case TelephonyManager.CALL_STATE_OFFHOOK:
+                    if (DebugLog.DEBUG) Log.d(TAG, "PhoneStateListener - state OFFHOOK: " + state);
+                    callEnded = true;
+                    break;
+                case TelephonyManager.CALL_STATE_RINGING:
+                    if (DebugLog.DEBUG) Log.d(TAG, "PhoneStateListener - state RINGING: " + state);
+                    callEnded = false;
+                    break;
+                default:
+                    break;
             }
         }
     }

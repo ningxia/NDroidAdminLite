@@ -789,7 +789,8 @@ public final class Metrics {
             CELL_LOCATION_CATEGORY,
             MEDIA_IMAGE_CATEGORY,
             MEDIA_AUDIO_CATEGORY,
-            MEDIA_VIDEO_CATEGORY
+            MEDIA_VIDEO_CATEGORY,
+            PHONE_CALL_CATEGORY
     };
 
     /**
