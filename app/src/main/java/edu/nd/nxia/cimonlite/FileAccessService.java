@@ -155,9 +155,9 @@ public final class FileAccessService extends MetricDevice<Long> {
             try {
                 File path = Environment.getExternalStorageDirectory();
                 StatFs stat = new StatFs(path.getPath());
-                long blockSize = stat.getBlockSize();
-                long totalBlocks = stat.getBlockCount();
-                long availableBlocks = stat.getAvailableBlocks();
+                long blockSize = stat.getBlockSizeLong();
+                long totalBlocks = stat.getBlockCountLong();
+                long availableBlocks = stat.getAvailableBlocksLong();
                 description = "SD card mounted  |  Total size: " +
                         ((blockSize * totalBlocks) >> 20) + "MB Available: " +
                         ((blockSize * availableBlocks) >> 20) + "MB";
