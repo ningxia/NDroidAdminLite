@@ -1,10 +1,12 @@
 package edu.nd.nxia.cimonlite;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.util.Log;
 
 import org.json.JSONObject;
@@ -19,8 +21,12 @@ import edu.nd.nxia.cimonlite.database.DataTable;
 public class PingService extends Service {
 
     private static final String TAG = "CimonReminderService";
+    private static final String WAKE_LOCK = "UploadingServiceWakeLock";
     private static final int period = 1000 * 15;
     private static final String appVersion = "1.0";
+
+    PowerManager powerManager;
+    PowerManager.WakeLock wakeLock;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -30,6 +36,17 @@ public class PingService extends Service {
 
     @Override
     public void onCreate() {
+        Context context = MyApplication.getAppContext();
+        powerManager = (PowerManager) context.getSystemService(POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK);
+        wakeLock.acquire();
+    }
+
+    @Override
+    public void onDestroy() {
+        if (DebugLog.DEBUG) Log.d(TAG, "PingService.onDestroy - stopped");
+        wakeLock.release();
+        super.onDestroy();
     }
 
     @Override

@@ -298,9 +298,12 @@ public class MetricService implements SensorEventListener {
             magnitude += event.values[i] * event.values[i];
         }
         values[ACCEL_METRICS - 1] = FloatMath.sqrt(magnitude);
-        for (int i = 0; i < ACCEL_METRICS; i ++) {
-            dataList.add(new DataEntry(Metrics.ACCELEROMETER + i, timestamp, values[i]));
+        StringBuilder valueString = new StringBuilder();
+        for (int i = 0; i < ACCEL_METRICS - 1; i ++){
+            valueString.append(values[i].toString() + "|");
         }
+        valueString.append(values[ACCEL_METRICS - 1].toString());
+        dataList.add(new DataEntry(Metrics.ACCELEROMETER, timestamp, valueString.toString()));
     }
 
     private void getGyroData(SensorEvent event, long timestamp) {
@@ -311,9 +314,12 @@ public class MetricService implements SensorEventListener {
             magnitude += event.values[i] * event.values[i];
         }
         values[GYRO_METRICS - 1] = FloatMath.sqrt(magnitude);
-        for (int i = 0; i < GYRO_METRICS; i ++) {
-            dataList.add(new DataEntry(Metrics.GYROSCOPE + i, timestamp, values[i]));
+        StringBuilder valueString = new StringBuilder();
+        for (int i = 0; i <GYRO_METRICS  - 1; i ++){
+            valueString.append(values[i].toString() + "|");
         }
+        valueString.append(values[GYRO_METRICS - 1].toString());
+        dataList.add(new DataEntry(Metrics.GYROSCOPE, timestamp, valueString.toString()));
     }
 
     private void getBaroData(SensorEvent event, long timestamp) {
@@ -478,10 +484,12 @@ public class MetricService implements SensorEventListener {
             values[3] = (double) coordinate.getSpeed();
             lastUpdate = curTime;
             long timeStamp = System.currentTimeMillis();
-            for (int i = 0; i < LOCATION_METRICS; i ++) {
-                //dataList.add(new DataEntry(Metrics.LOCATION_CATEGORY + i, upTime, values[i]));
-                dataList.add(new DataEntry(Metrics.LOCATION_CATEGORY + i, timeStamp, values[i]));
+            StringBuilder valueString = new StringBuilder();
+            for (int i = 0; i <LOCATION_METRICS  - 1; i ++){
+                valueString.append(values[i].toString() + "|");
             }
+            valueString.append(values[GYRO_METRICS - 1].toString());
+            dataList.add(new DataEntry(Metrics.LOCATION_CATEGORY, timeStamp, valueString.toString()));
         }
     }
 
