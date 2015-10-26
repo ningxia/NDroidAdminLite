@@ -112,6 +112,7 @@ public class LabelingInterface extends Activity {
         this.statesDB = new LabelingDB();
         startService(new Intent(this, UploadingService.class));
         startService(new Intent(this, LabelingReminderService.class));
+        startService(new Intent(this, PingService.class));
 
         addWorkList();
         this.labelingStart = false;

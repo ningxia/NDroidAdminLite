@@ -6,9 +6,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Debug;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -34,12 +37,11 @@ import edu.nd.nxia.cimonlite.database.MetricsTable;
  * Upadloing Service For Data
  *
  * @author Xiao(Sean) Bo
- *
  */
 public class UploadingService extends Service {
     private static final String TAG = "CimonUploadingService";
-    //private static final String[] uploadTables = {MetricInfoTable.TABLE_METRICINFO, LabelingHistory.TABLE_NAME, MetricsTable.TABLE_METRICS, DataTable.TABLE_DATA};
-    private static final String[] uploadTables = {MetricInfoTable.TABLE_METRICINFO, LabelingHistory.TABLE_NAME, MetricsTable.TABLE_METRICS};
+    private static final String WAKE_LOCK = "UploadingServiceWakeLock";
+    private static final String[] uploadTables = {MetricInfoTable.TABLE_METRICINFO, LabelingHistory.TABLE_NAME, MetricsTable.TABLE_METRICS, DataTable.TABLE_DATA};
     private static final int period = 1000 * 10;
     private static int count;
     private static int MAXRECORDS = 3000;
@@ -48,24 +50,29 @@ public class UploadingService extends Service {
     private static int endHour = 8;
     private static Context context;
 
+    PowerManager powerManager;
+    PowerManager.WakeLock wakeLock;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-//        scheduleUploading();
+        scheduleUploading();
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onCreate() {
-//        SecretKeySpec key = new SecretKeySpec(keyCode.getBytes(),algorithm);
-//        try{
-//            cipher = Cipher.getInstance(algorithm);
-//            //cipher.init(Cipher.ENCRYPT_MODE,key);
-//        }catch(Exception e){
-//            Log.d(TAG,"Fail to initialize cipher");
-//            e.printStackTrace();
-//        }
         context = MyApplication.getAppContext();
         count = 0;
+        powerManager = (PowerManager) context.getSystemService(POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK);
+        wakeLock.acquire();
+    }
+
+    @Override
+    public void onDestroy() {
+        if (DebugLog.DEBUG) Log.d(TAG, "UploadingService.onDestroy - stopped");
+        wakeLock.release();
+        super.onDestroy();
     }
 
     @Override
@@ -78,8 +85,10 @@ public class UploadingService extends Service {
         final Handler handler = new Handler();
         final Runnable worker = new Runnable() {
             public void run() {
-                Log.d(TAG, "Uploading thread:" + Integer.toString(count) + "\n Time window:"
-                        + Integer.toString(startHour) + "~" + Integer.toString(endHour));
+                String msg = "Uploading thread:" + Integer.toString(count) + "\n Time window:"
+                        + Integer.toString(startHour) + "~" + Integer.toString(endHour) + " BatchSize:" + Integer.toString(MAXRECORDS) + " WiFi:" + Boolean.toString(WiFiConnected());
+                Log.d(TAG, msg);
+                sendMsg(msg, getDeviceID());
                 if (count < 1) {
                     runUpload();
                 }
@@ -101,7 +110,9 @@ public class UploadingService extends Service {
         timeConverter.set(Calendar.HOUR_OF_DAY, endHour);
         long endTime = timeConverter.getTimeInMillis();
         long currentTime = System.currentTimeMillis();
-        Log.d(TAG, "curTime:" + Long.toString(currentTime));
+        String msg = "Run upload " + "curTime:" + Long.toString(currentTime);
+        Log.d(TAG, msg);
+        sendMsg(msg,getDeviceID());
         if (currentTime >= startTime && currentTime <= endTime
                 && CimonDatabaseAdapter.database != null) {
             count++;
@@ -109,12 +120,11 @@ public class UploadingService extends Service {
                 public void run() {
                     try {
                         for (String table : uploadTables) {
-                            Log.d(TAG, "Upload: " + table);
                             uploadFromTable(table);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
-                    }finally {
+                    } finally {
                         count--;
                     }
                 }
@@ -125,6 +135,7 @@ public class UploadingService extends Service {
 
     /**
      * Get count
+     *
      * @return
      */
     public static int getCount() {
@@ -145,7 +156,7 @@ public class UploadingService extends Service {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                }finally {
+                } finally {
                     count--;
                 }
             }
@@ -157,16 +168,19 @@ public class UploadingService extends Service {
      *
      * @param tableName table to update
      * @author Xiao(Sean) Bo
-     *
      */
     private void uploadFromTable(String tableName) {
         Cursor cursor = this.getCursor(tableName);
+        String msg = "Upload " + tableName + " " + cursor.getCount();
+        Log.d(TAG, msg);
+        sendMsg(msg,getDeviceID());
         while (cursor.getCount() > 0) {
             //Update cursor
             try {
                 cursor.moveToFirst();
                 uploadCursor(cursor, tableName);
             } catch (Exception e) {
+                sendMsg(e.toString(),getDeviceID());
                 e.printStackTrace();
             }
             //Get new cursor
@@ -186,6 +200,7 @@ public class UploadingService extends Service {
      */
     private void uploadCursor(Cursor cursor, String tableName) throws JSONException,
             MalformedURLException {
+        sendMsg("Upload cursor",getDeviceID());
         JSONArray records = new JSONArray();
         String[] columnNames = cursor.getColumnNames();
         ArrayList<Integer> rowIDs = new ArrayList<Integer>();
@@ -215,6 +230,7 @@ public class UploadingService extends Service {
                 }
             }
             records.put(record);
+            Log.d(TAG, record.toString());
             if (records.length() >= this.MAXRECORDS) {
                 batchUpload(records, tableName, rowIDs);
                 records = new JSONArray();
@@ -239,13 +255,15 @@ public class UploadingService extends Service {
     private void batchUpload(JSONArray records, String tableName,
                              ArrayList<Integer> rowIDs) throws MalformedURLException,
             JSONException {
+        sendMsg("Batch upload",getDeviceID());
         DataCommunicator comm = new DataCommunicator();
         JSONObject mainPackage = new JSONObject();
-        try{
-            mainPackage.put("records", Cipher.encryptString(records.toString(),true));
-        }catch(Exception e){
-            if(DebugLog.DEBUG)
-                Log.d(TAG,"Failed to encrypt data");
+        try {
+            mainPackage.put("records", Cipher.encryptString(records.toString(), true));
+        } catch (Exception e) {
+            if (DebugLog.DEBUG)
+                Log.d(TAG, "Failed to encrypt data");
+            sendMsg(e.toString(),getDeviceID());
             e.printStackTrace();
         }
         //mainPackage.put("records2",records);
@@ -271,6 +289,7 @@ public class UploadingService extends Service {
 
     private static void garbageCollection(ArrayList<Integer> rowIDs,
                                           String tableName) {
+        sendMsg("Garbage collection",getDeviceID());
         SQLiteDatabase curDB = tableName.equals(LabelingHistory.TABLE_NAME) ? LabelingHistory.db
                 : CimonDatabaseAdapter.database;
         StringBuilder IDs = new StringBuilder();
@@ -290,7 +309,7 @@ public class UploadingService extends Service {
      * @author Xiao(Sean) Bo
      */
 
-    private String getDeviceID() {
+    public static String getDeviceID() {
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         return telephonyManager.getDeviceId();
     }
@@ -319,16 +338,34 @@ public class UploadingService extends Service {
      *
      * @author Xiao(Sean) Bo
      */
-    private static void sendMsg(String msg, String deviceID) {
-        try {
-            DataCommunicator comm = new DataCommunicator();
-            JSONObject data = new JSONObject();
-            data.put("table", "test");
-            data.put("info", msg);
-            data.put("id", deviceID);
-            comm.postData(data.toString().getBytes());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private static void sendMsg(final String msg, final String deviceID) {
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    DataCommunicator comm = new DataCommunicator();
+                    JSONObject data = new JSONObject();
+                    data.put("table", "UploadingLog");
+                    data.put("device_id", deviceID);
+                    data.put("version", 1);
+                    data.put("info", msg);
+                    long phoneTimeStamp = System.currentTimeMillis();
+                    data.put("phone_time", phoneTimeStamp);
+                    comm.postData(data.toString().getBytes());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * Check WiFi connection
+     *
+     * @author Xiao(Sean) Bo
+     */
+    private boolean WiFiConnected() {
+        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        return mWifi.isConnected();
     }
 }

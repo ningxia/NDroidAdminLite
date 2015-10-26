@@ -142,9 +142,15 @@ public final class GyroscopeService extends MetricDevice<Float> {
         }
         values[GYRO_METRICS - 1] = FloatMath.sqrt(magnitude);
         List<DataEntry> dataList = new ArrayList<>();
-        for (int i = 0; i < GYRO_METRICS; i++) {
+/*        for (int i = 0; i < GYRO_METRICS; i++) {
             dataList.add(new DataEntry(Metrics.GYROSCOPE + i, timestamp, values[i]));
+        }*/
+        StringBuilder valueString = new StringBuilder();
+        for (int i = 0; i <GYRO_METRICS  - 1; i ++){
+            valueString.append(values[i].toString() + "|");
         }
+        valueString.append(values[GYRO_METRICS - 1].toString());
+        dataList.add(new DataEntry(Metrics.GYROSCOPE, timestamp, valueString.toString()));
         return dataList;
     }
 

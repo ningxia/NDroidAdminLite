@@ -108,8 +108,8 @@ public final class AccelerometerService extends MetricDevice<Float> {
 		Context context = MyApplication.getAppContext();
 		CimonDatabaseAdapter database = CimonDatabaseAdapter.getInstance(context);
 		if (!supportedMetric) {
-			database.insertOrReplaceMetricInfo(groupId, title, "", NOTSUPPORTED, 0, 0, 
-					"", "", Metrics.TYPE_SENSOR);
+			database.insertOrReplaceMetricInfo(groupId, title, "", NOTSUPPORTED, 0, 0,
+                    "", "", Metrics.TYPE_SENSOR);
 			return;
 		}
 		
@@ -156,9 +156,15 @@ public final class AccelerometerService extends MetricDevice<Float> {
             orientationService.onSensorUpdate(event);
         }
         List<DataEntry> dataList = new ArrayList<>();
-        for (int i = 0; i < ACCEL_METRICS; i ++) {
+/*        for (int i = 0; i < ACCEL_METRICS; i ++) {
             dataList.add(new DataEntry(Metrics.ACCELEROMETER + i, timestamp, values[i]));
+        }*/
+        StringBuilder valueString = new StringBuilder();
+        for (int i = 0; i < ACCEL_METRICS - 1; i ++){
+            valueString.append(values[i].toString() + "|");
         }
+        valueString.append(values[ACCEL_METRICS - 1].toString());
+        dataList.add(new DataEntry(Metrics.ACCELEROMETER, timestamp, valueString.toString()));
         return dataList;
     }
 
