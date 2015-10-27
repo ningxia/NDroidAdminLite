@@ -141,9 +141,9 @@ public class MetricService implements SensorEventListener {
 
         // Sensors
         mPeriodArray.put(Metrics.LOCATION_CATEGORY, 2000L);
-        mPeriodArray.put(Metrics.ACCELEROMETER, 40L);
+        mPeriodArray.put(Metrics.ACCELEROMETER, 35L);
         mPeriodArray.put(Metrics.MAGNETOMETER, 100L);
-        mPeriodArray.put(Metrics.GYROSCOPE, 40L);
+        mPeriodArray.put(Metrics.GYROSCOPE, 35L);
         mPeriodArray.put(Metrics.LINEAR_ACCEL, 100L);
         mPeriodArray.put(Metrics.ORIENTATION, 100L);
         mPeriodArray.put(Metrics.PROXIMITY, 1000L);
@@ -265,6 +265,7 @@ public class MetricService implements SensorEventListener {
             monitorId = database.insertMonitor(curTime - upTime);
             editor = appPrefs.edit();
             editor.putInt(RUNNING_MONITOR, monitorId);
+            editor.putInt(SENSOR_DELAY_MODE, mode);
             editor.commit();
         }
         else {
@@ -310,7 +311,6 @@ public class MetricService implements SensorEventListener {
 
         editor = appPrefs.edit();
         editor.remove(RUNNING_MONITOR);
-        editor.remove(SENSOR_DELAY_MODE);
         editor.putString(SENSOR_RESULT, result);
         editor.commit();
         return result;

@@ -230,7 +230,6 @@ public class UploadingService extends Service {
                 }
             }
             records.put(record);
-            Log.d(TAG, record.toString());
             if (records.length() >= this.MAXRECORDS) {
                 batchUpload(records, tableName, rowIDs);
                 records = new JSONArray();

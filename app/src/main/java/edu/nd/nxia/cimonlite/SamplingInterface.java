@@ -25,6 +25,7 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
     private static final String SENSOR_RESULT = "sensor_result";
     private static final String SENSOR_DELAY_MODE = "sensor_delay_mode";
     private static final String RUNNING_MONITOR = "running_monitor";
+    private static final String MONITOR_STARTED = "monitor_started";
 
     private Context context;
     private RadioGroup radioGroup;
@@ -119,6 +120,8 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
             button.setText("Start");
             Intent intent = new Intent(context, NDroidService.class);
             stopService(intent);
+            editor.remove(MONITOR_STARTED);
+            editor.remove(SENSOR_DELAY_MODE);
             setRadioGroupEnabled(true);
         }
     }
@@ -136,9 +139,10 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
     }
 
     private void startNDroidService() {
-        Intent intent = new Intent(context, NDroidService.class);
         editor.putInt(SENSOR_DELAY_MODE, sensorDelayMode);
+        editor.putBoolean(MONITOR_STARTED, true);
         editor.commit();
+        Intent intent = new Intent(context, NDroidService.class);
         startService(intent);
         if (DebugLog.DEBUG) Log.d(TAG, "MainActivity.startNDroidService - started");
     }
