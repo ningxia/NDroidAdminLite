@@ -21,10 +21,10 @@ public class NDroidService extends Service {
 
     private static final String TAG = "NDroid";
     private static final String THREADTAG = "NDroidServiceThread";
-    private static final String PACKAGE_NAME = "edu.nd.nxia.sensorsamplingtest";
+    private static final String PACKAGE_NAME = "edu.nd.nxia.cimonlite";
     private static final String SHARED_PREFS = "CimonSharedPrefs";
     private static final String SENSOR_DELAY_MODE = "sensor_delay_mode";
-    private static final String RUNNING_MONITOR = "running_monitor";
+    private static final String MONITOR_STARTED = "monitor_started";
     private static final String WAKE_LOCK = "NDroidServiceWakeLock";
 
     private static SharedPreferences appPrefs;
