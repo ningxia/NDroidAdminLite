@@ -18,9 +18,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
-import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.FileObserver;
@@ -28,14 +26,11 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-import android.util.FloatMath;
 import android.util.Log;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import edu.nd.nxia.cimonlite.database.CimonDatabaseAdapter;
 
@@ -146,9 +141,9 @@ public class MetricService implements SensorEventListener {
 
         // Sensors
         mPeriodArray.put(Metrics.LOCATION_CATEGORY, 2000L);
-        mPeriodArray.put(Metrics.ACCELEROMETER, 50L);
+        mPeriodArray.put(Metrics.ACCELEROMETER, 40L);
         mPeriodArray.put(Metrics.MAGNETOMETER, 100L);
-        mPeriodArray.put(Metrics.GYROSCOPE, 50L);
+        mPeriodArray.put(Metrics.GYROSCOPE, 40L);
         mPeriodArray.put(Metrics.LINEAR_ACCEL, 100L);
         mPeriodArray.put(Metrics.ORIENTATION, 100L);
         mPeriodArray.put(Metrics.PROXIMITY, 1000L);
@@ -160,14 +155,14 @@ public class MetricService implements SensorEventListener {
         // User
         mPeriodArray.put(Metrics.SCREEN_ON, 180000L);
         mPeriodArray.put(Metrics.BLUETOOTH_CATEGORY, 20000L);
-        mPeriodArray.put(Metrics.WIFI_CATEGORY, 5000L);
-        mPeriodArray.put(Metrics.APPLICATION_CATEGORY, 5000L);
+        mPeriodArray.put(Metrics.WIFI_CATEGORY, 20000L);
+        mPeriodArray.put(Metrics.APPLICATION_CATEGORY, 10000L);
         mPeriodArray.put(Metrics.BROWSER_HISTORY_CATEGORY, 24 * 360000L);
         mPeriodArray.put(Metrics.CALLSTATE_CATEGORY, 30000L);
         mPeriodArray.put(Metrics.CELL_LOCATION_CATEGORY, 10000L);
-        mPeriodArray.put(Metrics.MEDIA_IMAGE_CATEGORY, 10000L);
-        mPeriodArray.put(Metrics.MEDIA_AUDIO_CATEGORY, 10000L);
-        mPeriodArray.put(Metrics.MEDIA_VIDEO_CATEGORY, 10000L);
+        mPeriodArray.put(Metrics.MEDIA_IMAGE_CATEGORY, 300000L);
+        mPeriodArray.put(Metrics.MEDIA_AUDIO_CATEGORY, 300000L);
+        mPeriodArray.put(Metrics.MEDIA_VIDEO_CATEGORY, 300000L);
         mPeriodArray.put(Metrics.SMS_INFO_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.MMS_INFO_CATEGORY, 1000L);
         mPeriodArray.put(Metrics.PHONE_CALL_CATEGORY, 1000L);

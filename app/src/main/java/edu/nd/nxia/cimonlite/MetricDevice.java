@@ -29,7 +29,7 @@ public abstract class MetricDevice<T extends Comparable<T>> implements EventList
     protected int groupId;
     protected int metricsCount;
     protected long period = 0;
-    protected long timeOffset = 3;
+    protected long timeOffset = 0;
     protected long timer = 0;
 
     protected T[] values;
