@@ -123,6 +123,7 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
             stopService(intent);
             editor.remove(MONITOR_STARTED);
             editor.remove(SENSOR_DELAY_MODE);
+            editor.commit();
             setRadioGroupEnabled(true);
         }
     }
