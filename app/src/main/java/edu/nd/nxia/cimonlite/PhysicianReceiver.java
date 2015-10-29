@@ -20,6 +20,7 @@ public class PhysicianReceiver extends BroadcastReceiver {
     private static Intent ndroidService;
     private static Intent uploadingService;
     private static Intent labelingReminderService;
+    private static Intent pingService;
 
     SharedPreferences appPrefs;
 
@@ -27,21 +28,25 @@ public class PhysicianReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         appPrefs = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
         monitorStarted = appPrefs.getBoolean(MONITOR_STARTED, false);
+        if(DebugLog.DEBUG) Log.d(TAG,"Monitor Started: " + Boolean.toString(monitorStarted));
         if (monitorStarted) {
             ndroidService = new Intent(context, NDroidService.class);
             uploadingService = new Intent(context, UploadingService.class);
             labelingReminderService = new Intent(context, LabelingReminderService.class);
+            pingService = new Intent(context,PingService.class);
             if (ACTION_SHUTDOWN.equals(intent.getAction())) {
                 if (DebugLog.DEBUG) Log.d(TAG, "+ stop Services +");
                 context.stopService(ndroidService);
                 context.stopService(uploadingService);
                 context.stopService(labelingReminderService);
+                context.stopService(pingService);
             }
             else if (ACTION_START.equals(intent.getAction())) {
                 if (DebugLog.DEBUG) Log.d(TAG, "+ start Services +");
                 context.startService(ndroidService);
                 context.startService(uploadingService);
                 context.startService(labelingReminderService);
+                context.startService(pingService);
             }
         }
     }

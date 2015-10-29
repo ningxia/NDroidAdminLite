@@ -23,7 +23,7 @@ public class PingService extends Service {
     private static final String TAG = "CimonReminderService";
     private static final String WAKE_LOCK = "UploadingServiceWakeLock";
     private static final int period = 1000 * 15;
-    private static final String appVersion = "1.0";
+    private static final String appVersion = "2.0";
 
     PowerManager powerManager;
     PowerManager.WakeLock wakeLock;
