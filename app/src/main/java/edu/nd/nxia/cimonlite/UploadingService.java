@@ -47,7 +47,7 @@ public class UploadingService extends Service {
     private static int MAXRECORDS = 3000;
     private static int curWindow = 5 * MAXRECORDS;
     private static int startHour = 0;
-    private static int endHour = 8;
+    private static int endHour = 24;
     private static Context context;
 
     PowerManager powerManager;
