@@ -141,11 +141,11 @@ public class MetricService implements SensorEventListener {
 
         // Sensors
         mPeriodArray.put(Metrics.LOCATION_CATEGORY, 2000L);
-//        mPeriodArray.put(Metrics.ACCELEROMETER, 35L);
-        mPeriodArray.put(Metrics.ACCELEROMETER, 0L);
+        mPeriodArray.put(Metrics.ACCELEROMETER, 35L);
+//        mPeriodArray.put(Metrics.ACCELEROMETER, 0L);
         mPeriodArray.put(Metrics.MAGNETOMETER, 100L);
-//        mPeriodArray.put(Metrics.GYROSCOPE, 35L);
-        mPeriodArray.put(Metrics.GYROSCOPE, 0L);
+        mPeriodArray.put(Metrics.GYROSCOPE, 35L);
+//        mPeriodArray.put(Metrics.GYROSCOPE, 0L);
         mPeriodArray.put(Metrics.LINEAR_ACCEL, 100L);
         mPeriodArray.put(Metrics.ORIENTATION, 100L);
         mPeriodArray.put(Metrics.PROXIMITY, 1000L);
@@ -256,7 +256,7 @@ public class MetricService implements SensorEventListener {
     }
 
     public void startMonitoring(int mode) {
-        if (DebugLog.DEBUG) Log.d(TAG, "MetricService.startMonitoring - started");
+        if (DebugLog.DEBUG) Log.d(TAG, "MetricService.startMonitoring - started mode: " + mode);
         dataList = new ArrayList<>();
         registerDevices(mode);
         isActive = true;
@@ -335,12 +335,14 @@ public class MetricService implements SensorEventListener {
             List<DataEntry> tempData = null;
             switch (sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
+//                    Log.d(TAG, "MetricService.onSensorChanged - Accelerometer");
                     tempData = mDeviceArray.get(Metrics.ACCELEROMETER).getData(params);
                     break;
                 case Sensor.TYPE_MAGNETIC_FIELD:
                     tempData = mDeviceArray.get(Metrics.MAGNETOMETER).getData(params);
                     break;
                 case Sensor.TYPE_GYROSCOPE:
+//                    Log.d(TAG, "MetricService.onSensorChanged - Gyroscope");
                     tempData = mDeviceArray.get(Metrics.GYROSCOPE).getData(params);
                     break;
                 case Sensor.TYPE_LINEAR_ACCELERATION:
@@ -350,6 +352,7 @@ public class MetricService implements SensorEventListener {
                     tempData = mDeviceArray.get(Metrics.PROXIMITY).getData(params);
                     break;
                 case Sensor.TYPE_PRESSURE:
+//                    Log.d(TAG, "MetricService.onSensorChanged - Pressure");
                     tempData = mDeviceArray.get(Metrics.ATMOSPHERIC_PRESSURE).getData(params);
                     break;
                 case Sensor.TYPE_LIGHT:

@@ -73,7 +73,8 @@ public class NDroidService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (DebugLog.DEBUG) Log.d(TAG, "NDroidService.onStartCommand - started");
         metricService = new MetricService(context);
-        int mode = appPrefs.getInt(SENSOR_DELAY_MODE, SensorManager.SENSOR_DELAY_FASTEST);
+        int mode = intent.getIntExtra(SENSOR_DELAY_MODE, -1);
+        Log.d(TAG, "NDroidService.onStartCommand - from intent mode: " + mode);
         metricService.startMonitoring(mode);
         return super.onStartCommand(intent, flags, startId);
     }

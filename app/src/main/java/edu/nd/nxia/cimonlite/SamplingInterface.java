@@ -106,6 +106,7 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
                     this.sensorDelayMode = SensorManager.SENSOR_DELAY_GAME;
                 break;
         }
+        Log.d(TAG, "SamplingInterface.onRadioButtonClicked - mode: " + sensorDelayMode);
     }
 
     @Override
@@ -140,10 +141,12 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
     }
 
     private void startNDroidService() {
+        Log.d(TAG, "SamplingInterface.startNDroidService - sensorDelayMode: " + sensorDelayMode);
         editor.putInt(SENSOR_DELAY_MODE, sensorDelayMode);
         editor.putBoolean(MONITOR_STARTED, true);
         editor.commit();
         Intent intent = new Intent(context, NDroidService.class);
+        intent.putExtra(SENSOR_DELAY_MODE, sensorDelayMode);
         startService(intent);
         if (DebugLog.DEBUG) Log.d(TAG, "MainActivity.startNDroidService - started");
     }
