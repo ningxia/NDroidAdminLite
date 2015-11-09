@@ -141,11 +141,11 @@ public class MetricService implements SensorEventListener {
 
         // Sensors
         mPeriodArray.put(Metrics.LOCATION_CATEGORY, 2000L);
-        mPeriodArray.put(Metrics.ACCELEROMETER, 35L);
-//        mPeriodArray.put(Metrics.ACCELEROMETER, 0L);
+//        mPeriodArray.put(Metrics.ACCELEROMETER, 35L);
+        mPeriodArray.put(Metrics.ACCELEROMETER, 0L);
         mPeriodArray.put(Metrics.MAGNETOMETER, 100L);
-        mPeriodArray.put(Metrics.GYROSCOPE, 35L);
-//        mPeriodArray.put(Metrics.GYROSCOPE, 0L);
+//        mPeriodArray.put(Metrics.GYROSCOPE, 35L);
+        mPeriodArray.put(Metrics.GYROSCOPE, 0L);
         mPeriodArray.put(Metrics.LINEAR_ACCEL, 100L);
         mPeriodArray.put(Metrics.ORIENTATION, 100L);
         mPeriodArray.put(Metrics.PROXIMITY, 1000L);
@@ -204,6 +204,20 @@ public class MetricService implements SensorEventListener {
             serviceList.clear();
         }
     }
+
+//    public void initDevices() {
+//        List<MetricDevice<?>> serviceList = new ArrayList<>();
+//        serviceList.add(MetricDevice.getDevice(Metrics.BATTERY_CATEGORY));
+//
+//        serviceList.add(MetricDevice.getDevice(Metrics.ACCELEROMETER));
+//        serviceList.add(MetricDevice.getDevice(Metrics.GYROSCOPE));
+//        serviceList.add(MetricDevice.getDevice(Metrics.ATMOSPHERIC_PRESSURE));
+//
+//        for (MetricDevice<?> metricDevice: serviceList) {
+//            metricDevice.initDevice(mPeriodArray.get(metricDevice.getGroupId()));
+//            mDeviceArray.put(metricDevice.getGroupId(), metricDevice);
+//        }
+//    }
 
     public void initDatabase() {
         int storedVersion = appPrefs.getInt(PREF_VERSION, -1);
@@ -286,22 +300,31 @@ public class MetricService implements SensorEventListener {
         mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
         mContentResolver.unregisterContentObserver(mSmsContentObserver);
         double offset = (endTime - startTime) / 1000.0;
+        double rateAccelerometer = 0.0;
+        double rateGyroscope = 0.0;
+        double rateBarometer = 0.0;
+        StringBuilder sbResult = new StringBuilder();
         AccelerometerService accelerometerService = (AccelerometerService) mDeviceArray.get(Metrics.ACCELEROMETER);
-        double rateAccelerometer = accelerometerService.getCount() / offset;
-        accelerometerService.resetCount();
+        if (accelerometerService != null) {
+            rateAccelerometer = accelerometerService.getCount() / offset;
+            accelerometerService.resetCount();
+            sbResult.append(String.format("Accelerometer Sampling Rate: %.2fHz\n", rateAccelerometer));
+        }
         GyroscopeService gyroscopeService = (GyroscopeService) mDeviceArray.get(Metrics.GYROSCOPE);
-        double rateGyroscope = gyroscopeService.getCount() / offset;
-        gyroscopeService.resetCount();
+        if (gyroscopeService != null) {
+            rateGyroscope = gyroscopeService.getCount() / offset;
+            gyroscopeService.resetCount();
+            sbResult.append(String.format("Gyroscope Sampling Rate: %.2fHz\n", rateGyroscope));
+        }
         PressureService pressureService = (PressureService) mDeviceArray.get(Metrics.ATMOSPHERIC_PRESSURE);
-        double rateBarometer = pressureService.getCount() / offset;
-        pressureService.resetCount();
+        if (pressureService != null) {
+            rateBarometer = pressureService.getCount() / offset;
+            pressureService.resetCount();
+            sbResult.append(String.format("Barometer Sampling Rate: %.2fHz", rateBarometer));
+        }
+
         isActive = false;
-        String result = String.format(
-                "Accelerometer Sampling Rate: %.2fHz\n" +
-                        "Gyroscope Sampling Rate: %.2fHz\n" +
-                        "Barometer Sampling Rate: %.2fHz",
-                rateAccelerometer, rateGyroscope, rateBarometer
-        );
+        String result = sbResult.toString();
         if (dataList.size() > 0) {
             new Thread(new Runnable() {
                 @Override
@@ -335,14 +358,14 @@ public class MetricService implements SensorEventListener {
             List<DataEntry> tempData = null;
             switch (sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
-//                    Log.d(TAG, "MetricService.onSensorChanged - Accelerometer");
+                    Log.d(TAG, "MetricService.onSensorChanged - Accelerometer");
                     tempData = mDeviceArray.get(Metrics.ACCELEROMETER).getData(params);
                     break;
                 case Sensor.TYPE_MAGNETIC_FIELD:
                     tempData = mDeviceArray.get(Metrics.MAGNETOMETER).getData(params);
                     break;
                 case Sensor.TYPE_GYROSCOPE:
-//                    Log.d(TAG, "MetricService.onSensorChanged - Gyroscope");
+                    Log.d(TAG, "MetricService.onSensorChanged - Gyroscope");
                     tempData = mDeviceArray.get(Metrics.GYROSCOPE).getData(params);
                     break;
                 case Sensor.TYPE_LINEAR_ACCELERATION:

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 
 import edu.nd.nxia.cimonlite.DebugLog;
 import edu.nd.nxia.cimonlite.DataEntry;
+import edu.nd.nxia.cimonlite.Metrics;
 import edu.nd.nxia.cimonlite.contentprovider.CimonContentProvider;
 
 /**
@@ -263,6 +264,10 @@ public final class CimonDatabaseAdapter {
                 }
                 if (database.insert(DataTable.TABLE_DATA, null, contentValues) >= 0) {
                     rowsInserted++;
+                }
+                if (entry.metricId == Metrics.BATTERY_CATEGORY) {
+                    database.insert(BatteryTable.TABLE_DATA, null, contentValues);
+                    Log.d(TAG, "CimonDatabaseAdapter.insertBatchGroupData battery " + System.currentTimeMillis());
                 }
 //                if (DebugLog.DEBUG) Log.d(TAG, "insertBatchData: " + metric + " t: " + this.upTimeToRealTime(entry.timestamp) + " - v: " + entry.value);
             }

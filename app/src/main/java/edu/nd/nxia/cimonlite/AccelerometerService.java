@@ -99,6 +99,7 @@ public final class AccelerometerService extends MetricDevice<Float> {
         SensorManager sensorManager = (SensorManager) params.get(PARAM_SENSOR_MANAGER);
         SensorEventListener sensorEventListener = (SensorEventListener) params.get(PARAM_SENSOR_EVENT_LISTENER);
         int mode = (int) params.get(PARAM_MODE);
+        Log.d(TAG, "AccelerometerService.registerService mode: " + mode);
         sensorManager.registerListener(sensorEventListener, mAccelerometer, mode);
     }
 

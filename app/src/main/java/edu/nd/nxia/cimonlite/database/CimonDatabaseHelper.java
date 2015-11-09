@@ -32,6 +32,7 @@ public class CimonDatabaseHelper extends SQLiteOpenHelper {
         MetricsTable.onCreate(db);
         MonitorTable.onCreate(db);
         DataTable.onCreate(db);
+        BatteryTable.onCreate(db);
     }
 
     @Override
@@ -41,5 +42,6 @@ public class CimonDatabaseHelper extends SQLiteOpenHelper {
         MetricsTable.onUpgrade(db, oldVersion, newVersion);
         MonitorTable.onUpgrade(db, oldVersion, newVersion);
         DataTable.onUpgrade(db, oldVersion, newVersion);
+        BatteryTable.onUpgrade(db, oldVersion, newVersion);
     }
 }
