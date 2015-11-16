@@ -141,11 +141,11 @@ public class MetricService implements SensorEventListener {
 
         // Sensors
         mPeriodArray.put(Metrics.LOCATION_CATEGORY, 2000L);
-//        mPeriodArray.put(Metrics.ACCELEROMETER, 35L);
-        mPeriodArray.put(Metrics.ACCELEROMETER, 0L);
+        mPeriodArray.put(Metrics.ACCELEROMETER, 35L);
+//        mPeriodArray.put(Metrics.ACCELEROMETER, 0L);
         mPeriodArray.put(Metrics.MAGNETOMETER, 100L);
-//        mPeriodArray.put(Metrics.GYROSCOPE, 35L);
-        mPeriodArray.put(Metrics.GYROSCOPE, 0L);
+        mPeriodArray.put(Metrics.GYROSCOPE, 35L);
+//        mPeriodArray.put(Metrics.GYROSCOPE, 0L);
         mPeriodArray.put(Metrics.LINEAR_ACCEL, 100L);
         mPeriodArray.put(Metrics.ORIENTATION, 100L);
         mPeriodArray.put(Metrics.PROXIMITY, 1000L);
