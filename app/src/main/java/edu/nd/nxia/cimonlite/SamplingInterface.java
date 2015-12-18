@@ -59,6 +59,9 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
 
         startUploadingService();
         startLabelingReminderService();
+
+        getDefaultCheckedValue();
+
     }
 
     @Override
@@ -92,6 +95,25 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
     @Override
     protected void onResume() {
         super.onResume();
+    }
+
+    public void getDefaultCheckedValue() {
+        if (radioGroup.getCheckedRadioButtonId() != -1) {
+            int checkedId = radioGroup.getCheckedRadioButtonId();
+            RadioButton checkedRadio = (RadioButton) radioGroup.findViewById(checkedId);
+            boolean checked = checkedRadio.isChecked();
+            switch(checkedId) {
+                case R.id.radio_fastest:
+                    if (checked)
+                        this.sensorDelayMode = SensorManager.SENSOR_DELAY_FASTEST;
+                    break;
+                case R.id.radio_game:
+                    if (checked)
+                        this.sensorDelayMode = SensorManager.SENSOR_DELAY_GAME;
+                    break;
+            }
+        }
+        Log.d(TAG, "SamplingInterface.getDefaultCheckedValue: " + sensorDelayMode);
     }
 
     public void onRadioButtonClicked(View view) {
