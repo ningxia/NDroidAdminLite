@@ -37,13 +37,14 @@ public final class SMSInfoService extends MetricDevice<String> {
     public static final String SMS_ADDRESS = "address";
     public static final String SMS_DATE = "date";
     public static final String SMS_TYPE = "type";
+    public static final String SMS_PROTOCOL = "protocol";
 
     private static final int MESSAGE_TYPE_INBOX  = 1;
     private static final int MESSAGE_TYPE_SENT   = 2;
 
     private static final Uri uri = Uri.parse("content://sms/");
     private static final String[] sms_projection = new String[]{BaseColumns._ID,
-            SMS_ADDRESS, SMS_DATE, SMS_TYPE};
+            SMS_ADDRESS, SMS_DATE, SMS_TYPE, SMS_PROTOCOL};
 
     private static final String SORT_ORDER = BaseColumns._ID + " DESC";
     private long prevSMSID  = -1;
@@ -157,33 +158,31 @@ public final class SMSInfoService extends MetricDevice<String> {
 
         long firstID = cur.getLong(cur.getColumnIndex(BaseColumns._ID));
         long nextID = firstID;
-        final int TYPE_COLUMN = cur.getColumnIndex(SMS_TYPE);
         StringBuilder sbReceived = new StringBuilder();
         StringBuilder sbSent = new StringBuilder();
-        int type;
         String smsAddress;
         long smsDate;
+        String protocol;
 
-        while (nextID != prevSMSID) {
-            type = cur.getInt(TYPE_COLUMN);
+        while (nextID > prevSMSID) {
+            protocol = cur.getString(cur.getColumnIndexOrThrow(SMS_PROTOCOL));
             smsAddress = cur.getString(cur.getColumnIndexOrThrow(SMS_ADDRESS));
-//            String smsDate = getDate(cur.getLong(cur.getColumnIndexOrThrow(SMS_DATE)), "hh:ss MM/dd/yyyy");
+            if (smsAddress != null) {
+                smsAddress = smsAddress.replaceAll("[^0-9]", "");
+            }
             smsDate = cur.getLong(cur.getColumnIndexOrThrow(SMS_DATE));
-            switch (type) {
-                case MESSAGE_TYPE_INBOX:
-                    appendInfo(sbReceived, smsAddress, smsDate);
-                    tempData.add(new DataEntry(Metrics.SMSRECEIVED, smsDate, sbReceived.toString()));
-//                    if (DebugLog.DEBUG) Log.d(TAG, "SMSInfoService.getSmsData - received: " + sbReceived.toString());
-                    sbReceived.setLength(0);
-                    break;
-                case MESSAGE_TYPE_SENT:
-                    appendInfo(sbSent, smsAddress, smsDate);
-                    tempData.add(new DataEntry(Metrics.SMSSENT, smsDate, sbReceived.toString()));
-//                    if (DebugLog.DEBUG) Log.d(TAG, "SMSInfoService.getSmsData - sent: " + sbSent.toString());
-                    sbSent.setLength(0);
-                    break;
-                default:
-                    break;
+
+            if (protocol != null) {
+                appendInfo(sbReceived, smsAddress, smsDate);
+                tempData.add(new DataEntry(Metrics.SMSRECEIVED, smsDate, sbReceived.toString()));
+                if (DebugLog.DEBUG) Log.d(TAG, "SMSInfoService.getSmsData - received: " + sbReceived.toString());
+                sbReceived.setLength(0);
+            }
+            else {
+                appendInfo(sbSent, smsAddress, smsDate);
+                tempData.add(new DataEntry(Metrics.SMSSENT, smsDate, sbReceived.toString()));
+                if (DebugLog.DEBUG) Log.d(TAG, "SMSInfoService.getSmsData - sent: " + sbSent.toString());
+                sbSent.setLength(0);
             }
 
             if (!cur.moveToNext()) {
