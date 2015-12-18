@@ -589,7 +589,7 @@ public class MetricService implements SensorEventListener {
 
         @Override
         public void onChange(boolean selfChange) {
-            if (DebugLog.DEBUG) Log.d(TAG, "MetricService.SmsContentObserver: changed");
+            if (DebugLog.DEBUG) Log.d(TAG, "MetricService.MmsContentObserver: changed");
             SparseArray<Object> params = new SparseArray<>();
             params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
             params.put(PARAM_MMS_STATE, selfChange);
