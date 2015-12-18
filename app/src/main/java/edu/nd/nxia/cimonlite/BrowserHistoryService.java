@@ -61,6 +61,7 @@ public final class BrowserHistoryService extends MetricDevice<String> {
     private static final String BROWSING_URL = Browser.BookmarkColumns.URL;
 
     private static final Uri uri = Browser.BOOKMARKS_URI;
+    private static final Uri BOOKMARKS_URI_DEFAULT = Uri.parse("content://com.android.chrome.browser/history");
     private static final String[] browsing_projection = new String[]{BaseColumns._ID,
             BROWSING_TITLE, BROWSING_DATE, BROWSING_URL};
 
@@ -114,7 +115,7 @@ public final class BrowserHistoryService extends MetricDevice<String> {
     @Override
     void registerDevice(SparseArray<Object> params) {
         browserObserver = (ContentObserver) params.get(PARAM_BROWSER_OBSERVER);
-        browserResolver.registerContentObserver(Uri.parse("content://com.android.chrome.browser/history"), true, browserObserver);
+        browserResolver.registerContentObserver(BOOKMARKS_URI_DEFAULT, true, browserObserver);
     }
 
     @Override
@@ -138,36 +139,43 @@ public final class BrowserHistoryService extends MetricDevice<String> {
 
     private void getBrowserData(long timestamp) {
         Cursor cur = browserResolver.query(uri, browsing_projection, BROWSING_TYPE, null, SORT_ORDER);
-        if (!cur.moveToFirst()) {
-            cur.close();
-            if (DebugLog.DEBUG) Log.d(TAG, "BrowserHistoryService.getBrowserData - cursor empty?");
+        if (cur == null) {
             return;
         }
-
-        long firstID = cur.getLong(cur.getColumnIndex(BaseColumns._ID));
-        long nextID = firstID;
-        StringBuilder sb = new StringBuilder();
-        String title;
-        String date;
-        String url;
-        while (nextID != prevID) {
-            title = cur.getString(cur.getColumnIndexOrThrow(BROWSING_TITLE));
-            date = cur.getString(cur.getColumnIndexOrThrow(BROWSING_DATE));
-            url = cur.getString(cur.getColumnIndexOrThrow(BROWSING_URL));
-            appendInfo(sb, title, date, url);
-            tempData.add(new DataEntry(Metrics.BROWSING_HISTORY, timestamp, sb.toString()));
-            if (DebugLog.DEBUG)
-            if (!cur.moveToNext()) {
-                break;
+        else {
+            if (!cur.moveToFirst()) {
+                cur.close();
+                if (DebugLog.DEBUG)
+                    Log.d(TAG, "BrowserHistoryService.getBrowserData - cursor empty?");
+                return;
             }
-            sb.setLength(0);
-            nextID = cur.getLong(cur.getColumnIndex(BaseColumns._ID));
+
+            long firstID = cur.getLong(cur.getColumnIndex(BaseColumns._ID));
+            long nextID = firstID;
+            StringBuilder sb = new StringBuilder();
+            String title;
+            long date;
+            String url;
+            while (nextID != prevID) {
+                title = cur.getString(cur.getColumnIndexOrThrow(BROWSING_TITLE));
+                date = cur.getLong(cur.getColumnIndexOrThrow(BROWSING_DATE));
+                url = cur.getString(cur.getColumnIndexOrThrow(BROWSING_URL));
+                appendInfo(sb, title, date, url);
+                tempData.add(new DataEntry(Metrics.BROWSING_HISTORY, timestamp, sb.toString()));
+                sb.setLength(0);
+
+                if (!cur.moveToNext()) {
+                    break;
+                }
+
+                nextID = cur.getLong(cur.getColumnIndex(BaseColumns._ID));
+            }
+            cur.close();
+            prevID = firstID;
         }
-        cur.close();
-        prevID  = firstID;
     }
 
-    private void appendInfo(StringBuilder sb, String title, String date, String url) {
+    private void appendInfo(StringBuilder sb, String title, long date, String url) {
         title = title.replaceAll("\\|", "");
         sb.append(title)
                 .append("+")
