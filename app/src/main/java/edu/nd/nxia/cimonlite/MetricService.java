@@ -116,7 +116,13 @@ public class MetricService implements SensorEventListener {
         this.mDeviceArray = new SparseArray<>();
         this.mPeriodArray = new SparseArray<>();
         initPeriods();
+
+        initAccelerometer();
+        initGyroscope();
+        initBarometer();
+        initThree();
         initDevices();
+
         database = CimonDatabaseAdapter.getInstance(context);
         appPrefs = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
         this.mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
@@ -205,19 +211,55 @@ public class MetricService implements SensorEventListener {
         }
     }
 
-//    public void initDevices() {
-//        List<MetricDevice<?>> serviceList = new ArrayList<>();
-//        serviceList.add(MetricDevice.getDevice(Metrics.BATTERY_CATEGORY));
-//
-//        serviceList.add(MetricDevice.getDevice(Metrics.ACCELEROMETER));
-//        serviceList.add(MetricDevice.getDevice(Metrics.GYROSCOPE));
-//        serviceList.add(MetricDevice.getDevice(Metrics.ATMOSPHERIC_PRESSURE));
-//
-//        for (MetricDevice<?> metricDevice: serviceList) {
-//            metricDevice.initDevice(mPeriodArray.get(metricDevice.getGroupId()));
-//            mDeviceArray.put(metricDevice.getGroupId(), metricDevice);
-//        }
-//    }
+    public void initAccelerometer() {
+        List<MetricDevice<?>> serviceList = new ArrayList<>();
+        serviceList.add(MetricDevice.getDevice(Metrics.BATTERY_CATEGORY));
+
+        serviceList.add(MetricDevice.getDevice(Metrics.ACCELEROMETER));
+
+        for (MetricDevice<?> metricDevice: serviceList) {
+            metricDevice.initDevice(mPeriodArray.get(metricDevice.getGroupId()));
+            mDeviceArray.put(metricDevice.getGroupId(), metricDevice);
+        }
+    }
+
+    public void initGyroscope() {
+        List<MetricDevice<?>> serviceList = new ArrayList<>();
+        serviceList.add(MetricDevice.getDevice(Metrics.BATTERY_CATEGORY));
+
+        serviceList.add(MetricDevice.getDevice(Metrics.GYROSCOPE));
+
+        for (MetricDevice<?> metricDevice: serviceList) {
+            metricDevice.initDevice(mPeriodArray.get(metricDevice.getGroupId()));
+            mDeviceArray.put(metricDevice.getGroupId(), metricDevice);
+        }
+    }
+
+    public void initBarometer() {
+        List<MetricDevice<?>> serviceList = new ArrayList<>();
+        serviceList.add(MetricDevice.getDevice(Metrics.BATTERY_CATEGORY));
+
+        serviceList.add(MetricDevice.getDevice(Metrics.ATMOSPHERIC_PRESSURE));
+
+        for (MetricDevice<?> metricDevice: serviceList) {
+            metricDevice.initDevice(mPeriodArray.get(metricDevice.getGroupId()));
+            mDeviceArray.put(metricDevice.getGroupId(), metricDevice);
+        }
+    }
+
+        public void initThree() {
+        List<MetricDevice<?>> serviceList = new ArrayList<>();
+        serviceList.add(MetricDevice.getDevice(Metrics.BATTERY_CATEGORY));
+
+        serviceList.add(MetricDevice.getDevice(Metrics.ACCELEROMETER));
+        serviceList.add(MetricDevice.getDevice(Metrics.GYROSCOPE));
+        serviceList.add(MetricDevice.getDevice(Metrics.ATMOSPHERIC_PRESSURE));
+
+        for (MetricDevice<?> metricDevice: serviceList) {
+            metricDevice.initDevice(mPeriodArray.get(metricDevice.getGroupId()));
+            mDeviceArray.put(metricDevice.getGroupId(), metricDevice);
+        }
+    }
 
     public void initDatabase() {
         int storedVersion = appPrefs.getInt(PREF_VERSION, -1);
@@ -612,7 +654,7 @@ public class MetricService implements SensorEventListener {
 
         @Override
         public void onChange(boolean selfChange) {
-            if (DebugLog.DEBUG) Log.d(TAG, "MetricService.SmsContentObserver: changed");
+            if (DebugLog.DEBUG) Log.d(TAG, "MetricService.MmsContentObserver: changed");
             SparseArray<Object> params = new SparseArray<>();
             params.put(PARAM_TIMESTAMP, System.currentTimeMillis());
             params.put(PARAM_MMS_STATE, selfChange);
