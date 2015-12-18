@@ -117,10 +117,10 @@ public class MetricService implements SensorEventListener {
         this.mPeriodArray = new SparseArray<>();
         initPeriods();
 
-        initAccelerometer();
-        initGyroscope();
-        initBarometer();
-        initThree();
+//        initAccelerometer();
+//        initGyroscope();
+//        initBarometer();
+//        initThree();
         initDevices();
 
         database = CimonDatabaseAdapter.getInstance(context);
