@@ -87,7 +87,7 @@ public final class GyroscopeService extends MetricDevice<Float> {
         mSensorManager = (SensorManager) MyApplication.getAppContext().getSystemService(Context.SENSOR_SERVICE);
         mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         if (mGyroscope == null) {
-            if (DebugLog.INFO) Log.i(TAG, "AccelerometerService - sensor not supported on this system");
+            if (DebugLog.INFO) Log.i(TAG, "GyroscopeService - sensor not supported on this system");
             supportedMetric = false;
             return;
         }
