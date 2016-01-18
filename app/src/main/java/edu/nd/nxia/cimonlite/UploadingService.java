@@ -274,6 +274,8 @@ public class UploadingService extends Service {
         if (callBack.equals("Success")
                 && (tableName.equals(DataTable.TABLE_DATA) || tableName
                 .equals(LabelingHistory.TABLE_NAME))) {
+//            if (DebugLog.DEBUG)
+                Log.d(TAG, "UploadingService.batchUpload: Success");
             garbageCollection(rowIDs, tableName);
         }
     }

@@ -122,6 +122,7 @@ public final class PressureService extends MetricDevice<Float> {
         }
         setTimer(timestamp);
         mCounter++;
+        Log.d(TAG, "PressureService.getData: " + System.currentTimeMillis());
         List<DataEntry> dataList = new ArrayList<>();
         dataList.add(new DataEntry(Metrics.ATMOSPHERIC_PRESSURE + 0, timestamp, event.values[0]));
         return dataList;

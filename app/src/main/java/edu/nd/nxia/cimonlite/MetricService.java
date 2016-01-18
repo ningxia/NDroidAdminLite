@@ -119,9 +119,9 @@ public class MetricService implements SensorEventListener {
 
 //        initAccelerometer();
 //        initGyroscope();
-//        initBarometer();
+        initBarometer();
 //        initThree();
-        initDevices();
+//        initDevices();
 
         database = CimonDatabaseAdapter.getInstance(context);
         appPrefs = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
@@ -247,7 +247,7 @@ public class MetricService implements SensorEventListener {
         }
     }
 
-        public void initThree() {
+    public void initThree() {
         List<MetricDevice<?>> serviceList = new ArrayList<>();
         serviceList.add(MetricDevice.getDevice(Metrics.BATTERY_CATEGORY));
 
@@ -400,14 +400,14 @@ public class MetricService implements SensorEventListener {
             List<DataEntry> tempData = null;
             switch (sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
-                    Log.d(TAG, "MetricService.onSensorChanged - Accelerometer");
+ //                    if (DebugLog.DEBUG) Log.d(TAG, "MetricService.onSensorChanged - Accelerometer");
                     tempData = mDeviceArray.get(Metrics.ACCELEROMETER).getData(params);
                     break;
                 case Sensor.TYPE_MAGNETIC_FIELD:
                     tempData = mDeviceArray.get(Metrics.MAGNETOMETER).getData(params);
                     break;
                 case Sensor.TYPE_GYROSCOPE:
-                    Log.d(TAG, "MetricService.onSensorChanged - Gyroscope");
+//                    if (DebugLog.DEBUG) Log.d(TAG, "MetricService.onSensorChanged - Gyroscope");
                     tempData = mDeviceArray.get(Metrics.GYROSCOPE).getData(params);
                     break;
                 case Sensor.TYPE_LINEAR_ACCELERATION:
@@ -417,7 +417,7 @@ public class MetricService implements SensorEventListener {
                     tempData = mDeviceArray.get(Metrics.PROXIMITY).getData(params);
                     break;
                 case Sensor.TYPE_PRESSURE:
-//                    Log.d(TAG, "MetricService.onSensorChanged - Pressure");
+//                    if (DebugLog.DEBUG) Log.d(TAG, "MetricService.onSensorChanged - Pressure");
                     tempData = mDeviceArray.get(Metrics.ATMOSPHERIC_PRESSURE).getData(params);
                     break;
                 case Sensor.TYPE_LIGHT:

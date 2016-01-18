@@ -228,7 +228,7 @@ public final class CimonDatabaseAdapter {
     }
 
     public synchronized long insertBatchGroupData(int monitor, ArrayList<DataEntry> data) {
-        if (DebugLog.DEBUG)
+//        if (DebugLog.DEBUG)
             Log.d(TAG, "CimonDatabaseAdapter.insertBatchGroupData " + System.currentTimeMillis());
         long rowsInserted = 0;
         ContentValues values = new ContentValues();

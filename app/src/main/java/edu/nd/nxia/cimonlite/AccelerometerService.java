@@ -145,6 +145,7 @@ public final class AccelerometerService extends MetricDevice<Float> {
         }
         setTimer(timestamp);
         mCounter ++;
+        Log.d(TAG, "AccelerometerService.getData: " + System.currentTimeMillis());
         float magnitude = 0;
         Float values[] = new Float[ACCEL_METRICS];
         for (int i = 0; i < (ACCEL_METRICS - 1); i++) {

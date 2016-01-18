@@ -135,6 +135,7 @@ public final class GyroscopeService extends MetricDevice<Float> {
         }
         setTimer(timestamp);
         mCounter++;
+        Log.d(TAG, "GyroscopeService.getData: " + System.currentTimeMillis());
         float magnitude = 0;
         Float values[] = new Float[GYRO_METRICS];
         for (int i = 0; i < (GYRO_METRICS - 1); i++) {

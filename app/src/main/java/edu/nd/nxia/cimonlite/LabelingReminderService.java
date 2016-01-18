@@ -32,7 +32,7 @@ public class LabelingReminderService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "Start reminder service");
-        scheduleReminder();
+//        scheduleReminder();
         return super.onStartCommand(intent, flags, startId);
     }
 

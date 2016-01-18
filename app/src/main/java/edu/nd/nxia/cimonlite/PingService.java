@@ -30,7 +30,7 @@ public class PingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        pingServer();
+//        pingServer();
         return super.onStartCommand(intent, flags, startId);
     }
 
