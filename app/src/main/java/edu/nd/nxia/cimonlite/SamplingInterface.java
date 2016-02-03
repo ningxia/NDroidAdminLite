@@ -191,8 +191,8 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
         if (duration.equals("")) {
             duration = "12";
         }
-//        long durationInMillis = (long) Integer.parseInt(duration) * 60 * 60 * 1000;
-        long durationInMillis = 5 * 60 * 1000;
+        long durationInMillis = Long.parseLong(duration) * 60 * 60 * 1000;
+//        long durationInMillis = 5 * 60 * 1000;
         editor.putLong(MONITOR_DURATION, durationInMillis);
         editor.commit();
         Intent intent = new Intent(context, SchedulingService.class);
