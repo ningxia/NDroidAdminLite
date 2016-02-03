@@ -164,9 +164,11 @@ public final class MemoryService extends MetricDevice<Integer> {
         setTimer(timestamp);
         fetchValues();
         List<DataEntry> dataList = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < MEM_METRICS; i ++) {
-            dataList.add(new DataEntry(Metrics.MEMORY_CATEGORY + i, timestamp, values[i]));
+            sb.append(values[i]).append("|");
         }
+        dataList.add(new DataEntry(Metrics.MEMORY_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
         return dataList;
     }
 

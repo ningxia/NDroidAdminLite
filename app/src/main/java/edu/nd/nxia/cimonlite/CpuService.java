@@ -141,9 +141,11 @@ public final class CpuService extends MetricDevice<Float> {
             }
         }
         List<DataEntry> dataList = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < CPU_LOADS; i ++) {
-            dataList.add(new DataEntry(Metrics.CPULOAD_CATEGORY + i, timestamp, values[i]));
+            sb.append(values[i]).append("|");
         }
+        dataList.add(new DataEntry(Metrics.CPULOAD_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
         return dataList;
     }
 

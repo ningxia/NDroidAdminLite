@@ -162,9 +162,11 @@ public final class LocationService extends MetricDevice<Double> {
             values[2] = (double) mCoordinate.getAccuracy();
             values[3] = (double) mCoordinate.getSpeed();
             lastUpdate = timestamp;
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < LOCATION_METRICS; i++) {
-                tempData.add(new DataEntry(Metrics.LOCATION_CATEGORY + i, timestamp, values[i]));
+                sb.append(values[i]).append("|");
             }
+            tempData.add(new DataEntry(Metrics.LOCATION_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
         }
         if (timestamp - timer < period - timeOffset) {
             return null;

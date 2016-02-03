@@ -196,9 +196,11 @@ public final class NetBytesService extends MetricDevice<Long> {
             if (DebugLog.DEBUG) Log.d(TAG, "NetPacketsService.getMetricInfo - total tx not supported");
         }
         List<DataEntry> dataList = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < NET_STATS; i++) {
-            dataList.add(new DataEntry(Metrics.NETBYTES_CATEGORY + i, timestamp, values[i]));
+            sb.append(values[i]).append("|");
         }
+        dataList.add(new DataEntry(Metrics.NETBYTES_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
         return dataList;
     }
 

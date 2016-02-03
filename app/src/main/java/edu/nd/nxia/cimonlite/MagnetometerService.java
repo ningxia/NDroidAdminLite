@@ -25,7 +25,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.SystemClock;
 import android.util.FloatMath;
 import android.util.Log;
 import android.util.SparseArray;
@@ -150,9 +149,11 @@ public final class MagnetometerService extends MetricDevice<Float> {
         }
 
         List<DataEntry> dataList = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < MAGNET_METRICS; i ++) {
-            dataList.add(new DataEntry(Metrics.MAGNETOMETER + i, timestamp, values[i]));
+            sb.append(values[i]).append("|");
         }
+        dataList.add(new DataEntry(Metrics.MAGNETOMETER, timestamp, sb.substring(0, sb.length() - 1)));
         return dataList;
     }
 

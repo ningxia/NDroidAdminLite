@@ -82,9 +82,11 @@ public class CellLocationService extends MetricDevice<Integer> {
         fetchValues();
 //        if (DebugLog.DEBUG) Log.d(TAG, "CellLocationService.getData - updating values");
         List<DataEntry> dataList = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < CELL_METRICS; i ++) {
-            dataList.add(new DataEntry(Metrics.CELL_LOCATION_CATEGORY + i, timestamp, values[i]));
+            sb.append(values[i]).append("|");
         }
+        dataList.add(new DataEntry(Metrics.CELL_LOCATION_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
         return dataList;
     }
 

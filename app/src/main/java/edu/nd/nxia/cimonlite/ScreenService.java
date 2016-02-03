@@ -126,7 +126,7 @@ public final class ScreenService extends MetricDevice<Byte> {
         if (timestamp - timer < period) {
             return null;
         }
-        if (DebugLog.DEBUG) Log.d(TAG, "ScrennService.getData - updating Screen values");
+        if (DebugLog.DEBUG) Log.d(TAG, "ScreenService.getData - updating Screen values");
         setTimer(timestamp);
         List<DataEntry> dataList = new ArrayList<>();
         for (int i = 0; i < tempData.size(); i ++) {

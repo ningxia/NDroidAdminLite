@@ -145,9 +145,11 @@ public final class LinearAccelService extends MetricDevice<Float> {
         }
         values[ACCEL_METRICS - 1] = FloatMath.sqrt(magnitude);
         List<DataEntry> dataList = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < ACCEL_METRICS; i ++) {
-            dataList.add(new DataEntry(Metrics.LINEAR_ACCEL + i, timestamp, values[i]));
+            sb.append(values[i]).append("|");
         }
+        dataList.add(new DataEntry(Metrics.LINEAR_ACCEL, timestamp, sb.substring(0, sb.length() - 1)));
         return dataList;
     }
 

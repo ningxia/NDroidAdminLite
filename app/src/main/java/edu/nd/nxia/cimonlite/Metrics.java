@@ -754,17 +754,19 @@ public final class Metrics {
     public static final int MAX_METRIC = 245;
 //	public static final int CATEGORY_SIZE = 10;
 
-    public static final int[] SYSTEM_METRICS = {MEMORY_CATEGORY,
+    public static final int[] SYSTEM_METRICS = {
+            MEMORY_CATEGORY,
             CPULOAD_CATEGORY,
             PROCESSOR_CATEGORY,
             BATTERY_CATEGORY,
             NETBYTES_CATEGORY,
-            NETSTATUS_CATEGORY,
-            INSTRUCTION_CNT,
-            SDCARD_CATEGORY
+            NETSTATUS_CATEGORY
+//            INSTRUCTION_CNT,
+//            SDCARD_CATEGORY
     };
 
-    public static final int[] SENSOR_METRICS = {LOCATION_CATEGORY,
+    public static final int[] SENSOR_METRICS = {
+            LOCATION_CATEGORY,
             ACCELEROMETER,
             MAGNETOMETER,
             GYROSCOPE,
@@ -772,25 +774,25 @@ public final class Metrics {
             ORIENTATION,
             PROXIMITY,
             ATMOSPHERIC_PRESSURE,
-            LIGHT,
-            HUMIDITY,
-            TEMPERATURE
+            LIGHT
+//            HUMIDITY,
+//            TEMPERATURE
     };
 
-    public static final int[] USER_METRICS = {SCREEN_ON,
-            TELEPHONY,
-            SMS_INFO_CATEGORY,
-            MMS_INFO_CATEGORY,
+    public static final int[] USER_METRICS = {
+            SCREEN_ON,
             BLUETOOTH_CATEGORY,
             WIFI_CATEGORY,
-            CALLSTATE,
-            BROWSER_HISTORY_CATEGORY,
             APPLICATION_CATEGORY,
+            CALLSTATE,
+//            BROWSER_HISTORY_CATEGORY,
             CELL_LOCATION_CATEGORY,
-            MEDIA_IMAGE_CATEGORY,
-            MEDIA_AUDIO_CATEGORY,
-            MEDIA_VIDEO_CATEGORY,
-            PHONE_CALL_CATEGORY
+//            MEDIA_IMAGE_CATEGORY,
+//            MEDIA_AUDIO_CATEGORY,
+//            MEDIA_VIDEO_CATEGORY,
+            PHONE_CALL_CATEGORY,
+            SMS_INFO_CATEGORY
+//            MMS_INFO_CATEGORY,
     };
 
     /**

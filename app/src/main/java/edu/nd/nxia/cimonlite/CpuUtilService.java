@@ -193,9 +193,11 @@ public final class CpuUtilService extends MetricDevice<Long> {
             }
         }
         List<DataEntry> dataList = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < PROC_METRICS; i ++) {
-            dataList.add(new DataEntry(Metrics.PROCESSOR_CATEGORY + i, timestamp, values[i]));
+            sb.append(values[i]).append("|");
         }
+        dataList.add(new DataEntry(Metrics.PROCESSOR_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
         return dataList;
     }
 

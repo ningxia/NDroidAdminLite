@@ -139,9 +139,11 @@ public final class NetConnectedService extends MetricDevice<Byte> {
             values[ROAMING] = (byte) (networkInfo.isRoaming() ? 1 : 0);
         }
         List<DataEntry> dataList = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < NET_METRICS; i ++) {
-            dataList.add(new DataEntry(Metrics.NETSTATUS_CATEGORY + i, timestamp, values[i]));
+            sb.append(values[i]).append("|");
         }
+        dataList.add(new DataEntry(Metrics.NETSTATUS_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
         return dataList;
     }
 
