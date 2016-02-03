@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.hardware.SensorManager;
 import android.os.Binder;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -24,7 +23,6 @@ public class NDroidService extends Service {
     private static final String PACKAGE_NAME = "edu.nd.nxia.cimonlite";
     private static final String SHARED_PREFS = "CimonSharedPrefs";
     private static final String SENSOR_DELAY_MODE = "sensor_delay_mode";
-    private static final String MONITOR_STARTED = "monitor_started";
     private static final String WAKE_LOCK = "NDroidServiceWakeLock";
 
     private static SharedPreferences appPrefs;
@@ -73,8 +71,8 @@ public class NDroidService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (DebugLog.DEBUG) Log.d(TAG, "NDroidService.onStartCommand - started");
         metricService = new MetricService(context);
-        int mode = intent.getIntExtra(SENSOR_DELAY_MODE, -1);
-        Log.d(TAG, "NDroidService.onStartCommand - from intent mode: " + mode);
+        int mode = appPrefs.getInt(SENSOR_DELAY_MODE, -1);
+        Log.d(TAG, "NDroidService.onStartCommand - from preference mode: " + mode);
         metricService.startMonitoring(mode);
         return super.onStartCommand(intent, flags, startId);
     }

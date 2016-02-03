@@ -104,7 +104,7 @@ public final class MediaImageService extends MetricDevice<String> {
             return null;
         }
         setTimer(timestamp);
-        if (DebugLog.DEBUG) Log.d(TAG, "MediaImageService.getData - data updated");
+//        if (DebugLog.DEBUG) Log.d(TAG, "MediaImageService.getData - data updated");
         List<DataEntry> dataList = new ArrayList<>();
         for (int i = 0; i < tempData.size(); i ++) {
             dataList.add(tempData.get(i));
@@ -115,6 +115,9 @@ public final class MediaImageService extends MetricDevice<String> {
 
     private void getImageData(long timestamp) {
         Cursor cur = imageResolver.query(uri, image_projection, null, null, SORT_ORDER);
+        if (cur == null) {
+            return;
+        }
         if (!cur.moveToFirst()) {
             cur.close();
             if (DebugLog.DEBUG) Log.d(TAG, "MediaImageService.getImageData - cursor empty?");
@@ -133,7 +136,7 @@ public final class MediaImageService extends MetricDevice<String> {
             size = getSize(cur.getLong(cur.getColumnIndexOrThrow(SIZE)));
             appendInfo(sb, displayName, dateTaken, size);
             tempData.add(new DataEntry(Metrics.MEDIA_IMAGE, timestamp, sb.toString()));
-            if (DebugLog.DEBUG) Log.d(TAG, "MediaImageService.getImageData - " + sb.toString());
+//            if (DebugLog.DEBUG) Log.d(TAG, "MediaImageService.getImageData - " + sb.toString());
             if (!cur.moveToNext()) {
                 break;
             }

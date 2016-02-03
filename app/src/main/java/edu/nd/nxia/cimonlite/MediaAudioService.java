@@ -105,7 +105,7 @@ public final class MediaAudioService extends MetricDevice<String> {
             return null;
         }
         setTimer(timestamp);
-        if (DebugLog.DEBUG) Log.d(TAG, "MediaAudioService.getData - data updated");
+//        if (DebugLog.DEBUG) Log.d(TAG, "MediaAudioService.getData - data updated");
         List<DataEntry> dataList = new ArrayList<>();
         for (int i = 0; i < tempData.size(); i ++) {
             dataList.add(tempData.get(i));
@@ -116,6 +116,9 @@ public final class MediaAudioService extends MetricDevice<String> {
 
     private void getAudioData(long timestamp) {
         Cursor cur = resolver.query(uri, projection, null, null, SORT_ORDER);
+        if (cur == null) {
+            return;
+        }
         if (!cur.moveToFirst()) {
             cur.close();
             if (DebugLog.DEBUG) Log.d(TAG, "MediaAudioService.getAudioData - cursor empty?");
@@ -133,7 +136,7 @@ public final class MediaAudioService extends MetricDevice<String> {
             dateAdded = cur.getLong(cur.getColumnIndexOrThrow(DATE_ADDED)) * 1000;
             size = getSize(cur.getLong(cur.getColumnIndexOrThrow(SIZE)));
             appendInfo(sb, displayName, dateAdded, size);
-            Log.d(TAG, "MediaAudioService.getAudioData - dateAdded: " + dateAdded);
+//            Log.d(TAG, "MediaAudioService.getAudioData - dateAdded: " + dateAdded);
             tempData.add(new DataEntry(Metrics.MEDIA_AUDIO, timestamp, sb.toString()));
             if (DebugLog.DEBUG) Log.d(TAG, "MediaAudioService.getAudioData - " + sb.toString());
             if (!cur.moveToNext()) {

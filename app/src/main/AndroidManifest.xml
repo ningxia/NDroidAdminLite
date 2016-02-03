@@ -40,6 +40,9 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_physician_interface" >
         </activity>
+        <activity
+            android:name=".CimonPreferenceActivity">
+        </activity>
 
         <service
             android:name=".NDroidService"
@@ -48,6 +51,11 @@
             <intent-filter>
                 <action android:name="edu.nd.nxia.cimonlite" />
             </intent-filter>
+        </service>
+        <service
+            android:name=".SchedulingService"
+            android:enabled="true"
+            android:exported="false">
         </service>
         <service
             android:name=".UploadingService"

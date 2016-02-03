@@ -21,6 +21,7 @@ public class PhysicianReceiver extends BroadcastReceiver {
     private static Intent uploadingService;
     private static Intent labelingReminderService;
     private static Intent pingService;
+    private static Intent schedulingService;
 
     SharedPreferences appPrefs;
 
@@ -34,16 +35,17 @@ public class PhysicianReceiver extends BroadcastReceiver {
             uploadingService = new Intent(context, UploadingService.class);
             labelingReminderService = new Intent(context, LabelingReminderService.class);
             pingService = new Intent(context, PingService.class);
+            schedulingService = new Intent(context, SchedulingService.class);
             if (ACTION_SHUTDOWN.equals(intent.getAction())) {
                 if (DebugLog.DEBUG) Log.d(TAG, "+ stop Services +");
-                context.stopService(ndroidService);
+                context.stopService(schedulingService);
                 context.stopService(uploadingService);
                 context.stopService(labelingReminderService);
                 context.stopService(pingService);
             }
             else if (ACTION_START.equals(intent.getAction())) {
                 if (DebugLog.DEBUG) Log.d(TAG, "+ start Services +");
-                context.startService(ndroidService);
+                context.startService(schedulingService);
                 context.startService(uploadingService);
                 context.startService(labelingReminderService);
                 context.startService(pingService);

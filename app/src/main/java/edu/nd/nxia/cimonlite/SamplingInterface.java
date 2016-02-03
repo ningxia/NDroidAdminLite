@@ -1,11 +1,14 @@
 package edu.nd.nxia.cimonlite;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,6 +18,8 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Calendar;
 
 
 public class SamplingInterface extends Activity implements View.OnClickListener, SharedPreferences.OnSharedPreferenceChangeListener {
@@ -26,6 +31,9 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
     private static final String SENSOR_DELAY_MODE = "sensor_delay_mode";
     private static final String RUNNING_MONITOR = "running_monitor";
     private static final String MONITOR_STARTED = "monitor_started";
+    private static final String MONITOR_START_TIME = "monitor_start_time";
+    private static final String MONITOR_DURATION = "monitor_duration";
+    private static final String MONITOR_SLEEP = "monitor_sleep";
 
     private Context context;
     private RadioGroup radioGroup;
@@ -33,6 +41,7 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
     private Button button;
 
     MetricService metricService;
+    SharedPreferences prefs;
     SharedPreferences appPrefs;
     SharedPreferences.Editor editor;
 
@@ -52,6 +61,7 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
         metricService = new MetricService(context);
         metricService.initDatabase();
 
+        prefs = PreferenceManager.getDefaultSharedPreferences(context);
         appPrefs = getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
         appPrefs.registerOnSharedPreferenceChangeListener(this);
         editor = appPrefs.edit();
@@ -141,12 +151,18 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
         }
         else {
             button.setText("Start");
-            Intent intent = new Intent(context, NDroidService.class);
-            stopService(intent);
+//            Intent intentNDroid = new Intent(context, NDroidService.class);
+            Intent intentScheduling = new Intent(context, SchedulingService.class);
+//            stopService(intentNDroid);
+            stopService(intentScheduling);
             editor.remove(MONITOR_STARTED);
             editor.remove(SENSOR_DELAY_MODE);
+            editor.remove(MONITOR_START_TIME);
+            editor.remove(MONITOR_DURATION);
+            editor.remove(MONITOR_SLEEP);
             editor.commit();
             setRadioGroupEnabled(true);
+            textView.setText("");
         }
     }
 
@@ -165,12 +181,23 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
     private void startNDroidService() {
         Log.d(TAG, "SamplingInterface.startNDroidService - sensorDelayMode: " + sensorDelayMode);
         editor.putInt(SENSOR_DELAY_MODE, sensorDelayMode);
-        editor.putBoolean(MONITOR_STARTED, true);
+        String startTime = prefs.getString(MONITOR_START_TIME, "");
+        Log.d(TAG, "SamplingInterface.startNDroidService - starTime: " + startTime);
+        if (startTime.equals("")) {
+            startTime = "08:00";
+        }
+        editor.putString(MONITOR_START_TIME, startTime);
+        String duration = prefs.getString(MONITOR_DURATION, "");
+        if (duration.equals("")) {
+            duration = "12";
+        }
+//        long durationInMillis = (long) Integer.parseInt(duration) * 60 * 60 * 1000;
+        long durationInMillis = 5 * 60 * 1000;
+        editor.putLong(MONITOR_DURATION, durationInMillis);
         editor.commit();
-        Intent intent = new Intent(context, NDroidService.class);
-        intent.putExtra(SENSOR_DELAY_MODE, sensorDelayMode);
+        Intent intent = new Intent(context, SchedulingService.class);
         startService(intent);
-        if (DebugLog.DEBUG) Log.d(TAG, "MainActivity.startNDroidService - started");
+        if (DebugLog.DEBUG) Log.d(TAG, "SamplingInterface.startNDroidService - started");
     }
 
     private void resumeStatus() {

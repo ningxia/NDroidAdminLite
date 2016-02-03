@@ -82,7 +82,7 @@ public class CallStateService extends MetricDevice<String> {
         if (timestamp - timer < period) {
             return null;
         }
-        if (DebugLog.DEBUG) Log.d(TAG, "CallStateService.getData - updating values");
+//        if (DebugLog.DEBUG) Log.d(TAG, "CallStateService.getData - updating values");
         setTimer(timestamp);
         List<DataEntry> dataList = new ArrayList<>();
         for (int i = 0; i < tempData.size(); i ++) {

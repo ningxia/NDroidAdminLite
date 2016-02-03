@@ -207,7 +207,7 @@ public final class LocationService extends MetricDevice<Double> {
 	 * @return    best last known location
 	 */
 	private Location getLastLocation() {
-		if (DebugLog.DEBUG) Log.d(TAG, "LocationService.getLastLocation - getting last known location");
+//		if (DebugLog.DEBUG) Log.d(TAG, "LocationService.getLastLocation - getting last known location");
 		Location gps = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 		Location network = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 		if (gps != null) {

@@ -285,23 +285,23 @@ public class MetricService implements SensorEventListener {
         mAccessObserver.stopWatching();
         mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
         mContentResolver.unregisterContentObserver(mSmsContentObserver);
-        double offset = (endTime - startTime) / 1000.0;
-        AccelerometerService accelerometerService = (AccelerometerService) mDeviceArray.get(Metrics.ACCELEROMETER);
-        double rateAccelerometer = accelerometerService.getCount() / offset;
-        accelerometerService.resetCount();
-        GyroscopeService gyroscopeService = (GyroscopeService) mDeviceArray.get(Metrics.GYROSCOPE);
-        double rateGyroscope = gyroscopeService.getCount() / offset;
-        gyroscopeService.resetCount();
-        PressureService pressureService = (PressureService) mDeviceArray.get(Metrics.ATMOSPHERIC_PRESSURE);
-        double rateBarometer = pressureService.getCount() / offset;
-        pressureService.resetCount();
+//        double offset = (endTime - startTime) / 1000.0;
+//        AccelerometerService accelerometerService = (AccelerometerService) mDeviceArray.get(Metrics.ACCELEROMETER);
+//        double rateAccelerometer = accelerometerService.getCount() / offset;
+//        accelerometerService.resetCount();
+//        GyroscopeService gyroscopeService = (GyroscopeService) mDeviceArray.get(Metrics.GYROSCOPE);
+//        double rateGyroscope = gyroscopeService.getCount() / offset;
+//        gyroscopeService.resetCount();
+//        PressureService pressureService = (PressureService) mDeviceArray.get(Metrics.ATMOSPHERIC_PRESSURE);
+//        double rateBarometer = pressureService.getCount() / offset;
+//        pressureService.resetCount();
+//        String result = String.format(
+//                "Accelerometer Sampling Rate: %.2fHz\n" +
+//                        "Gyroscope Sampling Rate: %.2fHz\n" +
+//                        "Barometer Sampling Rate: %.2fHz",
+//                rateAccelerometer, rateGyroscope, rateBarometer
+//        );
         isActive = false;
-        String result = String.format(
-                "Accelerometer Sampling Rate: %.2fHz\n" +
-                        "Gyroscope Sampling Rate: %.2fHz\n" +
-                        "Barometer Sampling Rate: %.2fHz",
-                rateAccelerometer, rateGyroscope, rateBarometer
-        );
         if (dataList.size() > 0) {
             new Thread(new Runnable() {
                 @Override
@@ -313,9 +313,10 @@ public class MetricService implements SensorEventListener {
 
         editor = appPrefs.edit();
         editor.remove(RUNNING_MONITOR);
-        editor.putString(SENSOR_RESULT, result);
+//        editor.putString(SENSOR_RESULT, result);
         editor.commit();
-        return result;
+//        return result;
+        return "";
     }
 
     @Override
