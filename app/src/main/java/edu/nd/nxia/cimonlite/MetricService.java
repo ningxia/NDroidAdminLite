@@ -119,8 +119,8 @@ public class MetricService implements SensorEventListener {
 
 //        initAccelerometer();
 //        initGyroscope();
-        initBarometer();
-//        initThree();
+//        initBarometer();
+        initThree();
 //        initDevices();
 
         database = CimonDatabaseAdapter.getInstance(context);
