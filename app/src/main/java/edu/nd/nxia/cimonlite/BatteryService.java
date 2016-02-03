@@ -46,20 +46,20 @@ import java.util.List;
  * <p>
  * See android documentation of {@link BatteryManager} for complete
  * description of metric values.
- * 
+ *
  * @author darts
- * 
+ *
  * @see MetricService
  * @see BatteryManager
  *
  */
-public final class BatteryService extends MetricDevice<Integer> {
+public final class BatteryService extends MetricDevice<Float> {
 
 	private static final String TAG = "NDroid";
 	private static final int BATT_METRICS = 6;
-	private static final int BATT_INT_METRICS = 4;
+//	private static final int BATT_INT_METRICS = 4;
 	private static final long THIRTY_MINUTES = 1800000;
-	
+
 	// NOTE: title and string array must be defined above instance,//
 	//   otherwise, they will be null in constructor
 	private static final IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
@@ -73,23 +73,23 @@ public final class BatteryService extends MetricDevice<Integer> {
 	private Float voltage;
     private static Intent batteryStatus = null;
     private static IntentFilter batteryIntentFilter;
-	
+
 	private BatteryService() {
 		if (DebugLog.DEBUG) Log.d(TAG, "BatteryService - constructor");
 		groupId = Metrics.BATTERY_CATEGORY;
 		metricsCount = BATT_METRICS;
-		values = new Integer[BATT_INT_METRICS];
+		values = new Float[BATT_METRICS];
 	}
-	
+
 	public static BatteryService getInstance() {
 		if (DebugLog.DEBUG) Log.d(TAG, "BatteryService.getInstance - get single instance");
 		if (!INSTANCE.supportedMetric) return null;
 		return INSTANCE;
 	}
-	
+
 	/**
 	 * Get string describing battery used with device.
-	 * 
+	 *
 	 * @return    technology description of battery
 	 */
 	private String getTechnology() {
@@ -119,22 +119,22 @@ public final class BatteryService extends MetricDevice<Integer> {
 	void insertDatabaseEntries() {
 		Context context = MyApplication.getAppContext();
 		CimonDatabaseAdapter database = CimonDatabaseAdapter.getInstance(context);
-		
+
 		// insert metric group information in database
-		database.insertOrReplaceMetricInfo(groupId, title, getTechnology(), 
+		database.insertOrReplaceMetricInfo(groupId, title, getTechnology(),
 				SUPPORTED, 0, 0, "100 %", "1 %", Metrics.TYPE_SYSTEM);
 		// insert information for metrics in group into database
-		database.insertOrReplaceMetrics(Metrics.BATTERY_PERCENT, groupId, 
+		database.insertOrReplaceMetrics(Metrics.BATTERY_PERCENT, groupId,
 				"Battery level", context.getString(R.string.units_percent), 100);
-		database.insertOrReplaceMetrics(Metrics.BATTERY_STATUS, groupId, 
+		database.insertOrReplaceMetrics(Metrics.BATTERY_STATUS, groupId,
 				"Status", "", 5);
-		database.insertOrReplaceMetrics(Metrics.BATTERY_PLUGGED, groupId, 
+		database.insertOrReplaceMetrics(Metrics.BATTERY_PLUGGED, groupId,
 				"Plugged status", "", 2);
-		database.insertOrReplaceMetrics(Metrics.BATTERY_HEALTH, groupId, 
+		database.insertOrReplaceMetrics(Metrics.BATTERY_HEALTH, groupId,
 				"Health", "", 7);
-		database.insertOrReplaceMetrics(Metrics.BATTERY_TEMPERATURE, groupId, 
+		database.insertOrReplaceMetrics(Metrics.BATTERY_TEMPERATURE, groupId,
 				"Temperature", context.getString(R.string.units_celcius), 100);
-		database.insertOrReplaceMetrics(Metrics.BATTERY_VOLTAGE, groupId, 
+		database.insertOrReplaceMetrics(Metrics.BATTERY_VOLTAGE, groupId,
 				"Voltage", context.getString(R.string.units_volts), 10);
 	}
 
@@ -146,12 +146,8 @@ public final class BatteryService extends MetricDevice<Integer> {
             return null;
         }
         setTimer(timestamp);
-        Integer values[] = new Integer[BATT_INT_METRICS];
         int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
         int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-        values[Metrics.BATTERY_STATUS - Metrics.BATTERY_CATEGORY] = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-        values[Metrics.BATTERY_PLUGGED - Metrics.BATTERY_CATEGORY] = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-        values[Metrics.BATTERY_HEALTH - Metrics.BATTERY_CATEGORY] = intent.getIntExtra(BatteryManager.EXTRA_HEALTH, -1);
         // temperature returned is tenths of a degree centigrade.
         //  temp = value / 10 (degrees celcius)
         float temp = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
@@ -159,14 +155,20 @@ public final class BatteryService extends MetricDevice<Integer> {
         // voltage returned is millivolts
         float volt = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1);
         float voltage = volt / 1000.0f;
-        values[Metrics.BATTERY_PERCENT - Metrics.BATTERY_CATEGORY] = level * 100 / scale;
-//        for (int i = 0; i < BATTERY_METRICS; i ++) {
-//            dataList.add(new DataEntry(Metrics.BATTERY_PERCENT, timestamp, values[i]));
-//        }
+        values[Metrics.BATTERY_PERCENT - Metrics.BATTERY_CATEGORY] = (float) level * 100 / scale;
+        values[Metrics.BATTERY_STATUS - Metrics.BATTERY_CATEGORY] = (float) intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+        values[Metrics.BATTERY_PLUGGED - Metrics.BATTERY_CATEGORY] = (float) intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+        values[Metrics.BATTERY_HEALTH - Metrics.BATTERY_CATEGORY] = (float) intent.getIntExtra(BatteryManager.EXTRA_HEALTH, -1);
+        values[Metrics.BATTERY_TEMPERATURE - Metrics.BATTERY_CATEGORY] = temperature;
+        values[Metrics.BATTERY_VOLTAGE - Metrics.BATTERY_CATEGORY] = voltage;
         if (DebugLog.DEBUG)
             Log.d(TAG, "BatteryService.batteryReceiver - updating battery values: " + values[0]);
         List<DataEntry> dataList = new ArrayList<>();
-        dataList.add(new DataEntry(Metrics.BATTERY_PERCENT, timestamp, values[0]));
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < BATT_METRICS; i ++) {
+            sb.append(values[i]).append("|");
+        }
+        dataList.add(new DataEntry(Metrics.BATTERY_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
         return dataList;
     }
 
