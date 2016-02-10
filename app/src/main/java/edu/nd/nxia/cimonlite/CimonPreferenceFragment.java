@@ -35,6 +35,7 @@ public class CimonPreferenceFragment extends PreferenceFragment {
             }
         });
 
+        durationPreference.setSummary(durationPreference.getText());
         durationPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {

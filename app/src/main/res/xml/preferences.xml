@@ -9,7 +9,6 @@
             android:key="monitor_duration"
             android:inputType="number"
             android:defaultValue="12"
-            android:summary="12"
             android:title="Duration in hours"/>
     </PreferenceCategory>
 </PreferenceScreen>
