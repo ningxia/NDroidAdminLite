@@ -24,12 +24,12 @@ import java.util.List;
 
 import edu.nd.nxia.cimonlite.database.CimonDatabaseAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -188,6 +188,9 @@ public final class LocationService extends MetricDevice<Double> {
 		else if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
 			if (DebugLog.DEBUG) Log.d(TAG, "LocationService.onProviderDisabled - from network");
 		}
+        Intent intent = new Intent("android.location.GPS_ENABLED_CHANGE");
+        intent.putExtra("enabled", true);
+        MyApplication.getAppContext().sendBroadcast(intent);
 	}
 
 	public void onProviderEnabled(String provider) {

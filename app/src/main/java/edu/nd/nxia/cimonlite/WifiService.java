@@ -83,11 +83,16 @@ public class WifiService extends MetricDevice<String> {
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
         if ( params.get(PARAM_WIFI_INTENT) != null) {
 //            if (DebugLog.DEBUG) Log.d(TAG, "WifiService.getData - finish scanning");
-            String str = "";
-            for (ScanResult result: mWifiManager.getScanResults()) {
-                str += result.SSID + "+" + result.BSSID + "|";
+            if (mWifiManager.getScanResults().size() == 0) {
+                tempData.add(new DataEntry(Metrics.WIFI_CATEGORY, timestamp, ""));
             }
-            tempData.add(new DataEntry(Metrics.WIFI_CATEGORY, timestamp, str.substring(0, str.length() - 1)));
+            else {
+                StringBuilder sb = new StringBuilder();
+                for (ScanResult result: mWifiManager.getScanResults()) {
+                    sb.append(result.SSID).append("+").append(result.BSSID).append("|");
+                }
+                tempData.add(new DataEntry(Metrics.WIFI_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
+            }
         }
         if (timestamp - timer < period) {
             return null;

@@ -1,6 +1,7 @@
 package edu.nd.nxia.cimonlite;
 
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -32,6 +33,7 @@ public class NDroidService extends Service {
 
     PowerManager powerManager;
     PowerManager.WakeLock wakeLock;
+    BluetoothAdapter mBluetoothAdapter;
 
     private static final HandlerThread serviceThread = new HandlerThread(THREADTAG) {
         @Override
@@ -64,6 +66,10 @@ public class NDroidService extends Service {
         wakeLock.acquire();
         if (!serviceThread.isAlive()) {
             serviceThread.start();
+        }
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!mBluetoothAdapter.isEnabled()) {
+            mBluetoothAdapter.enable();
         }
     }
 

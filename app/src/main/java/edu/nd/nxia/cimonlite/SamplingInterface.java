@@ -1,14 +1,18 @@
 package edu.nd.nxia.cimonlite;
 
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
+import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.SensorManager;
+import android.location.LocationManager;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -44,6 +48,10 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
     SharedPreferences prefs;
     SharedPreferences appPrefs;
     SharedPreferences.Editor editor;
+    BluetoothAdapter mBluetoothAdapter;
+    WifiManager mWifiManager;
+    LocationManager mLocationManager;
+    Intent intentGPS;
 
     private int sensorDelayMode;
 
@@ -57,6 +65,24 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
         textView = (TextView) findViewById(R.id.text_view);
         button = (Button) findViewById(R.id.start_button);
         button.setOnClickListener(this);
+
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!mBluetoothAdapter.isEnabled()) {
+            Toast.makeText(this, "It is necessary to keep Bluetooth on! Now enabling ...", Toast.LENGTH_LONG).show();
+            mBluetoothAdapter.enable();
+        }
+
+        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        if (!mWifiManager.isWifiEnabled()) {
+            Toast.makeText(this, "It is necessary to keep WiFi enabled! Now enabling ...", Toast.LENGTH_LONG).show();
+            mWifiManager.setWifiEnabled(true);
+        }
+
+        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            Toast.makeText(this, "Please enable Location service!", Toast.LENGTH_LONG).show();
+            startActivityForResult(new Intent(android.provider.Settings.ACTION_SETTINGS), 0);
+        }
 
         metricService = new MetricService(context);
         metricService.initDatabase();
@@ -182,7 +208,6 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
         Log.d(TAG, "SamplingInterface.startNDroidService - sensorDelayMode: " + sensorDelayMode);
         editor.putInt(SENSOR_DELAY_MODE, sensorDelayMode);
         String startTime = prefs.getString(MONITOR_START_TIME, "");
-        Log.d(TAG, "SamplingInterface.startNDroidService - starTime: " + startTime);
         if (startTime.equals("")) {
             startTime = "08:00";
         }
@@ -191,6 +216,7 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
         if (duration.equals("")) {
             duration = "12";
         }
+        Log.d(TAG, "SamplingInterface.startNDroidService - startTime: " + startTime + " - duration: " + duration);
         long durationInMillis = Long.parseLong(duration) * 60 * 60 * 1000;
 //        long durationInMillis = 5 * 60 * 1000;
         editor.putLong(MONITOR_DURATION, durationInMillis);
