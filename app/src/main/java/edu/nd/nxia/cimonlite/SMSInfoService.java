@@ -180,7 +180,7 @@ public final class SMSInfoService extends MetricDevice<String> {
             }
             else {
                 appendInfo(sbSent, smsAddress, smsDate);
-                tempData.add(new DataEntry(Metrics.SMSSENT, smsDate, sbReceived.toString()));
+                tempData.add(new DataEntry(Metrics.SMSSENT, smsDate, sbSent.toString()));
                 if (DebugLog.DEBUG) Log.d(TAG, "SMSInfoService.getSmsData - sent: " + sbSent.toString());
                 sbSent.setLength(0);
             }
