@@ -131,8 +131,8 @@ public final class NetConnectedService extends MetricDevice<Byte> {
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 
         if (networkInfo == null) {
-            values[CONNECTED] = 0;
-            values[ROAMING] = 0;
+            values[CONNECTED] = -1;
+            values[ROAMING] = -1;
         }
         else {
             values[CONNECTED] = (byte) (networkInfo.isConnected() ? 1 : 0);
