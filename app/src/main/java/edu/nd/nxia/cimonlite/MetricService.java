@@ -344,7 +344,7 @@ public class MetricService implements SensorEventListener {
                     tempData = mDeviceArray.get(Metrics.MAGNETOMETER).getData(params);
                     break;
                 case Sensor.TYPE_GYROSCOPE:
-                    Log.d(TAG, "MetricService.onSensorChanged - Gyroscope");
+//                    Log.d(TAG, "MetricService.onSensorChanged - Gyroscope");
                     tempData = mDeviceArray.get(Metrics.GYROSCOPE).getData(params);
                     break;
                 case Sensor.TYPE_LINEAR_ACCELERATION:
@@ -354,7 +354,7 @@ public class MetricService implements SensorEventListener {
                     tempData = mDeviceArray.get(Metrics.PROXIMITY).getData(params);
                     break;
                 case Sensor.TYPE_PRESSURE:
-                    Log.d(TAG, "MetricService.onSensorChanged - Pressure");
+//                    Log.d(TAG, "MetricService.onSensorChanged - Pressure");
                     tempData = mDeviceArray.get(Metrics.ATMOSPHERIC_PRESSURE).getData(params);
                     break;
                 case Sensor.TYPE_LIGHT:
