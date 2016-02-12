@@ -42,7 +42,7 @@ public class UploadingService extends Service {
     private static final String TAG = "CimonUploadingService";
     private static final String WAKE_LOCK = "UploadingServiceWakeLock";
     private static final String[] uploadTables = {MetricInfoTable.TABLE_METRICINFO, LabelingHistory.TABLE_NAME, MetricsTable.TABLE_METRICS, DataTable.TABLE_DATA};
-    private static final int period = 1000 * 10;
+    private static final int period = 1000 * 15;
     private static int count;
     private static int MAXRECORDS = 3000;
     private static int curWindow = 5 * MAXRECORDS;
@@ -104,6 +104,7 @@ public class UploadingService extends Service {
      * @author Xiao(Sean) Bo
      */
     private void runUpload() {
+        Log.d(TAG,"Run upload");
         Calendar timeConverter = Calendar.getInstance();
         timeConverter.set(Calendar.HOUR_OF_DAY, startHour);
         long startTime = timeConverter.getTimeInMillis();
@@ -202,6 +203,7 @@ public class UploadingService extends Service {
             MalformedURLException {
         sendMsg("Upload cursor",getDeviceID());
         JSONArray records = new JSONArray();
+        Log.d(TAG,"Upload cursor " + tableName);
         String[] columnNames = cursor.getColumnNames();
         ArrayList<Integer> rowIDs = new ArrayList<Integer>();
         while (!cursor.isAfterLast()) {
@@ -257,6 +259,7 @@ public class UploadingService extends Service {
         sendMsg("Batch upload",getDeviceID());
         DataCommunicator comm = new DataCommunicator();
         JSONObject mainPackage = new JSONObject();
+        Log.d(TAG,"Batch upload " + tableName);
         try {
             mainPackage.put("records", Cipher.encryptString(records.toString(), true));
         } catch (Exception e) {
@@ -271,6 +274,7 @@ public class UploadingService extends Service {
         String deviceID = getDeviceID();
         mainPackage.put("device_id", deviceID);
         String callBack = comm.postData(mainPackage.toString().getBytes());
+        Log.d(TAG,"Call back:" + callBack + " " + tableName);
         if (callBack.equals("Success")
                 && (tableName.equals(DataTable.TABLE_DATA) || tableName
                 .equals(LabelingHistory.TABLE_NAME))) {
@@ -289,6 +293,7 @@ public class UploadingService extends Service {
     private static void garbageCollection(ArrayList<Integer> rowIDs,
                                           String tableName) {
         sendMsg("Garbage collection",getDeviceID());
+        Log.d(TAG,"Garbage collection " + tableName);
         SQLiteDatabase curDB = tableName.equals(LabelingHistory.TABLE_NAME) ? LabelingHistory.db
                 : CimonDatabaseAdapter.database;
         StringBuilder IDs = new StringBuilder();
@@ -329,7 +334,6 @@ public class UploadingService extends Service {
         } else
             return CimonDatabaseAdapter.database.rawQuery("SELECT * FROM "
                     + tableName + " LIMIT " + Integer.toString(curWindow) + ";", null);
-
     }
 
     /**
