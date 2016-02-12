@@ -144,12 +144,13 @@ public class MetricService implements SensorEventListener {
 //        mPeriodArray.put(Metrics.ACCELEROMETER, 35L);
         mPeriodArray.put(Metrics.ACCELEROMETER, 0L);
         mPeriodArray.put(Metrics.MAGNETOMETER, 100L);
-//        mPeriodArray.put(Metrics.GYROSCOPE, 35L);
-        mPeriodArray.put(Metrics.GYROSCOPE, 0L);
+        mPeriodArray.put(Metrics.GYROSCOPE, 15L);
+//        mPeriodArray.put(Metrics.GYROSCOPE, 0L);
         mPeriodArray.put(Metrics.LINEAR_ACCEL, 100L);
         mPeriodArray.put(Metrics.ORIENTATION, 100L);
         mPeriodArray.put(Metrics.PROXIMITY, 1000L);
-        mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 0L);
+//        mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 0L);
+        mPeriodArray.put(Metrics.ATMOSPHERIC_PRESSURE, 100L);
         mPeriodArray.put(Metrics.LIGHT, 1000L);
         mPeriodArray.put(Metrics.HUMIDITY, 1000L);
         mPeriodArray.put(Metrics.TEMPERATURE, 1000L);
@@ -343,7 +344,7 @@ public class MetricService implements SensorEventListener {
                     tempData = mDeviceArray.get(Metrics.MAGNETOMETER).getData(params);
                     break;
                 case Sensor.TYPE_GYROSCOPE:
-//                    Log.d(TAG, "MetricService.onSensorChanged - Gyroscope");
+                    Log.d(TAG, "MetricService.onSensorChanged - Gyroscope");
                     tempData = mDeviceArray.get(Metrics.GYROSCOPE).getData(params);
                     break;
                 case Sensor.TYPE_LINEAR_ACCELERATION:
@@ -353,7 +354,7 @@ public class MetricService implements SensorEventListener {
                     tempData = mDeviceArray.get(Metrics.PROXIMITY).getData(params);
                     break;
                 case Sensor.TYPE_PRESSURE:
-//                    Log.d(TAG, "MetricService.onSensorChanged - Pressure");
+                    Log.d(TAG, "MetricService.onSensorChanged - Pressure");
                     tempData = mDeviceArray.get(Metrics.ATMOSPHERIC_PRESSURE).getData(params);
                     break;
                 case Sensor.TYPE_LIGHT:
