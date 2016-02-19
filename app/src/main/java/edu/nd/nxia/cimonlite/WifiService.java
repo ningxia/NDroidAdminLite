@@ -83,7 +83,9 @@ public class WifiService extends MetricDevice<String> {
         long timestamp = (long) params.get(PARAM_TIMESTAMP);
         if ( params.get(PARAM_WIFI_INTENT) != null) {
 //            if (DebugLog.DEBUG) Log.d(TAG, "WifiService.getData - finish scanning");
-            tempData.addAll(mWifiManager.getScanResults());
+            if (mWifiManager.getScanResults().size() > 0) {
+                tempData.addAll(mWifiManager.getScanResults());
+            }
         }
         if (timestamp - timer < period) {
             return null;
@@ -93,12 +95,17 @@ public class WifiService extends MetricDevice<String> {
         mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         mWifiManager.startScan();
         List<DataEntry> dataList = new ArrayList<>();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < tempData.size(); i ++) {
-            sb.append(tempData.get(i).SSID).append("+").append(tempData.get(i).BSSID).append("|");
+        if (tempData.size() == 0) {
+            dataList.add(new DataEntry(Metrics.WIFI_CATEGORY, timestamp, ""));
         }
-        dataList.add(new DataEntry(Metrics.WIFI_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
-        tempData.clear();
+        else {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < tempData.size(); i ++) {
+                sb.append(tempData.get(i).SSID).append("+").append(tempData.get(i).BSSID).append("|");
+            }
+            dataList.add(new DataEntry(Metrics.WIFI_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
+            tempData.clear();
+        }
         return dataList;
     }
 

@@ -200,7 +200,12 @@ public final class NetBytesService extends MetricDevice<Long> {
         for (int i = 0; i < NET_STATS; i++) {
             sb.append(values[i]).append("|");
         }
-        dataList.add(new DataEntry(Metrics.NETBYTES_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
+        if (sb.length() == 0) {
+            dataList.add(new DataEntry(Metrics.NETBYTES_CATEGORY, timestamp, ""));
+        }
+        else {
+            dataList.add(new DataEntry(Metrics.NETBYTES_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
+        }
         return dataList;
     }
 

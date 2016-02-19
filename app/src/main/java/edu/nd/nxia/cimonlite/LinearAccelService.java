@@ -149,7 +149,12 @@ public final class LinearAccelService extends MetricDevice<Float> {
         for (int i = 0; i < ACCEL_METRICS; i ++) {
             sb.append(values[i]).append("|");
         }
-        dataList.add(new DataEntry(Metrics.LINEAR_ACCEL, timestamp, sb.substring(0, sb.length() - 1)));
+        if (sb.length() == 0) {
+            dataList.add(new DataEntry(Metrics.LINEAR_ACCEL, timestamp, ""));
+        }
+        else {
+            dataList.add(new DataEntry(Metrics.LINEAR_ACCEL, timestamp, sb.substring(0, sb.length() - 1)));
+        }
         return dataList;
     }
 

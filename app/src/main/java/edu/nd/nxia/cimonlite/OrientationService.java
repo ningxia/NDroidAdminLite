@@ -150,7 +150,12 @@ public final class OrientationService extends MetricDevice<Float> {
         for (int i = 0; i < ORIENT_METRICS; i ++) {
             sb.append(values[i]).append("|");
         }
-        dataList.add(new DataEntry(Metrics.ORIENTATION, timestamp, sb.substring(0, sb.length() - 1)));
+        if (sb.length() == 0) {
+            dataList.add(new DataEntry(Metrics.ORIENTATION, timestamp, ""));
+        }
+        else {
+            dataList.add(new DataEntry(Metrics.ORIENTATION, timestamp, sb.substring(0, sb.length() - 1)));
+        }
 //        if (DebugLog.DEBUG) Log.d(TAG, "OrientationService.getData: " + values[0] + " " + values[1] + " " + values[2]);
         return dataList;
     }

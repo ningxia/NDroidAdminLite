@@ -113,11 +113,11 @@ public final class GyroscopeService extends MetricDevice<Float> {
 		}
 		
 		// insert metric group information in database
-		database.insertOrReplaceMetricInfo(groupId, title, mGyroscope.getName(), 
-				SUPPORTED, mGyroscope.getPower(), mGyroscope.getMinDelay()/1000, 
-				mGyroscope.getMaximumRange() + " " + context.getString(R.string.units_rads), 
-				mGyroscope.getResolution() + " " + context.getString(R.string.units_rads), 
-				Metrics.TYPE_SENSOR);
+		database.insertOrReplaceMetricInfo(groupId, title, mGyroscope.getName(),
+                SUPPORTED, mGyroscope.getPower(), mGyroscope.getMinDelay() / 1000,
+                mGyroscope.getMaximumRange() + " " + context.getString(R.string.units_rads),
+                mGyroscope.getResolution() + " " + context.getString(R.string.units_rads),
+                Metrics.TYPE_SENSOR);
 		// insert information for metrics in group into database
 		for (int i = 0; i < GYRO_METRICS; i++) {
 			database.insertOrReplaceMetrics(groupId + i, groupId, metrics[i],
@@ -150,7 +150,12 @@ public final class GyroscopeService extends MetricDevice<Float> {
             valueString.append(values[i].toString() + "|");
         }
         valueString.append(values[GYRO_METRICS - 1].toString());
-        dataList.add(new DataEntry(Metrics.GYROSCOPE, timestamp, valueString.toString()));
+        if (valueString.length() == 0) {
+            dataList.add(new DataEntry(Metrics.GYROSCOPE, timestamp, ""));
+        }
+        else {
+            dataList.add(new DataEntry(Metrics.GYROSCOPE, timestamp, valueString.toString()));
+        }
         return dataList;
     }
 

@@ -153,7 +153,12 @@ public final class MagnetometerService extends MetricDevice<Float> {
         for (int i = 0; i < MAGNET_METRICS; i ++) {
             sb.append(values[i]).append("|");
         }
-        dataList.add(new DataEntry(Metrics.MAGNETOMETER, timestamp, sb.substring(0, sb.length() - 1)));
+        if (sb.length() == 0) {
+            dataList.add(new DataEntry(Metrics.MAGNETOMETER, timestamp, ""));
+        }
+        else {
+            dataList.add(new DataEntry(Metrics.MAGNETOMETER, timestamp, sb.substring(0, sb.length() - 1)));
+        }
         return dataList;
     }
 

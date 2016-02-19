@@ -89,10 +89,6 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
         appPrefs.registerOnSharedPreferenceChangeListener(this);
         editor = appPrefs.edit();
         resumeStatus();
-
-        startUploadingService();
-        startLabelingReminderService();
-
         getDefaultCheckedValue();
 
     }
@@ -167,6 +163,11 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
     @Override
     public void onClick(View v) {
         if (button.getText().equals("Start")) {
+            boolean monitorStarted = appPrefs.getBoolean(MONITOR_STARTED, false);
+            if (!monitorStarted) {
+                editor.putBoolean(MONITOR_STARTED, true);
+                editor.commit();
+            }
             button.setText("Stop");
             startNDroidService();
             setRadioGroupEnabled(false);
@@ -224,8 +225,22 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
     }
 
     private void resumeStatus() {
-        if (appPrefs.getInt(RUNNING_MONITOR, -1) != -1) {
-            Toast.makeText(this, "Monitor #" + appPrefs.getInt(RUNNING_MONITOR, -1) + " is running...", Toast.LENGTH_LONG).show();
+        if (appPrefs.getBoolean(MONITOR_STARTED, false)) {
+            String message = "";
+            if (appPrefs.getBoolean(MONITOR_SLEEP, false)) {
+                String monitorSleeping = "Monitor is sleeping...\n";
+                String monitorScheduled = "Monitor is scheduled to start at " + appPrefs.getString(MONITOR_START_TIME, "") + ".";
+                message += monitorSleeping + monitorScheduled;
+            }
+            else {
+                if (appPrefs.getInt(RUNNING_MONITOR, -1) == -1) {
+                    message = "Monitor is initiating...";
+                }
+                else {
+                    message = "Monitor #" + appPrefs.getInt(RUNNING_MONITOR, -1) + " is running...";
+                }
+            }
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             button.setText("Stop");
             textView.setText("Working...");
             int mode = appPrefs.getInt(SENSOR_DELAY_MODE, -1);

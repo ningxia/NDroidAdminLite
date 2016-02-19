@@ -16,6 +16,7 @@ public class PhysicianReceiver extends BroadcastReceiver {
 
     private static final String SHARED_PREFS = "CimonSharedPrefs";
     private static final String MONITOR_STARTED = "monitor_started";
+    private static final String MONITOR_SLEEP = "monitor_sleep";
     private static boolean monitorStarted;
     private static Intent ndroidService;
     private static Intent uploadingService;
@@ -24,6 +25,7 @@ public class PhysicianReceiver extends BroadcastReceiver {
     private static Intent schedulingService;
 
     SharedPreferences appPrefs;
+    SharedPreferences.Editor editor;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -37,6 +39,9 @@ public class PhysicianReceiver extends BroadcastReceiver {
             pingService = new Intent(context, PingService.class);
             schedulingService = new Intent(context, SchedulingService.class);
             if (ACTION_SHUTDOWN.equals(intent.getAction())) {
+                editor = appPrefs.edit();
+                editor.remove(MONITOR_SLEEP);
+                editor.commit();
                 if (DebugLog.DEBUG) Log.d(TAG, "+ stop Services +");
                 context.stopService(schedulingService);
                 context.stopService(uploadingService);

@@ -172,7 +172,12 @@ public final class LocationService extends MetricDevice<Double> {
         for (int i = 0; i < LOCATION_METRICS; i++) {
             sb.append(values[i]).append("|");
         }
-        tempData.add(new DataEntry(Metrics.LOCATION_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
+        if (sb.length() == 0) {
+            tempData.add(new DataEntry(Metrics.LOCATION_CATEGORY, timestamp, ""));
+        }
+        else {
+            tempData.add(new DataEntry(Metrics.LOCATION_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
+        }
 
         List<DataEntry> dataList = new ArrayList<>();
         dataList.add(tempData.get(0));

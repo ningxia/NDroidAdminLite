@@ -161,7 +161,12 @@ public final class BrowserHistoryService extends MetricDevice<String> {
                 date = cur.getLong(cur.getColumnIndexOrThrow(BROWSING_DATE));
                 url = cur.getString(cur.getColumnIndexOrThrow(BROWSING_URL));
                 appendInfo(sb, title, date, url);
-                tempData.add(new DataEntry(Metrics.BROWSING_HISTORY, timestamp, sb.toString()));
+                if (sb.length() == 0) {
+                    tempData.add(new DataEntry(Metrics.BROWSING_HISTORY, timestamp, ""));
+                }
+                else {
+                    tempData.add(new DataEntry(Metrics.BROWSING_HISTORY, timestamp, sb.toString()));
+                }
                 sb.setLength(0);
 
                 if (!cur.moveToNext()) {

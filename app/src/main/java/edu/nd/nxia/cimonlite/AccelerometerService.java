@@ -114,11 +114,11 @@ public final class AccelerometerService extends MetricDevice<Float> {
 		}
 		
 		// insert metric group information in database
-		database.insertOrReplaceMetricInfo(groupId, title, mAccelerometer.getName(), 
-				SUPPORTED, mAccelerometer.getPower(), mAccelerometer.getMinDelay()/1000, 
-				mAccelerometer.getMaximumRange() + " " + context.getString(R.string.units_ms2), 
-				mAccelerometer.getResolution() + " " + context.getString(R.string.units_ms2), 
-				Metrics.TYPE_SENSOR);
+		database.insertOrReplaceMetricInfo(groupId, title, mAccelerometer.getName(),
+                SUPPORTED, mAccelerometer.getPower(), mAccelerometer.getMinDelay() / 1000,
+                mAccelerometer.getMaximumRange() + " " + context.getString(R.string.units_ms2),
+                mAccelerometer.getResolution() + " " + context.getString(R.string.units_ms2),
+                Metrics.TYPE_SENSOR);
 		// insert information for metrics in group into database
 		for (int i = 0; i < ACCEL_METRICS; i++) {
 			database.insertOrReplaceMetrics(groupId + i, groupId, metrics[i],
@@ -164,7 +164,12 @@ public final class AccelerometerService extends MetricDevice<Float> {
             valueString.append(values[i].toString() + "|");
         }
         valueString.append(values[ACCEL_METRICS - 1].toString());
-        dataList.add(new DataEntry(Metrics.ACCELEROMETER, timestamp, valueString.toString()));
+        if (valueString.length() == 0 ) {
+            dataList.add(new DataEntry(Metrics.ACCELEROMETER, timestamp, ""));
+        }
+        else {
+            dataList.add(new DataEntry(Metrics.ACCELEROMETER, timestamp, valueString.toString()));
+        }
         return dataList;
     }
 

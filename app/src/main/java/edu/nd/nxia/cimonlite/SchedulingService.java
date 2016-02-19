@@ -86,11 +86,6 @@ public class SchedulingService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (DebugLog.DEBUG) Log.d(TAG, "SchedulingService.onStartCommand - started");
-        boolean monitorStarted = appPrefs.getBoolean(MONITOR_STARTED, false);
-        if (!monitorStarted) {
-            appEditor.putBoolean(MONITOR_STARTED, true);
-            appEditor.commit();
-        }
         scheduleService();
         return super.onStartCommand(intent, flags, startId);
     }

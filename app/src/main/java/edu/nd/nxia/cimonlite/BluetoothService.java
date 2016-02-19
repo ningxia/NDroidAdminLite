@@ -83,7 +83,9 @@ public class BluetoothService extends MetricDevice<String> {
             Intent intent = (Intent) params.get(PARAM_BLUETOOTH_INTENT);
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 //            if (DebugLog.DEBUG) Log.d(TAG, "BluetoothService.getData - discovered Bluetooth device: " + device.getAddress());
-            tempData.add(device.getAddress());
+            if (device != null) {
+                tempData.add(device.getAddress());
+            }
         }
         if (timestamp - timer < period) {
             return null;

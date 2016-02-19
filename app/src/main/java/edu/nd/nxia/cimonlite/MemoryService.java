@@ -168,7 +168,12 @@ public final class MemoryService extends MetricDevice<Integer> {
         for (int i = 0; i < MEM_METRICS; i ++) {
             sb.append(values[i]).append("|");
         }
-        dataList.add(new DataEntry(Metrics.MEMORY_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
+        if (sb.length() == 0) {
+            dataList.add(new DataEntry(Metrics.MEMORY_CATEGORY, timestamp, ""));
+        }
+        else {
+            dataList.add(new DataEntry(Metrics.MEMORY_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
+        }
         return dataList;
     }
 

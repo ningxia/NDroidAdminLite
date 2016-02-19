@@ -143,7 +143,12 @@ public final class NetConnectedService extends MetricDevice<Byte> {
         for (int i = 0; i < NET_METRICS; i ++) {
             sb.append(values[i]).append("|");
         }
-        dataList.add(new DataEntry(Metrics.NETSTATUS_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
+        if (sb.length() == 0) {
+            dataList.add(new DataEntry(Metrics.NETSTATUS_CATEGORY, timestamp, ""));
+        }
+        else {
+            dataList.add(new DataEntry(Metrics.NETSTATUS_CATEGORY, timestamp, sb.substring(0, sb.length() - 1)));
+        }
         return dataList;
     }
 
