@@ -12,7 +12,11 @@
     <string name="hundredsec">100</string>
     <string name="units_ma">mA</string>
     <string name="units_ms2">m/s²</string>
-    <string name="units_ms_2">		m/s<sup><small>2</small></sup></string>
+    <string name="units_ms_2">m/s
+        <sup>
+            <small>2</small>
+        </sup>
+    </string>
     <string name="units_rads">rad/s</string>
     <string name="units_radians">rad</string>
     <string name="units_ut">µT</string>
@@ -32,4 +36,7 @@
     <string name="units_ms">ms</string>
     <string name="units_hz">Hz</string>
     <string name="units_seconds">s</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
