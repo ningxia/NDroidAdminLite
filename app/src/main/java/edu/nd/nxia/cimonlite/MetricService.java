@@ -116,12 +116,13 @@ public class MetricService implements SensorEventListener {
         this.mDeviceArray = new SparseArray<>();
         this.mPeriodArray = new SparseArray<>();
         initPeriods();
-        initDevices();
+//        initDevices();
+        initFour();
         database = CimonDatabaseAdapter.getInstance(context);
         appPrefs = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
         this.mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         this.mLocationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        this.mTelephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+//        this.mTelephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         this.mContentResolver = context.getContentResolver();
         initParameters();
     }
@@ -206,6 +207,20 @@ public class MetricService implements SensorEventListener {
         }
     }
 
+    public void initFour() {
+        List<MetricDevice<?>> serviceList = new ArrayList<>();
+
+        serviceList.add(MetricDevice.getDevice(Metrics.ACCELEROMETER));
+        serviceList.add(MetricDevice.getDevice(Metrics.GYROSCOPE));
+        serviceList.add(MetricDevice.getDevice(Metrics.LOCATION_CATEGORY));
+        serviceList.add(MetricDevice.getDevice(Metrics.ATMOSPHERIC_PRESSURE));
+
+        for (MetricDevice<?> metricDevice: serviceList) {
+            metricDevice.initDevice(mPeriodArray.get(metricDevice.getGroupId()));
+            mDeviceArray.put(metricDevice.getGroupId(), metricDevice);
+        }
+    }
+
     public void initDatabase() {
         int storedVersion = appPrefs.getInt(PREF_VERSION, -1);
         int appVersion = -1;
@@ -281,27 +296,11 @@ public class MetricService implements SensorEventListener {
         if (DebugLog.DEBUG) Log.d(TAG, "MetricService.stopMonitoring - stopped");
         endTime = System.currentTimeMillis();
         mSensorManager.unregisterListener(this);
-        context.unregisterReceiver(mBroadcastReceiver);
+//        context.unregisterReceiver(mBroadcastReceiver);
         mLocationManager.removeUpdates(mLocationListener);
-        mAccessObserver.stopWatching();
-        mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
-        mContentResolver.unregisterContentObserver(mSmsContentObserver);
-//        double offset = (endTime - startTime) / 1000.0;
-//        AccelerometerService accelerometerService = (AccelerometerService) mDeviceArray.get(Metrics.ACCELEROMETER);
-//        double rateAccelerometer = accelerometerService.getCount() / offset;
-//        accelerometerService.resetCount();
-//        GyroscopeService gyroscopeService = (GyroscopeService) mDeviceArray.get(Metrics.GYROSCOPE);
-//        double rateGyroscope = gyroscopeService.getCount() / offset;
-//        gyroscopeService.resetCount();
-//        PressureService pressureService = (PressureService) mDeviceArray.get(Metrics.ATMOSPHERIC_PRESSURE);
-//        double rateBarometer = pressureService.getCount() / offset;
-//        pressureService.resetCount();
-//        String result = String.format(
-//                "Accelerometer Sampling Rate: %.2fHz\n" +
-//                        "Gyroscope Sampling Rate: %.2fHz\n" +
-//                        "Barometer Sampling Rate: %.2fHz",
-//                rateAccelerometer, rateGyroscope, rateBarometer
-//        );
+//        mAccessObserver.stopWatching();
+//        mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
+//        mContentResolver.unregisterContentObserver(mSmsContentObserver);
         isActive = false;
         if (dataList.size() > 0) {
             new Thread(new Runnable() {
@@ -314,9 +313,7 @@ public class MetricService implements SensorEventListener {
 
         editor = appPrefs.edit();
         editor.remove(RUNNING_MONITOR);
-//        editor.putString(SENSOR_RESULT, result);
         editor.commit();
-//        return result;
         return "";
     }
 

@@ -67,10 +67,10 @@ public class NDroidService extends Service {
         if (!serviceThread.isAlive()) {
             serviceThread.start();
         }
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (!mBluetoothAdapter.isEnabled()) {
-            mBluetoothAdapter.enable();
-        }
+//        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+//        if (!mBluetoothAdapter.isEnabled()) {
+//            mBluetoothAdapter.enable();
+//        }
     }
 
     @Override

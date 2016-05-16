@@ -63,17 +63,17 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
         button = (Button) findViewById(R.id.start_button);
         button.setOnClickListener(this);
 
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (!mBluetoothAdapter.isEnabled()) {
-            Toast.makeText(this, "It is necessary to keep Bluetooth on! Now enabling ...", Toast.LENGTH_LONG).show();
-            mBluetoothAdapter.enable();
-        }
-
-        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        if (!mWifiManager.isWifiEnabled()) {
-            Toast.makeText(this, "It is necessary to keep WiFi enabled! Now enabling ...", Toast.LENGTH_LONG).show();
-            mWifiManager.setWifiEnabled(true);
-        }
+//        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+//        if (!mBluetoothAdapter.isEnabled()) {
+//            Toast.makeText(this, "It is necessary to keep Bluetooth on! Now enabling ...", Toast.LENGTH_LONG).show();
+//            mBluetoothAdapter.enable();
+//        }
+//
+//        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+//        if (!mWifiManager.isWifiEnabled()) {
+//            Toast.makeText(this, "It is necessary to keep WiFi enabled! Now enabling ...", Toast.LENGTH_LONG).show();
+//            mWifiManager.setWifiEnabled(true);
+//        }
 
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -175,9 +175,7 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
         }
         else {
             button.setText("Start");
-//            Intent intentNDroid = new Intent(context, NDroidService.class);
             Intent intentScheduling = new Intent(context, SchedulingService.class);
-//            stopService(intentNDroid);
             stopService(intentScheduling);
             editor.remove(MONITOR_STARTED);
             editor.remove(SENSOR_DELAY_MODE);
