@@ -17,6 +17,8 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.os.AsyncTask;
 
+import com.crashlytics.android.Crashlytics;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -125,6 +127,7 @@ public class UploadingService extends Service {
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
+                        Crashlytics.logException(e);
                     } finally {
                         count--;
                     }
@@ -157,6 +160,7 @@ public class UploadingService extends Service {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+                    Crashlytics.logException(e);
                 } finally {
                     count--;
                 }
@@ -183,6 +187,7 @@ public class UploadingService extends Service {
             } catch (Exception e) {
                 sendMsg(e.toString(),getDeviceID());
                 e.printStackTrace();
+                Crashlytics.logException(e);
             }
             //Get new cursor
             if (tableName.equals(MetricInfoTable.TABLE_METRICINFO) || tableName.equals(MetricsTable.TABLE_METRICS))
@@ -267,6 +272,7 @@ public class UploadingService extends Service {
                 Log.d(TAG, "Failed to encrypt data");
             sendMsg(e.toString(),getDeviceID());
             e.printStackTrace();
+            Crashlytics.logException(e);
         }
         //mainPackage.put("records2",records);
         mainPackage.put("table", tableName);
@@ -356,6 +362,7 @@ public class UploadingService extends Service {
                     comm.postData(data.toString().getBytes());
                 } catch (Exception e) {
                     e.printStackTrace();
+                    Crashlytics.logException(e);
                 }
             }
         }).start();

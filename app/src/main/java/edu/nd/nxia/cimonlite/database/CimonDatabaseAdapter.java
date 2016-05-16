@@ -10,6 +10,8 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.util.ArrayList;
 
 import edu.nd.nxia.cimonlite.DebugLog;
@@ -214,6 +216,7 @@ public final class CimonDatabaseAdapter {
             database.setTransactionSuccessful();
         } catch (Exception e) {
             if (DebugLog.ERROR) Log.e(TAG, "Error on batch insert: " + e.toString());
+            Crashlytics.logException(e);
         } finally {
             //End the transaction
             database.endTransaction();
@@ -270,6 +273,7 @@ public final class CimonDatabaseAdapter {
             database.setTransactionSuccessful();
         } catch (Exception e) {
             if (DebugLog.ERROR) Log.e(TAG, "Error on batch insert: " + e.toString());
+            Crashlytics.logException(e);
         } finally {
             //End the transaction
             database.endTransaction();

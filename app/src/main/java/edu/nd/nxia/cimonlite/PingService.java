@@ -9,6 +9,8 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+
 import org.json.JSONObject;
 
 import edu.nd.nxia.cimonlite.database.CimonDatabaseAdapter;
@@ -77,6 +79,7 @@ public class PingService extends Service {
                             if (DebugLog.DEBUG) Log.d(TAG, "Ping Callback:" + callBack);
                         } catch (Exception e) {
                             e.printStackTrace();
+                            Crashlytics.logException(e);
                         }
                     }
                 }).start();

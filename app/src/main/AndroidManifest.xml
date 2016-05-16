@@ -44,6 +44,11 @@
             android:name=".CimonPreferenceActivity">
         </activity>
 
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="13de2d4b294c5af160aff32dbdc0cb51080d2d60"
+        />
+
         <service
             android:name=".NDroidService"
             android:enabled="true"

@@ -37,11 +37,14 @@ import android.widget.Toast;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 
+import com.crashlytics.android.Crashlytics;
+
 import edu.nd.nxia.cimonlite.database.CimonDatabaseAdapter;
 import edu.nd.nxia.cimonlite.database.DataTable;
 import edu.nd.nxia.cimonlite.database.LabelingDB;
 import edu.nd.nxia.cimonlite.database.LabelingHistory;
 import edu.nd.nxia.cimonlite.database.MetricInfoTable;
+import io.fabric.sdk.android.Fabric;
 
 
 /**
@@ -86,6 +89,9 @@ public class LabelingInterface extends Activity {
         if (DebugLog.DEBUG)
             Log.d(TAG, "Initializing Labeling Interface");
         super.onCreate(savedInstanceState);
+
+        Fabric.with(this, new Crashlytics());
+
         setContentView(R.layout.activity_ll);
 
         saveButton = (Button) findViewById(R.id.button1);

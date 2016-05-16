@@ -2,6 +2,8 @@ package edu.nd.nxia.cimonlite.database;
 
 //import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.InputStream;
@@ -80,6 +82,7 @@ public class DataCommunicator {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            Crashlytics.logException(e);
             return "Fail";
         } finally {
             connection.disconnect();
