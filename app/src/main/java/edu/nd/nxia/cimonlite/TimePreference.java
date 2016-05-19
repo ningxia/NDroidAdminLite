@@ -56,7 +56,7 @@ public class TimePreference extends DialogPreference {
             lastHour = timePicker.getCurrentHour();
             lastMinute = timePicker.getCurrentMinute();
             if (DebugLog.DEBUG)
-                Log.d("CimonPreference", "lastHour: " + lastHour + " - " + "lastMinute: " + lastMinute);
+                Log.d("TimePreference", "lastHour: " + lastHour + " - " + "lastMinute: " + lastMinute);
             String hourStr = lastHour < 10 ? "0" + String.valueOf(lastHour) : String.valueOf(lastHour);
             String minuteStr = lastMinute < 10 ? "0" + String.valueOf(lastMinute) : String.valueOf(lastMinute);
             String time = hourStr + ":" + minuteStr;

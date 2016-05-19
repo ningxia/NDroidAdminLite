@@ -1,5 +1,7 @@
 package edu.nd.nxia.cimonlite;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -11,6 +13,7 @@ import android.util.Log;
  */
 public class CimonPreferenceFragment extends PreferenceFragment {
 
+    private static final String SHARED_PREFS = "CimonSharedPrefs";
     private static final String MONITOR_START_TIME = "monitor_start_time";
     private static final String MONITOR_DURATION = "monitor_duration";
     private TimePreference timePreference;
@@ -29,8 +32,10 @@ public class CimonPreferenceFragment extends PreferenceFragment {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 String time = (String) newValue;
                 if (DebugLog.DEBUG)
-                    Log.d("CimonPreference", time);
+                    Log.d("CimonPreferenceFragment", time);
                 timePreference.setSummary(time);
+                SharedPreferences appPrefs = MyApplication.getAppContext().getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
+                appPrefs.edit().putString(MONITOR_START_TIME, time).commit();
                 return true;
             }
         });
@@ -40,7 +45,11 @@ public class CimonPreferenceFragment extends PreferenceFragment {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 String duration = (String) newValue;
+                if (DebugLog.DEBUG)
+                    Log.d("CimonPreferenceFragment", duration);
                 durationPreference.setSummary(duration);
+                SharedPreferences appPrefs = MyApplication.getAppContext().getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
+                appPrefs.edit().putString(MONITOR_DURATION, duration).commit();
                 return true;
             }
         });
