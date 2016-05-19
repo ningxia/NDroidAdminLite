@@ -1,5 +1,6 @@
 package edu.nd.nxia.cimonlite;
 
+import android.app.ActivityManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -35,7 +36,7 @@ public class SchedulingService extends Service {
     private static String END_TIME;
     private static long DURATION_IN_MILLIS;
     private static Intent INTENT;
-    private static long INTERVAL = 10 * 60 * 1000;
+    private static long INTERVAL = 5 * 60 * 1000;
 
     private Context context;
 
@@ -59,8 +60,8 @@ public class SchedulingService extends Service {
             serviceThread.start();
         }
 
-        START_TIME = appPrefs.getString(MONITOR_START_TIME, "");
-        DURATION_IN_MILLIS = appPrefs.getLong(MONITOR_DURATION, -1);
+        START_TIME = appPrefs.getString(MONITOR_START_TIME, "8:00");
+        DURATION_IN_MILLIS = appPrefs.getLong(MONITOR_DURATION, 12*3600*1000);
     }
 
     private static final HandlerThread serviceThread = new HandlerThread(THREADTAG) {
@@ -86,10 +87,10 @@ public class SchedulingService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (DebugLog.DEBUG) Log.d(TAG, "SchedulingService.onStartCommand - started");
+        checkService();
         scheduleService();
         return super.onStartCommand(intent, flags, startId);
     }
-
 
     private void scheduleService() {
         if (DebugLog.DEBUG) Log.d(TAG, "SchedulingService.scheduleService - started");
@@ -97,35 +98,35 @@ public class SchedulingService extends Service {
         worker = new Runnable() {
             @Override
             public void run() {
-                if (DebugLog.DEBUG) Log.d(TAG, "SchedulingService.scheduleService - run called");
-                long currentInMillis = System.currentTimeMillis();
-                String[] startTimeTokens = START_TIME.split(":");
-                Calendar calendarStart = Calendar.getInstance();
-                calendarStart.setTimeInMillis(System.currentTimeMillis());
-                calendarStart.set(Calendar.HOUR_OF_DAY, Integer.parseInt(startTimeTokens[0]));
-                calendarStart.set(Calendar.MINUTE, Integer.parseInt(startTimeTokens[1]));
-                long startInMillis = calendarStart.getTimeInMillis();
-                long endInMillis = startInMillis + DURATION_IN_MILLIS;
-                /* Schedule monitor on daily basis. */
-                if (currentInMillis >= startInMillis && currentInMillis <= endInMillis) {
-//                /* Periodically schedule monitor. */
-//                long val = (currentInMillis - startInMillis) % INTERVAL;
-//                if (val >= 0 && val <= DURATION_IN_MILLIS) {
-                    boolean monitorSleep = appPrefs.getBoolean(MONITOR_SLEEP, true);
-                    if (monitorSleep) {
-                        context.startService(INTENT);
-                        appEditor.putBoolean(MONITOR_SLEEP, false);
-                    }
-                }
-                else {
-                    context.stopService(INTENT);
-                    appEditor.putBoolean(MONITOR_SLEEP, true);
-                }
-                appEditor.commit();
-                handler.postDelayed(this, 60 * 1000);
+                checkService();
+                handler.postDelayed(this, INTERVAL);
             }
         };
-        handler.postDelayed(worker, 60  * 1000);
+        handler.postDelayed(worker, INTERVAL);
+    }
+
+    private void checkService(){
+        if (DebugLog.DEBUG) Log.d(TAG, "SchedulingService.scheduleService - run called");
+        long currentInMillis = System.currentTimeMillis();
+        String[] startTimeTokens = START_TIME.split(":");
+        Calendar calendarStart = Calendar.getInstance();
+        calendarStart.setTimeInMillis(System.currentTimeMillis());
+        calendarStart.set(Calendar.HOUR_OF_DAY, Integer.parseInt(startTimeTokens[0]));
+        calendarStart.set(Calendar.MINUTE, Integer.parseInt(startTimeTokens[1]));
+        long startInMillis = calendarStart.getTimeInMillis();
+        long endInMillis = startInMillis + DURATION_IN_MILLIS;
+        if (currentInMillis >= startInMillis && currentInMillis <= endInMillis) {
+            //Check sensor service. Start sensing if it's not running
+            if(!isServiceRunning(NDroidService.class,context)){
+                context.startService(INTENT);
+                appEditor.putBoolean(MONITOR_STARTED, true);
+            }
+        }
+        else {
+            context.stopService(INTENT);
+            appEditor.putBoolean(MONITOR_STARTED, false);
+        }
+        appEditor.commit();
     }
 
     @Override
@@ -135,6 +136,16 @@ public class SchedulingService extends Service {
         context.stopService(INTENT);
         handler.removeCallbacks(worker);
         super.onDestroy();
+    }
+
+    public static boolean isServiceRunning(Class<?> serviceClass,Context c) {
+        ActivityManager manager = (ActivityManager) c.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

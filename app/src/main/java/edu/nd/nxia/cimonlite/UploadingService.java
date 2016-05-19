@@ -52,6 +52,8 @@ public class UploadingService extends Service {
     private static int endHour = 24;
     private static Context context;
 
+    private Thread uploadThread = null;
+
     PowerManager powerManager;
     PowerManager.WakeLock wakeLock;
 
@@ -83,12 +85,37 @@ public class UploadingService extends Service {
         return null;
     }
 
+    /*private void scheduleUploading() {
+        final Handler handler = new Handler();
+        final Runnable worker = new Runnable() {
+            public void run() {
+                String msg = "Uploading thread:" + Integer.toString(count) + "\n Time window:"
+                        + Integer.toString(startHour) + "~" + Integer.toString(endHour) + " BatchSize:" + Integer.toString(MAXRECORDS) + " WiFi:" + Boolean.toString(WiFiConnected());
+                Log.d(TAG, msg);
+                sendMsg(msg, getDeviceID());
+                if (count < 1) {
+                    runUpload();
+                }
+                handler.postDelayed(this, period);
+            }
+        };
+        handler.postDelayed(worker, period);
+    }*/
     private void scheduleUploading() {
         final Handler handler = new Handler();
         final Runnable worker = new Runnable() {
             public void run() {
                 String msg = "Uploading thread:" + Integer.toString(count) + "\n Time window:"
                         + Integer.toString(startHour) + "~" + Integer.toString(endHour) + " BatchSize:" + Integer.toString(MAXRECORDS) + " WiFi:" + Boolean.toString(WiFiConnected());
+                if(uploadThread != null){
+                    String isInterrupted = Boolean.toString(uploadThread.isInterrupted());
+                    String isAlive = Boolean.toString(uploadThread.isAlive());
+                    String state = uploadThread.getState().toString();
+                    String isDamon = Boolean.toString(uploadThread.isDaemon());
+                    msg = msg + " isInterrupted:" + isInterrupted + " isAlive:" + isAlive + " State:" + state + " isDamon:" + isDamon;
+                }else{
+                    msg = msg + " Null: True";
+                }
                 Log.d(TAG, msg);
                 sendMsg(msg, getDeviceID());
                 if (count < 1) {
@@ -105,7 +132,7 @@ public class UploadingService extends Service {
      *
      * @author Xiao(Sean) Bo
      */
-    private void runUpload() {
+    /*private void runUpload() {
         Log.d(TAG,"Run upload");
         Calendar timeConverter = Calendar.getInstance();
         timeConverter.set(Calendar.HOUR_OF_DAY, startHour);
@@ -133,6 +160,37 @@ public class UploadingService extends Service {
                     }
                 }
             }).start();
+        }
+    }*/
+
+    private void runUpload() {
+        Log.d(TAG,"Run upload");
+        Calendar timeConverter = Calendar.getInstance();
+        timeConverter.set(Calendar.HOUR_OF_DAY, startHour);
+        long startTime = timeConverter.getTimeInMillis();
+        timeConverter.set(Calendar.HOUR_OF_DAY, endHour);
+        long endTime = timeConverter.getTimeInMillis();
+        long currentTime = System.currentTimeMillis();
+        String msg = "Run upload " + "curTime:" + Long.toString(currentTime);
+        Log.d(TAG, msg);
+        sendMsg(msg,getDeviceID());
+        if (currentTime >= startTime && currentTime <= endTime
+                && CimonDatabaseAdapter.database != null) {
+            count++;
+            uploadThread = new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        for (String table : uploadTables) {
+                            uploadFromTable(table);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        count--;
+                    }
+                }
+            });
+            uploadThread.start();
         }
     }
 
@@ -178,14 +236,14 @@ public class UploadingService extends Service {
         Cursor cursor = this.getCursor(tableName);
         String msg = "Upload " + tableName + " " + cursor.getCount();
         Log.d(TAG, msg);
-        sendMsg(msg,getDeviceID());
+        sendMsg(msg, getDeviceID());
         while (cursor.getCount() > 0) {
             //Update cursor
             try {
                 cursor.moveToFirst();
                 uploadCursor(cursor, tableName);
             } catch (Exception e) {
-                sendMsg(e.toString(),getDeviceID());
+                sendMsg(e.toString(), getDeviceID());
                 e.printStackTrace();
                 Crashlytics.logException(e);
             }
@@ -206,9 +264,9 @@ public class UploadingService extends Service {
      */
     private void uploadCursor(Cursor cursor, String tableName) throws JSONException,
             MalformedURLException {
-        sendMsg("Upload cursor",getDeviceID());
+        sendMsg("Upload cursor", getDeviceID());
         JSONArray records = new JSONArray();
-        Log.d(TAG,"Upload cursor " + tableName);
+        Log.d(TAG, "Upload cursor " + tableName);
         String[] columnNames = cursor.getColumnNames();
         ArrayList<Integer> rowIDs = new ArrayList<Integer>();
         while (!cursor.isAfterLast()) {
@@ -261,16 +319,16 @@ public class UploadingService extends Service {
     private void batchUpload(JSONArray records, String tableName,
                              ArrayList<Integer> rowIDs) throws MalformedURLException,
             JSONException {
-        sendMsg("Batch upload",getDeviceID());
+        sendMsg("Batch upload", getDeviceID());
         DataCommunicator comm = new DataCommunicator();
         JSONObject mainPackage = new JSONObject();
-        Log.d(TAG,"Batch upload " + tableName);
+        Log.d(TAG, "Batch upload " + tableName);
         try {
             mainPackage.put("records", Cipher.encryptString(records.toString(), true));
         } catch (Exception e) {
             if (DebugLog.DEBUG)
                 Log.d(TAG, "Failed to encrypt data");
-            sendMsg(e.toString(),getDeviceID());
+            sendMsg(e.toString(), getDeviceID());
             e.printStackTrace();
             Crashlytics.logException(e);
         }
@@ -280,7 +338,7 @@ public class UploadingService extends Service {
         String deviceID = getDeviceID();
         mainPackage.put("device_id", deviceID);
         String callBack = comm.postData(mainPackage.toString().getBytes());
-        Log.d(TAG,"Call back:" + callBack + " " + tableName);
+        Log.d(TAG, "Call back:" + callBack + " " + tableName);
         if (callBack.equals("Success")
                 && (tableName.equals(DataTable.TABLE_DATA) || tableName
                 .equals(LabelingHistory.TABLE_NAME))) {
@@ -298,8 +356,8 @@ public class UploadingService extends Service {
 
     private static void garbageCollection(ArrayList<Integer> rowIDs,
                                           String tableName) {
-        sendMsg("Garbage collection",getDeviceID());
-        Log.d(TAG,"Garbage collection " + tableName);
+        sendMsg("Garbage collection", getDeviceID());
+        Log.d(TAG, "Garbage collection " + tableName);
         SQLiteDatabase curDB = tableName.equals(LabelingHistory.TABLE_NAME) ? LabelingHistory.db
                 : CimonDatabaseAdapter.database;
         StringBuilder IDs = new StringBuilder();

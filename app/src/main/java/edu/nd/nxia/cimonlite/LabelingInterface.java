@@ -2,12 +2,14 @@ package edu.nd.nxia.cimonlite;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
 
 import android.annotation.SuppressLint;
 import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -51,28 +53,24 @@ import io.fabric.sdk.android.Fabric;
  * Labeling Interface.
  *
  * @author Xiao(Sean) Bo
+ *
  */
 
 public class LabelingInterface extends Activity {
-    Spinner workSpinner, timeIntervalSpinner;
-    List<String> kineticStates = new ArrayList<String>();
-    List<String> timeArray = Arrays.asList("Select time", "1 min", "10 min", "30 min",
-            "60 min", "120 min", "180 min");
     private String TAG = "CimonLabelingInterface";
-    Button saveButton, LoginButton, cancelButton, newItemButton,
-            saveNewItemButton, discardNewItemButton,
-            loginButton;
-//    Button MemoryButton, CimonButton;
-    EditText et, et2, PinCode;
+    private Spinner workSpinner, timeIntervalSpinner;
+    private List<String> kineticStates = new ArrayList<String>();
+    private List<String> timeArray = Arrays.asList("Select time", "1 min", "10 min", "30 min",
+            "60 min", "120 min", "180 min");
+    private Button saveButton, LoginButton, cancelButton, newItemButton,
+            saveNewItemButton, discardNewItemButton;
+    private EditText et, PinCode;
     private RadioGroup radioButtonGroup;
-    private RadioButton radioButton;
-    TextView tv, loginText, pinText, statusText, tv1;
-    String work = "", loginCode = "";
-    long startTime, endTime;
+    private TextView tv, statusText, tv1;
+    private String work = "";
+    private long startTime, endTime;
     private static LabelingHistory labelDB;
     private LabelingDB statesDB;
-    private static final String[] uploadTables = {DataTable.TABLE_DATA,
-            MetricInfoTable.TABLE_METRICINFO, LabelingHistory.TABLE_NAME};
     private static String[] initialStates = {"Sitting", "Sit to Stand",
             "Standing", "Stand to Sit", "Walking", "Stairs Up", "Stairs Down",
             "Wheeling", "Lying"};
@@ -81,6 +79,10 @@ public class LabelingInterface extends Activity {
     private static final String RUNNING_MONITOR_IDS = "running_monitor_ids";
     private static Set<String> runningMonitorIds;
     private boolean labelingStart;
+
+    private static final String SHARED_PREFS = "CimonSharedPrefs";
+    private static final String MONITOR_START_TIME = "monitor_start_time";
+    private static final String MONITOR_DURATION = "monitor_duration";
 
     @SuppressLint("NewApi")
     @SuppressWarnings("unchecked")
@@ -99,8 +101,6 @@ public class LabelingInterface extends Activity {
         saveNewItemButton = (Button) findViewById(R.id.saveItemButton);
         discardNewItemButton = (Button) findViewById(R.id.discardItemButton);
         LoginButton = (Button) findViewById(R.id.button7);
-//        MemoryButton = (Button) findViewById(R.id.button8);
-//        CimonButton = (Button) findViewById(R.id.button9);
 
         cancelButton = (Button) findViewById(R.id.button2);
         workSpinner = (Spinner) findViewById(R.id.spinner1);
@@ -111,19 +111,17 @@ public class LabelingInterface extends Activity {
         statusText = (TextView) findViewById(R.id.statusTextView);
         showStatus();
 
-        this.initializeTimeSpinner();
-
         // It is necessary, otherwise LabelingDB cannot be opened.
         CimonDatabaseAdapter.getInstance(MyApplication.getAppContext());
-
         this.labelDB = new LabelingHistory();
         this.statesDB = new LabelingDB();
         startService(new Intent(this, UploadingService.class));
         startService(new Intent(this, LabelingReminderService.class));
         startService(new Intent(this, PingService.class));
 
+        initializeTimeSpinner();
         addWorkList();
-        this.labelingStart = false;
+        labelingStart = false;
 
         timeIntervalSpinner
                 .setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -152,7 +150,7 @@ public class LabelingInterface extends Activity {
                             }
                         };
                         handler.postDelayed(worker, selectedTime);
-                        Toast.makeText(getApplicationContext(), Integer.toString(selectedTime) + " " + Boolean.toString(labelingStart), Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getApplicationContext(), Integer.toString(selectedTime) + " " + Boolean.toString(labelingStart), Toast.LENGTH_SHORT).show();
                         initializeTimeSpinner();
                     }
 
@@ -170,6 +168,8 @@ public class LabelingInterface extends Activity {
                 workSpinner.setSelection(position);
                 work = (String) workSpinner.getSelectedItem();
                 if (!work.equals("Select Activity")) {
+                    if(!checkEnvironment())
+                        return;
                     if (!isInitialStates(work) && saveButton.getText().equals("Start")) {
                         new AlertDialog.Builder(LabelingInterface.this)
                                 .setMessage("Options for " + work)
@@ -243,6 +243,11 @@ public class LabelingInterface extends Activity {
         saveButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (!checkEnvironment())
+                    return;
+                /*long recordNum = CimonDatabaseAdapter.getDataLeft();
+                Toast.makeText(getApplicationContext(),"Record Left: " + Long.toString(recordNum),Toast.LENGTH_LONG);
+                Toast.makeText(getApplicationContext(),Long.toString(recordNum),Toast.LENGTH_LONG).show();*/
                 String curWork = (String) workSpinner.getSelectedItem();
                 if (saveButton.getText().equals("Start") && !curWork.equals("Select Activity")) {
                     startTime = System.currentTimeMillis();
@@ -418,18 +423,6 @@ public class LabelingInterface extends Activity {
                 });
             }
         });
-
-//        CimonButton.setOnClickListener(new OnClickListener() {
-//
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(LabelingInterface.this,
-//                        NDroidAdmin.class);
-//                intent.putExtra("State", work);
-//                startActivity(intent); //
-//
-//            }
-//        });
     }
 
     @Override
@@ -558,6 +551,34 @@ public class LabelingInterface extends Activity {
                 return true;
         }
         return false;
+    }
+
+    /*
+    * Check if sensing service is running or within sensing window.
+    *
+    * */
+    private boolean checkEnvironment() {
+        SharedPreferences appPrefs = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
+        String START_TIME = appPrefs.getString(MONITOR_START_TIME, "8:00");
+        long DURATION_IN_MILLIS = appPrefs.getLong(MONITOR_DURATION, 12*3600*1000);
+        String[] startTimeTokens = START_TIME.split(":");
+        Calendar calendarStart = Calendar.getInstance();
+        calendarStart.setTimeInMillis(System.currentTimeMillis());
+        calendarStart.set(Calendar.HOUR_OF_DAY, Integer.parseInt(startTimeTokens[0]));
+        calendarStart.set(Calendar.MINUTE, Integer.parseInt(startTimeTokens[1]));
+        long startInMillis = calendarStart.getTimeInMillis();
+        long endInMillis = startInMillis + DURATION_IN_MILLIS;
+        long currentInMillis = System.currentTimeMillis();
+        if(!(currentInMillis >= startInMillis && currentInMillis <= endInMillis)){
+            Toast.makeText(getApplicationContext(),"Out of sensing window",Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (!SchedulingService.isServiceRunning(SchedulingService.class, getApplicationContext())) {
+            Toast.makeText(getApplicationContext(), "Sensing is not running. Please wait for 2 minutes", Toast.LENGTH_SHORT).show();
+            startService(new Intent(getApplicationContext(), SchedulingService.class));
+            return false;
+        }
+        return true;
     }
 
     @Override

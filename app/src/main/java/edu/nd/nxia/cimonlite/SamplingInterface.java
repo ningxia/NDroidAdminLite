@@ -123,6 +123,7 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
 
     @Override
     protected void onResume() {
+        resumeStatus();
         super.onResume();
     }
 

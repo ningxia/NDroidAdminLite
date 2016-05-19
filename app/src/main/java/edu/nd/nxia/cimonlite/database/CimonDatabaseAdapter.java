@@ -3,6 +3,7 @@ package edu.nd.nxia.cimonlite.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
@@ -395,6 +396,14 @@ public final class CimonDatabaseAdapter {
      * */
     private long upTimeToRealTime(long upTime) {
         return System.currentTimeMillis() - SystemClock.elapsedRealtime() + upTime;
+    }
+
+    /*
+    * Get record count
+    *
+    * */
+    public static long getDataLeft() {
+        return DatabaseUtils.queryNumEntries(database, DataTable.TABLE_DATA);
     }
 
 }

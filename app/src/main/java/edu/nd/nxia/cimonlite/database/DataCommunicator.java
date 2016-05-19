@@ -2,7 +2,11 @@ package edu.nd.nxia.cimonlite.database;
 
 //import android.util.Log;
 
-import com.crashlytics.android.Crashlytics;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.nfc.Tag;
+import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -11,6 +15,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import com.crashlytics.android.Crashlytics;
 
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -21,6 +26,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import edu.nd.nxia.cimonlite.MyApplication;
+
 /**
  * Communication facility for uploading to server
  *
@@ -29,9 +36,9 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class DataCommunicator {
     private URL url;
-    private String url_c = "http://129.74.247.90:9003/Update_Data/";
-//    private String url_c = "http://129.74.152.106:8200/Update_Data/";
-    //private String url_c = "http://10.11.132.136:8300/Update_Data/";
+    //private String url_c = "http://129.74.247.90:9003/Update_Data/";
+    private String url_c = "http://m-health.cse.nd.edu:8100/Update_Data/";
+    private String TAG = "DataCommunicator";
     private HttpURLConnection connection = null;
 
     public DataCommunicator() throws MalformedURLException{
@@ -60,6 +67,9 @@ public class DataCommunicator {
      *
      */
     public String postData(byte[] data) {
+        Log.d(TAG,"Network:" + Boolean.toString(checkNetwork()));
+        if(!checkNetwork())
+            return  "Fail";
         String callBack = null;
         try {
             connection = (HttpURLConnection) url.openConnection();
@@ -88,5 +98,14 @@ public class DataCommunicator {
             connection.disconnect();
             return callBack;
         }
+    }
+
+    private boolean checkNetwork(){
+        ConnectivityManager connMgr = (ConnectivityManager) MyApplication.getAppContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if(networkInfo != null && networkInfo.isConnected()){
+            return true;
+        }
+        return false;
     }
 }

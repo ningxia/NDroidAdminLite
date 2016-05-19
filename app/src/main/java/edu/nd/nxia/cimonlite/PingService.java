@@ -1,5 +1,6 @@
 package edu.nd.nxia.cimonlite;
 
+import android.app.ActivityManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -22,9 +23,9 @@ import edu.nd.nxia.cimonlite.database.DataTable;
  */
 public class PingService extends Service {
 
-    private static final String TAG = "CimonReminderService";
+    private static final String TAG = "CimonPingService";
     private static final String WAKE_LOCK = "UploadingServiceWakeLock";
-    private static final int period = 1000 * 3600;
+    private static final int period = 1000 * 5;
     private static final String appVersion = "1.0";
 
     PowerManager powerManager;
@@ -71,12 +72,13 @@ public class PingService extends Service {
                             String deviceID = UploadingService.getDeviceID();
                             mainPackage.put("device_id", deviceID);
                             mainPackage.put("version", appVersion);
-                            long totalRowCount = getTotalRowCount();
+                            long totalRowCount = CimonDatabaseAdapter.getDataLeft();
                             mainPackage.put("total_row", totalRowCount);
                             long phoneTimeStamp = System.currentTimeMillis();
                             mainPackage.put("phone_time", phoneTimeStamp);
                             String callBack = comm.postData(mainPackage.toString().getBytes());
                             if (DebugLog.DEBUG) Log.d(TAG, "Ping Callback:" + callBack);
+                            Log.d(TAG,"Running Services: " + SchedulingService.isServiceRunning(NDroidService.class,getApplicationContext()));
                         } catch (Exception e) {
                             e.printStackTrace();
                             Crashlytics.logException(e);
