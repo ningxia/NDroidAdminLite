@@ -36,7 +36,7 @@ public class SchedulingService extends Service {
     private static String END_TIME;
     private static long DURATION_IN_MILLIS;
     private static Intent INTENT;
-    private static long INTERVAL = 5 * 60 * 1000;
+    private static long INTERVAL = 5 * 1000;
 
     private Context context;
 
@@ -59,9 +59,6 @@ public class SchedulingService extends Service {
         if (!serviceThread.isAlive()) {
             serviceThread.start();
         }
-
-        START_TIME = appPrefs.getString(MONITOR_START_TIME, "8:00");
-        DURATION_IN_MILLIS = appPrefs.getLong(MONITOR_DURATION, 12*3600*1000);
     }
 
     private static final HandlerThread serviceThread = new HandlerThread(THREADTAG) {
@@ -107,6 +104,9 @@ public class SchedulingService extends Service {
 
     private void checkService(){
         if (DebugLog.DEBUG) Log.d(TAG, "SchedulingService.scheduleService - run called");
+        START_TIME = appPrefs.getString(MONITOR_START_TIME, "8:00");
+        DURATION_IN_MILLIS = Long.parseLong(appPrefs.getString(MONITOR_DURATION, "12")) * 3600 *1000;
+        Log.d(TAG, "SchedulingService.checkService - startTime: " + START_TIME + " - duration: " + Long.toString(DURATION_IN_MILLIS/(3600 * 1000)));
         long currentInMillis = System.currentTimeMillis();
         String[] startTimeTokens = START_TIME.split(":");
         Calendar calendarStart = Calendar.getInstance();

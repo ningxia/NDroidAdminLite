@@ -204,20 +204,10 @@ public class SamplingInterface extends Activity implements View.OnClickListener,
     private void startNDroidService() {
         Log.d(TAG, "SamplingInterface.startNDroidService - sensorDelayMode: " + sensorDelayMode);
         editor.putInt(SENSOR_DELAY_MODE, sensorDelayMode);
-        String startTime = prefs.getString(MONITOR_START_TIME, "");
-        if (startTime.equals("")) {
-            startTime = "08:00";
-        }
-        editor.putString(MONITOR_START_TIME, startTime);
-        String duration = prefs.getString(MONITOR_DURATION, "");
-        if (duration.equals("")) {
-            duration = "12";
-        }
-        Log.d(TAG, "SamplingInterface.startNDroidService - startTime: " + startTime + " - duration: " + duration);
-        long durationInMillis = Long.parseLong(duration) * 60 * 60 * 1000;
-//        long durationInMillis = 5 * 60 * 1000;
-        editor.putLong(MONITOR_DURATION, durationInMillis);
         editor.commit();
+        String startTime = prefs.getString(MONITOR_START_TIME, "08:00");
+        String duration = prefs.getString(MONITOR_DURATION, "12");
+        Log.d(TAG, "SamplingInterface.startNDroidService - startTime: " + startTime + " - duration: " + duration);
         Intent intent = new Intent(context, SchedulingService.class);
         startService(intent);
         if (DebugLog.DEBUG) Log.d(TAG, "SamplingInterface.startNDroidService - started");
