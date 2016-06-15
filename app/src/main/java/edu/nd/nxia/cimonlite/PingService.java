@@ -73,6 +73,7 @@ public class PingService extends Service {
                             mainPackage.put("device_id", deviceID);
                             mainPackage.put("version", appVersion);
                             long totalRowCount = CimonDatabaseAdapter.getDataLeft();
+                            //long totalRowCount = getTotalRowCount();
                             mainPackage.put("total_row", totalRowCount);
                             long phoneTimeStamp = System.currentTimeMillis();
                             mainPackage.put("phone_time", phoneTimeStamp);
@@ -93,6 +94,7 @@ public class PingService extends Service {
 
     private long getTotalRowCount() {
         String query = "select count(*) from " + DataTable.TABLE_DATA;
+        //Log.d(TAG,"Database:" + CimonDatabaseAdapter.database.toString());
         Cursor res = CimonDatabaseAdapter.database.rawQuery(query, null);
         res.moveToFirst();
         long totalRowCount = res.getLong(0);

@@ -560,7 +560,7 @@ public class LabelingInterface extends Activity {
     private boolean checkEnvironment() {
         SharedPreferences appPrefs = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
         String START_TIME = appPrefs.getString(MONITOR_START_TIME, "8:00");
-        long DURATION_IN_MILLIS = appPrefs.getLong(MONITOR_DURATION, 12*3600*1000);
+        long DURATION_IN_MILLIS = Long.parseLong(appPrefs.getString(MONITOR_DURATION, "12"))*3600*1000;
         String[] startTimeTokens = START_TIME.split(":");
         Calendar calendarStart = Calendar.getInstance();
         calendarStart.setTimeInMillis(System.currentTimeMillis());

@@ -36,7 +36,7 @@ public class SchedulingService extends Service {
     private static String END_TIME;
     private static long DURATION_IN_MILLIS;
     private static Intent INTENT;
-    private static long INTERVAL = 5 * 1000;
+    private static long INTERVAL = 5 * 60 * 1000;
 
     private Context context;
 
@@ -119,14 +119,14 @@ public class SchedulingService extends Service {
             //Check sensor service. Start sensing if it's not running
             if(!isServiceRunning(NDroidService.class,context)){
                 context.startService(INTENT);
-                appEditor.putBoolean(MONITOR_STARTED, true);
+                //appEditor.putBoolean(MONITOR_STARTED, true);
             }
         }
         else {
             context.stopService(INTENT);
-            appEditor.putBoolean(MONITOR_STARTED, false);
+            //appEditor.putBoolean(MONITOR_STARTED, false);
         }
-        appEditor.commit();
+        //appEditor.commit();
     }
 
     @Override
@@ -138,6 +138,10 @@ public class SchedulingService extends Service {
         super.onDestroy();
     }
 
+    /*
+    * Check actual status of service.
+    *
+    * */
     public static boolean isServiceRunning(Class<?> serviceClass,Context c) {
         ActivityManager manager = (ActivityManager) c.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
